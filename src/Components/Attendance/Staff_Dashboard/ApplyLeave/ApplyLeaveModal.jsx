@@ -24,11 +24,15 @@ const clean = (val) =>
     : val;
 
 const ApplyLeaveModal = ({ onClose, onSubmitted }) => {
-  const [leaveType, setLeaveType] = useState('Annual');
+  const [leaveType, setLeaveType] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [totalDayLeave, setTotalDayLeave] =useState('');
+  const [workGiven, setWorkGiven] = useState('');
   const [reason, setReason] = useState('');
   const [document, setDocument] = useState(null);
+
+  const [balanceTotalLeave, setBalanceTotalLeave] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 

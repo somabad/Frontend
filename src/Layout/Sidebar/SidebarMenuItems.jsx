@@ -64,10 +64,14 @@ const SidebarMenuItems = ({ setMainMenu, sidebartoogle, setNavActive, activeClas
     const newMenu = JSON.parse(JSON.stringify(getMenuItems()));
 
     const updateActiveStates = (items) => {
+      if (!Array.isArray(items)){
       for (let item of items) {
-        item.active = currentPath.toLowerCase().includes(item.path.toLowerCase());
-        if (item.children) {
+        if (item.path){
+          item.active = currentPath.toLowerCase().includes(item.path.toLowerCase());
+        }
+        if (item.children){
           updateActiveStates(item.children);
+        }
           if (item.children.some((child) => child.active)) {
             item.active = true;
           }
@@ -75,7 +79,9 @@ const SidebarMenuItems = ({ setMainMenu, sidebartoogle, setNavActive, activeClas
       }
     };
 
-    newMenu.forEach((section) => updateActiveStates(section.Items));
+    newMenu.forEach((section) => {
+      if (Array.isArray(section.Items)) {
+        updateActiveStates(section.Items)}});
     setMenuItems(newMenu);
     setMainMenu({ mainmenu: newMenu });
   }, [currentPath, setMainMenu]);
@@ -89,7 +95,7 @@ const SidebarMenuItems = ({ setMainMenu, sidebartoogle, setNavActive, activeClas
               <h6 className="lan-1">{t(section.menutitle)}</h6>
             </div>
           </li>
-          {section.Items.map((menuItem, index) => (
+          {section.Items?.map((menuItem, index) => (
             <li className="sidebar-list" key={index}>
               {menuItem.type === "sub" && (
                 <button
