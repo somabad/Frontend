@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://127.0.0.1:8000/';
+const BASE_URL = 'http://127.0.0.1:8000/api';
 
 // Dashboard APIs
 export const getStaffDashboard = async (staffId) => {
@@ -89,7 +89,7 @@ export const updateStaff = async (staffId, data) => {
 
 // Leave APIs
 export const getAdminLeaveDashboard = async (staffId) => {
-  const response = await axios.post(`http://127.0.0.1:8000/api/admin-leave-dashboard/${staffId}/`);
+  const response = await axios.get(`${BASE_URL}/admin-leave-dashboard/${staffId}/`);
   return response.data;
 };
 

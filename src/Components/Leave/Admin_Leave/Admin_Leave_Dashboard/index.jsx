@@ -15,7 +15,7 @@ const AdminLeaveDashboard = () => {
   const [totalApproved, setTotalApproved] = useState(0);
   const [totalReject, setTotalReject] = useState(0);
   const [totalRequest, setTotalRequest] = useState(0);
-  const [staffLeave, setStaffLeave] = useState([]);
+  const [onLeaveTodayNames, setOnLeaveTodayNames] = useState([]);
   const [latestRequest, setLatestRequest] = useState([]);
 
   const navigate = useNavigate();  // Correctly initialize navigate hook
@@ -33,7 +33,7 @@ const AdminLeaveDashboard = () => {
       setTotalApproved(data.totalApproved || 0);
       setTotalReject(data.totalReject || 0);
       setTotalRequest(data.totalRequest || 0);
-      setStaffLeave(data.staffLeave || []);
+      setOnLeaveTodayNames(data.onLeaveTodayNames || []);
       setLatestRequest(data.latestRequest || []);
 
     } catch (err) {
@@ -77,7 +77,7 @@ const AdminLeaveDashboard = () => {
               </Col>
             </Row>
             <Row>
-              <TodayLeave staffLeave={staffLeave} loading={loading} error={error} />
+              <TodayLeave onLeaveTodayName={onLeaveTodayNames} loading={loading} error={error} />
               <LatestLeave latestRequest={latestRequest} loading={loading} error={error} />
             </Row>
           </Container>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Col, Card, CardHeader} from 'reactstrap';
 import DataTable from 'react-data-table-component'; //not same as HTML(not user-friendly))
 
-const TodayLeave = ({ staffLeave, loading, error }) => {
+const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
   const columns = [
     {
       name: 'Staff ID',
@@ -65,7 +65,7 @@ const TodayLeave = ({ staffLeave, loading, error }) => {
 
         <DataTable
           columns={columns}
-          data={staffLeave}
+          data={onLeaveTodayNames}
           pagination
           striped
           highlightOnHover

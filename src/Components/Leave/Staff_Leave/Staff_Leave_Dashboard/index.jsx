@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { Container, Row } from "reactstrap";
-import Swal from 'sweetalert2';
 import {getStaffLeaveDashboard} from "../../../Attendance/utils"
 import Loader from '../../../Attendance/Loader'; // Loader component
 
-const Dashboard = () => {
-  const [refreshLogs, setRefreshLogs] = useState(false);
-  const [showLateModal, setShowLateModal] = useState(false);
-  const [lateReason, setLateReason] = useState('');
+const StaffLeaveDashboard = () => {
   const [staffData, setStaffData] = useState(null);
   const [error, setError] = useState(null);
-  const [pendingClockIn, setPendingClockIn] = useState(false);
   const [loading, setLoading] = useState(true); // For showing loader
   const [initialLoad, setInitialLoad] = useState(true); // Tracks only first load
 
@@ -23,8 +18,6 @@ const Dashboard = () => {
       navigate('/login');
     }
   }, [staffId, navigate]);
-
-  const triggerRefresh = () => setRefreshLogs(prev => !prev);
 
   useEffect(() => {
     const fetchStaffData = async () => {
@@ -54,49 +47,6 @@ const Dashboard = () => {
     }
   }, [staffId, refreshLogs]);
 
-  const handleClockIn = async (data, isLate) => {
-    if (isLate) {
-      setPendingClockIn(data);
-      setShowLateModal(true);
-    } else {
-      await proceedClockIn(data);
-    }
-  };
-
-  const handleLateReasonSubmit = async (reason) => {
-    setLateReason(reason);
-    setShowLateModal(false);
-
-    if (pendingClockIn) {
-      const dataWithNotes = {
-        ...pendingClockIn,
-        notes: reason
-      };
-      await proceedClockIn(dataWithNotes);
-      setPendingClockIn(null);
-    }
-  };
-
-  const proceedClockIn = async (data) => {
-    try {
-      await clockIn(data);
-      Swal.fire({
-        icon: 'success',
-        title: 'Clock-in successful!',
-        timer: 2000,
-        showConfirmButton: false,
-      });
-      triggerRefresh(); // Refresh silently, without showing loader
-    } catch (err) {
-      console.error('Clock-in error:', err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Clock-in failed',
-        text: err.message || 'Please try again later.',
-      });
-    }
-  };
-
   return (
     <div style={{ paddingTop: '1.5rem' }}>
       <Container>
@@ -104,18 +54,6 @@ const Dashboard = () => {
           <Loader /> // Only shown on first page load
         ) : (
           <Row className="widget-grid">
-            <GreetingCard staffData={staffData} error={error} />
-            <DigitalClock />
-            <ClockInOut
-              staffData={staffData}
-              onClockChange={triggerRefresh}
-              onHandleClockIn={handleClockIn}
-            />
-            <LateModal
-              show={showLateModal}
-              onClose={() => setShowLateModal(false)}
-              onSubmitReason={handleLateReasonSubmit}
-            />
             <DashboardCards staffData={staffData} />
             <TableClock refresh={refreshLogs} staffData={staffData} />
           </Row>
@@ -125,4 +63,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default StaffLeaveDashboard;
