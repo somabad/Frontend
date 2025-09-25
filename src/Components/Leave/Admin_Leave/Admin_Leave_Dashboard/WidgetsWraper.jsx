@@ -3,7 +3,7 @@ import { Row, Col, Card, CardBody } from "reactstrap";
 import { MdPendingActions } from 'react-icons/md';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { FaCheckCircle } from 'react-icons/fa';
-import { VscGitPullRequestGotoChanges } from "react-icons/vsc";
+import { VscGitPullRequestGoToChanges } from "react-icons/vsc";
 
 const WidgetWraper = ({
   totalPending,
@@ -15,32 +15,32 @@ const WidgetWraper = ({
 
   const cards = [
     {
-      icon: <MdPendingActions size={36} color="#81C784" />,
+      icon: <MdPendingActions size={36} color="#FCBB42" />,
       label: "Total Pending",
       value: totalPending,
-      bgColor: "#e6ecfa",
-      iconBg: "#d0d9f6",
+      bgColor: "#fff8e6",
+      iconBg: "#ffeebf",
     },
     {
-      icon: <FaCheckCircle size={36} color="#1cc88a" />,
+      icon: <FaCheckCircle size={36} color="#43A047" />,
       label: "Total Approved",
       value: totalApproved,
       bgColor: "#e6f9f2",
       iconBg: "#c9f3e1",
     },
     {
-      icon: <AiOutlineCloseCircle size={36} color="#f6c23e" />,
+      icon: <AiOutlineCloseCircle size={36} color="#e93e2e" />,
       label: "Total Reject",
       value: totalReject,
-      bgColor: "#fff8e6",
-      iconBg: "#ffeebf",
-    },
-    {
-      icon: <VscGitPullRequestGotoChanges size={36} color="#e74a3b" />,
-      label: "Total Request",
-      value: totalRequest,
       bgColor: "#fdecea",
       iconBg: "#fbd0cd",
+    },
+    {
+      icon: <VscGitPullRequestGoToChanges size={36} color="#1976d2" />,
+      label: "Total Request",
+      value: totalRequest,
+      bgColor: "#bbdefba2",
+      iconBg: "#b8cefb",
     },
   ];
 

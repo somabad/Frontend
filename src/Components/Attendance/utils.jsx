@@ -88,6 +88,16 @@ export const updateStaff = async (staffId, data) => {
 };
 
 // Leave APIs
+export const getAdminLeaveDashboard = async (staffId) => {
+  const response = await axios.post(`http://127.0.0.1:8000/api/admin-leave-dashboard/${staffId}/`);
+  return response.data;
+};
+
+export const getStaffLeaveDashboard = async (staffId) => {
+  const response = await axios.post(`${BASE_URL}/staff-leave-dashboard/${staffId}/`);
+  return response.data;
+};
+
 export const applyLeave = async (formData) => {
   const response = await axios.post(`http://127.0.0.1:8000/api/apply-leave/`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

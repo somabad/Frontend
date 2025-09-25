@@ -15,8 +15,8 @@ export const getMenuItems = () => {
     active: true,
     Items: [
       { path: `/admin-leave/leave-dashboard/` , icon: "home", title: "Leave Dashboard", type: "link", active: true},
-      { path: `/admin-leave/manage-staff-leave/` , icon: "user", title: "Manage Leave Staff", type: "link", active:true},
-      { path: `/admin-leave/leave-history` , icon: "file", title: "Leave History", type: "link", active:true},
+      { path: `/admin-leave/manage-leave-request/` , icon: "user", title: "Manage Leave Reques", type: "link", active:true},
+      { path: `/admin-leave/leave-history/` , icon: "file", title: "Leave History", type: "link", active:true},
     ]}
   ]
 
