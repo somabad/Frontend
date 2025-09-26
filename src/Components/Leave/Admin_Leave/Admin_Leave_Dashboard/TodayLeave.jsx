@@ -6,32 +6,32 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
   const columns = [
     {
       name: 'Staff ID',
-      selector: row => row.staffID,
+      selector: row => row.staffId,
       sortable: true
     },
     {
       name: 'Staff Name',
-      selector: row => row.staffName,
+      selector: row => row.staff_name,
       sortable: true,
     },
     {
       name: 'Leave Type',
-      selector: row => row.leaveType,
+      selector: row => row.leave_type,
       sortable: true,
     },
     {
       name: 'Start Date',
-      selector: row => row.startDate,
+      selector: row => row.start_date,
       sortable: true,
     },
     {
       name: 'End Date',
-      selector: row => row.endDate,
+      selector: row => row.end_date,
       sortable: true,
     },
     {
       name: 'Job Taken by',
-      selector: row => row.jobTaken,
+      selector: row => row.job_taken_over_by,
       sortable: true,
     },
     {
@@ -49,7 +49,7 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
     {
       name: 'SubmittedAt',
       selector: row =>
-        row.submittedAt ? new Date(row.submittedAt).toLocaleString(): '-',
+        row.submittedAt ? new Date(row.creted_at).toLocaleString(): '-',
     },
   ];
 

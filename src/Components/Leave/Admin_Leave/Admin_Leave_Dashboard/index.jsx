@@ -13,10 +13,10 @@ const AdminLeaveDashboard = () => {
   const [error, setError] = useState(null);
   const [totalPending, setTotalPending] = useState(0);
   const [totalApproved, setTotalApproved] = useState(0);
-  const [totalReject, setTotalReject] = useState(0);
-  const [totalRequest, setTotalRequest] = useState(0);
+  const [totalRejected, setTotalRejected] = useState(0);
+  const [totalRequests, setTotalRequests] = useState(0);
   const [onLeaveTodayNames, setOnLeaveTodayNames] = useState([]);
-  const [latestRequest, setLatestRequest] = useState([]);
+  const [latestRequests, setLatestRequests] = useState([]);
 
   const navigate = useNavigate();  // Correctly initialize navigate hook
 
@@ -31,10 +31,10 @@ const AdminLeaveDashboard = () => {
       setAdminName(data.currentAdmin?.name || "Admin");
       setTotalPending(data.totalPending || 0);
       setTotalApproved(data.totalApproved || 0);
-      setTotalReject(data.totalReject || 0);
-      setTotalRequest(data.totalRequest || 0);
+      setTotalRejected(data.totalRejected || 0);
+      setTotalRequests(data.totalRequests || 0);
       setOnLeaveTodayNames(data.onLeaveTodayNames || []);
-      setLatestRequest(data.latestRequest || []);
+      setLatestRequests(<data value="" className="latestRequests"></data> || []);
 
     } catch (err) {
       setError("Failed to load admin data");
@@ -71,14 +71,14 @@ const AdminLeaveDashboard = () => {
                 <WidgetsWraper
                   totalPending = {totalPending}
                   totalApproved = {totalApproved}
-                  totalReject = {totalReject}
-                  totalRequest = {totalRequest}
+                  totalRejected = {totalRejected}
+                  totalRequests = {totalRequests}
                 />
               </Col>
             </Row>
             <Row>
-              <TodayLeave onLeaveTodayName={onLeaveTodayNames} loading={loading} error={error} />
-              <LatestLeave latestRequest={latestRequest} loading={loading} error={error} />
+              <TodayLeave onLeaveTodayNames={onLeaveTodayNames} loading={loading} error={error} />
+              <LatestLeave latestRequests={latestRequests} loading={loading} error={error} />
             </Row>
           </Container>
         </div>

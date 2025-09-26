@@ -8,8 +8,8 @@ import { VscGitPullRequestGoToChanges } from "react-icons/vsc";
 const WidgetWraper = ({
   totalPending,
   totalApproved,
-  totalReject,
-  totalRequest,
+  totalRejected,
+  totalRequests,
 }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
@@ -30,15 +30,15 @@ const WidgetWraper = ({
     },
     {
       icon: <AiOutlineCloseCircle size={36} color="#e93e2e" />,
-      label: "Total Reject",
-      value: totalReject,
+      label: "Total Rejected",
+      value: totalRejected,
       bgColor: "#fdecea",
       iconBg: "#fbd0cd",
     },
     {
       icon: <VscGitPullRequestGoToChanges size={36} color="#1976d2" />,
-      label: "Total Request",
-      value: totalRequest,
+      label: "Total Requests",
+      value: totalRequests,
       bgColor: "#bbdefba2",
       iconBg: "#b8cefb",
     },

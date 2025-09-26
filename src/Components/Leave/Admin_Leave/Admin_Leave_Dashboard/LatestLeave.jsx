@@ -4,29 +4,33 @@ import DataTable from 'react-data-table-component';
 
 const LatestLeave = ({ staffLeave, loading, error }) => {
   // Show only the 3 newest requests
-  const latestLeaves = staffLeave
-    ?.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+  const latestRequests = staffLeave
+    ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 3) || [];
 
   const columns = [
     {
+      name: "Staff ID",
+      selector: row => row.staffId,
+    },
+    {
       name: 'Staff Name',
-      selector: row => row.staffName,
+      selector: row => row.staff_name,
       sortable: true,
     },
     {
       name: 'Leave Type',
-      selector: row => row.leaveType,
+      selector: row => row.leave_type,
       sortable: true,
     },
     {
       name: 'Start Date',
-      selector: row => row.startDate,
+      selector: row => row.start_date,
       sortable: true,
     },
     {
       name: 'End Date',
-      selector: row => row.endDate,
+      selector: row => row.end_date,
       sortable: true,
     },
     {
@@ -50,7 +54,7 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
     },
     {
       name: 'Submitted At',
-      selector: row => row.submittedAt ? new Date(row.submittedAt).toLocaleString() : '-',
+      selector: row => row.submittedAt ? new Date(row.created_at).toLocaleString() : '-',
     },
   ];
 
@@ -66,7 +70,8 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
 
         <DataTable
           columns={columns}
-          data={latestLeaves}
+          data={latestRequests}
+          pagination
           striped
           highlightOnHover
           responsive
