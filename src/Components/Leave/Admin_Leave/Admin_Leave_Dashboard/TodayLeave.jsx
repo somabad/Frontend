@@ -1,55 +1,45 @@
-import React, { useState } from 'react';
-import { Col, Card, CardHeader} from 'reactstrap';
-import DataTable from 'react-data-table-component'; //not same as HTML(not user-friendly))
+import React from 'react';
+import { Col, Card, CardHeader } from 'reactstrap';
+import DataTable from 'react-data-table-component';
 
 const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
   const columns = [
-    {
-      name: 'Staff ID',
-      selector: row => row.staffId,
+    { 
+      name: 'Staff Name', 
+      selector: row => row.staff_name,
+      sortable: true 
+    },
+    { 
+      name: 'Staff Department', 
+      selector: row => row.staff_department,
       sortable: true
     },
-    {
-      name: 'Staff Name',
-      selector: row => row.staff_name,
-      sortable: true,
+    { name: 'Leave Type', 
+      selector: row => row.leave_type, 
+      sortable: true 
     },
-    {
-      name: 'Leave Type',
-      selector: row => row.leave_type,
-      sortable: true,
+    { name: 'Start Date', 
+      selector: row => row.start_date, 
+      sortable: true 
     },
-    {
-      name: 'Start Date',
-      selector: row => row.start_date,
-      sortable: true,
+    { name: 'End Date', 
+      selector: row => row.end_date, 
+      sortable: true 
     },
-    {
-      name: 'End Date',
-      selector: row => row.end_date,
-      sortable: true,
-    },
-    {
-      name: 'Job Taken by',
-      selector: row => row.job_taken_over_by,
-      sortable: true,
-    },
+    { name: 'Job Taken by', 
+      selector: row => row.job_taken_over_by, 
+      sortable: true },
     {
       name: 'Status',
       selector: row => row.status || '-',
       cell: row => {
         const color = row.status === 'Pending' ? 'text-danger' : 'text-success';
-        return (
-          <span className={color} style={{ fontWeight: 'bold' }}>
-            {row.status}
-          </span>
-        );
+        return <span className={color} style={{ fontWeight: 'bold' }}>{row.status}</span>;
       },
     },
-    {
-      name: 'SubmittedAt',
-      selector: row =>
-        row.submittedAt ? new Date(row.creted_at).toLocaleString(): '-',
+    { 
+      name: 'Submitted At', 
+      selector: row => row.created_at 
     },
   ];
 

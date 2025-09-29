@@ -1,46 +1,63 @@
 import React, { useState } from "react";
 import { Row, Col, Card, CardBody } from "reactstrap";
-import { MdPendingActions } from 'react-icons/md';
-import { AiOutlineCloseCircle } from 'react-icons/ai';
-import { FaCheckCircle } from 'react-icons/fa';
-import { VscGitPullRequestGoToChanges } from "react-icons/vsc";
+import {FaCalendarMinus, FaCalendarDay, FaForward} from "react-icons/fa";
+import {CgToday} from "react-icons/cg";
+import {HiOutlineCalendarDays} from "react-icons/hi2";
+import {TbChartInfographic} from"react-icons/tb";
+
 
 const WidgetWraper = ({
-  totalPending,
-  totalApproved,
-  totalReject,
-  totalRequest,
+  carryFowardDays,
+  entitledDays,
+  totalEntitlement,
+  usedDays,
+  balanceThisYear,
+  totalBalance,
 }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
   const cards = [
     {
-      icon: <MdPendingActions size={36} color="#FCBB42" />,
-      label: "Total Pending",
-      value: totalPending,
+      icon: <FaForward size={36} color="#FCBB42" />,
+      label: "Carry Foward Days",
+      value: carryFowardDays,
       bgColor: "#fff8e6",
       iconBg: "#ffeebf",
     },
     {
-      icon: <FaCheckCircle size={36} color="#43A047" />,
-      label: "Total Approved",
-      value: totalApproved,
-      bgColor: "#e6f9f2",
-      iconBg: "#c9f3e1",
+      icon: <FaCalendarDay size={36} color="#FCBB42" />,
+      label: "Entitled Days",
+      value: entitledDays,
+      bgColor: "#fff8e6",
+      iconBg: "#ffeebf",
     },
     {
-      icon: <AiOutlineCloseCircle size={36} color="#e93e2e" />,
-      label: "Total Reject",
-      value: totalReject,
-      bgColor: "#fdecea",
-      iconBg: "#fbd0cd",
+      icon: <CgToday size={36} color="#FCBB42" />,
+      label: "Total Entitlement",
+      value: totalEntitlement,
+      bgColor: "#fff8e6",
+      iconBg: "#ffeebf",
     },
     {
-      icon: <VscGitPullRequestGoToChanges size={36} color="#1976d2" />,
-      label: "Total Request",
-      value: totalRequest,
-      bgColor: "#bbdefba2",
-      iconBg: "#b8cefb",
+      icon: <FaCalendarMinus size={36} color="#FCBB42" />,
+      label: "Used Days",
+      value: usedDays,
+      bgColor: "#fff8e6",
+      iconBg: "#ffeebf",
+    },
+    {
+      icon: <HiOutlineCalendarDays size={36} color="#FCBB42" />,
+      label: "Balance This Year",
+      value: balanceThisYear,
+      bgColor: "#fff8e6",
+      iconBg: "#ffeebf",
+    },
+    {
+      icon: <TbChartInfographic size={36} color="#FCBB42" />,
+      label: "Total Balance",
+      value: totalBalance,
+      bgColor: "#fff8e6",
+      iconBg: "#ffeebf",
     },
   ];
 

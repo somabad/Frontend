@@ -94,7 +94,7 @@ export const getAdminLeaveDashboard = async (staffId) => {
 };
 
 export const getStaffLeaveDashboard = async (staffId) => {
-  const response = await axios.post(`${BASE_URL}/staff-leave-dashboard/${staffId}/`);
+  const response = await axios.get(`${BASE_URL}/staff-leave-dashboard/${staffId}/`);
   return response.data;
 };
 

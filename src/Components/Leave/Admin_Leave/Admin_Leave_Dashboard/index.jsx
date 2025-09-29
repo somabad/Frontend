@@ -8,7 +8,6 @@ import Loader from "../../../Attendance/Loader"; // Adjust the path if needed
 import { useNavigate } from "react-router-dom"; // Ensure correct import for useNavigate
 
 const AdminLeaveDashboard = () => {
-  const [adminName, setAdminName] = useState("Admin");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPending, setTotalPending] = useState(0);
@@ -16,7 +15,7 @@ const AdminLeaveDashboard = () => {
   const [totalRejected, setTotalRejected] = useState(0);
   const [totalRequests, setTotalRequests] = useState(0);
   const [onLeaveTodayNames, setOnLeaveTodayNames] = useState([]);
-  const [latestRequests, setLatestRequests] = useState([]);
+  const [latestRequests, setLatestRequests] = useState(null);
 
   const navigate = useNavigate();  // Correctly initialize navigate hook
 
@@ -28,13 +27,12 @@ const AdminLeaveDashboard = () => {
       if (!staffId) throw new Error("No staff Id found in session");
       const data = await getAdminLeaveDashboard(staffId);
       console.log("API.Response:",data);
-      setAdminName(data.currentAdmin?.name || "Admin");
       setTotalPending(data.totalPending || 0);
       setTotalApproved(data.totalApproved || 0);
       setTotalRejected(data.totalRejected || 0);
       setTotalRequests(data.totalRequests || 0);
       setOnLeaveTodayNames(data.onLeaveTodayNames || []);
-      setLatestRequests(<data value="" className="latestRequests"></data> || []);
+      setLatestRequests(data.latestRequests || []);
 
     } catch (err) {
       setError("Failed to load admin data");
@@ -78,7 +76,7 @@ const AdminLeaveDashboard = () => {
             </Row>
             <Row>
               <TodayLeave onLeaveTodayNames={onLeaveTodayNames} loading={loading} error={error} />
-              <LatestLeave latestRequests={latestRequests} loading={loading} error={error} />
+              <LatestLeave staffLeave={latestRequests} loading={loading} error={error} />
             </Row>
           </Container>
         </div>
