@@ -121,3 +121,8 @@ export const deleteLeaveApplication = async (leaveId) => {
   const response = await axios.delete(`http://127.0.0.1:8000/api/leave-application/${leaveId}/delete/`);
   return response.data;
 };
+
+export const getAdminLeaveHistory = async (staffId) => {
+  const response = await axios.get(`${BASE_URL}/admin-leave-history/${staffId}/`);
+  return response.data;
+};
