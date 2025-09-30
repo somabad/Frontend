@@ -3,15 +3,15 @@ import { Col, Card, CardHeader } from 'reactstrap';
 import DataTable from 'react-data-table-component';
 
 const LatestLeave = ({ staffLeave, loading, error }) => {
+  console.log("staffLeave received:", staffLeave);
+
   // Show only the 3 newest requests
-  const latestRequests = staffLeave
-    ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    .slice(0, 3) || [];
+  const latestRequests = staffLeave?.latestRequests || [];
 
   const columns = [
     {
-      name: 'Staff Name',
-      selector: row => row.staff_name,
+      name: 'Request ID',
+      selector: row => row.request_id,
       sortable: true,
     },
     {
@@ -27,6 +27,21 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
     {
       name: 'End Date',
       selector: row => row.end_date,
+      sortable: true,
+    },
+    {
+      name: 'Is Half Day',
+      selector: row => row.is_half_day,
+      sortable: true,
+    },
+    {
+      name: 'Total days',
+      selector: row => row.total_days,
+      sortable: true,
+    },
+    {
+      name: 'Job Taken Over By',
+      selector: row => row.job_taken_over_by,
       sortable: true,
     },
     {
@@ -61,7 +76,7 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
     <Col sm="12">
       <Card>
         <CardHeader>
-          <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>Staff Leave Requests</h3>
+          <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>Leave Request</h3>
         </CardHeader>
 
         <DataTable

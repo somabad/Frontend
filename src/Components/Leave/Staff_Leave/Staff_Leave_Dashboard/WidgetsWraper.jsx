@@ -12,6 +12,7 @@ const WidgetWraper = ({
   totalEntitlement,
   usedDays,
   balanceThisYear,
+  balanceByType,
   totalBalance,
 }) => {
   const [activeIndex, setActiveIndex] = useState(null);
@@ -59,6 +60,13 @@ const WidgetWraper = ({
       bgColor: "#fff8e6",
       iconBg: "#ffeebf",
     },
+    {
+      icon: <TbChartInfographic size={36} color="#FCBB42" />,
+      label: "Balance By Type",
+      value: balanceByType,
+      bgColor: "#fff8e6",
+      iconBg: "#ffeebf",
+    }
   ];
 
   const handleCardClick = (index) => {
