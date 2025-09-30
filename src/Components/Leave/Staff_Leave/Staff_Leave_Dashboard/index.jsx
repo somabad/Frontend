@@ -29,13 +29,13 @@ const StaffLeaveDashboard = () => {
       const data = await getStaffLeaveDashboard(staffId);
       console.log("API.Response:",data);
       setCarryForwardDays(data.carry_forward_days || 0);
-      setEntitledDays(data.entitled_days || 0);
+      setEntitledDays(data.leave_entitlement || 0);
       setTotalEntitlement(data.total_entitlement || 0);
       setUsedDays(data.used_days || 0);
-      setBalanceThisYear(data.balance_this_year || 0);
+      setBalanceThisYear(data.current_balance || 0);
       setTotalBalance(data.total_balance || 0);
-      setBalanceByType(data.balanceByType || 0);
-      setLatestRequests(data.latest_requests || []);
+      setBalanceByType(data.balanceByType || []);
+      setLatestRequests(data.latestRequests || []);
 
     } catch (err) {
       setError("Failed to load staff data");
@@ -75,7 +75,7 @@ const StaffLeaveDashboard = () => {
                   totalEntitlement = {totalEntitlement}
                   usedDays = {usedDays}
                   balanceThisYear = {balanceThisYear}
-                  balanceByType = {balanceByType}
+                  balanceByType= {balanceByType}
                   totalBalance = {totalBalance}
                 />
               </Col>

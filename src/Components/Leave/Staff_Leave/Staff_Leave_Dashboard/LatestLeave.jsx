@@ -3,10 +3,10 @@ import { Col, Card, CardHeader } from 'reactstrap';
 import DataTable from 'react-data-table-component';
 
 const LatestLeave = ({ staffLeave, loading, error }) => {
-  console.log("staffLeave received:", staffLeave);
-
   // Show only the 3 newest requests
-  const latestRequests = staffLeave?.latestRequests || [];
+  const latestRequests =Array.isArray(staffLeave)
+    ?staffLeave.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 3) : [];
 
   const columns = [
     {
@@ -31,7 +31,7 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
     },
     {
       name: 'Is Half Day',
-      selector: row => row.is_half_day,
+      selector: row => row.is_half_day || '-',
       sortable: true,
     },
     {
