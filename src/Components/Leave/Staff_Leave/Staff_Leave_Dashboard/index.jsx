@@ -15,6 +15,7 @@ const StaffLeaveDashboard = () => {
   const [usedDays,setUsedDays] = useState(null);
   const [balanceThisYear, setBalanceThisYear] = useState(null);
   const [totalBalance, setTotalBalance] = useState(null);
+  const [balanceByType, setBalanceByType] = useState(null);
   const [latestRequests, setLatestRequests] = useState(null);
 
   const navigate = useNavigate();  // Correctly initialize navigate hook
@@ -33,7 +34,8 @@ const StaffLeaveDashboard = () => {
       setUsedDays(data.used_days || 0);
       setBalanceThisYear(data.balance_this_year || 0);
       setTotalBalance(data.total_balance || 0);
-      setLatestRequests(data.latestRequests || []);
+      setBalanceByType(data.balanceByType || 0);
+      setLatestRequests(data.latest_requests || []);
 
     } catch (err) {
       setError("Failed to load staff data");
@@ -73,6 +75,7 @@ const StaffLeaveDashboard = () => {
                   totalEntitlement = {totalEntitlement}
                   usedDays = {usedDays}
                   balanceThisYear = {balanceThisYear}
+                  balanceByType = {balanceByType}
                   totalBalance = {totalBalance}
                 />
               </Col>
