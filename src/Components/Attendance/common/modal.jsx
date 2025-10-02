@@ -12,7 +12,12 @@ const CommonModal = (props) => {
       <ModalBody className={props.bodyClass}>
         {props.children}
       </ModalBody>
-
+      {props.showFooter && (
+        <ModalFooter>
+          <Btn attrBtn={{ color: 'secondary', onClick: props.toggler }}>{Close}</Btn>
+          {props.footerButtons}
+        </ModalFooter>
+      )}
     </Modal>
   );
 };

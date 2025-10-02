@@ -14,6 +14,7 @@ import ClockLogPage from "../Components/Attendance/Staff_Dashboard/ClockLog/cloc
 import ProfilePage from "../Components/Attendance/Staff_Dashboard/Profile/userprofile";
 import StaffLeaveDashboard from "../Components/Leave/Staff_Leave/Staff_Leave_Dashboard";
 import LeaveRequestForm from "../Components/Leave/Staff_Leave/Leave_Request_Form/ApplyLeaveModal";
+import LeaveRequest from "../Components/Leave/Staff_Leave/Leave_Request_Form/LeaveRequest";
 import LeaveHistory  from "../Components/Leave/Staff_Leave/Staff_Leave_History/Leave_History";
 
 
@@ -34,6 +35,7 @@ export const routes = [
   { path: `/staff-attendance/manage-profile/`, Component: <ProfilePage /> },
   { path: `/staff-leave/leave-dashboard/` , Component: <StaffLeaveDashboard />},
   { path: `/staff-leave/leave-request-form/`, Component: <LeaveRequestForm />},
+    { path: `/staff-leave/leave-request/`, Component: <LeaveRequest />},
   { path: `/staff-leave/leave-history/`, Component: <LeaveHistory />}
 
 ];

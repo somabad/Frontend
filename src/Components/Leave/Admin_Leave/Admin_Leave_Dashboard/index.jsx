@@ -49,7 +49,6 @@ const AdminLeaveDashboard = () => {
   useEffect(() => {
     // Check sessionStorage for staffId and userType
     const userType = sessionStorage.getItem('userType');
-
     if (!staffId || userType === 'Staff') {
       // Redirect to login if conditions are met using navigate
       navigate('/login');
