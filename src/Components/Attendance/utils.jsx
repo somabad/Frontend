@@ -105,10 +105,12 @@ export const applyLeave = async (formData) => {
   return response.data;
 };
 
+// Staff Leave History
 export const getLeaveHistory = async (staffId) => {
-  const response = await axios.get(`http://127.0.0.1:8000/api/leave-history/${staffId}/`);
+  const response = await axios.get(`${BASE_URL}/staff-leave-history/${staffId}/`);
   return response.data;
 };
+
 
 export const updateLeaveApplication = async (leaveId, data) => {
   const response = await axios.post(`http://127.0.0.1:8000/api/leave-application/${leaveId}/update/`, data, {
@@ -126,3 +128,5 @@ export const getAdminLeaveHistory = async (staffId) => {
   const response = await axios.get(`${BASE_URL}/admin-leave-history/${staffId}/`);
   return response.data;
 };
+
+
