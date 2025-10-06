@@ -71,6 +71,20 @@ const AdminLeaveHistory = () => {
       width: '120px'
     },
     {
+      name: 'Job Taken Over By',
+      selector: row => row.job_taken_over_by,
+      sortable: true,
+      cell: row => row.job_taken_over_by || '-',
+      width: '180px'
+    },
+    {
+      name: 'Reason',
+      selector: row => row.reason,
+      sortable: true,
+      cell: row => row.reason || '-',
+      width: '200px'
+    },
+    {
       name: 'Status',
       selector: row => row.status,
       sortable: true,
