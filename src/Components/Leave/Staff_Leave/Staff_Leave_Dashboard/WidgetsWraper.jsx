@@ -6,6 +6,7 @@ import { FaChartBar } from "react-icons/fa";
 import { FaCalendarMinus } from "react-icons/fa6"; 
 import { FaCalendarDay } from "react-icons/fa6"; 
 import { FaLayerGroup } from "react-icons/fa6"; 
+import { AiOutlineInfoCircle } from "react-icons/ai";
 
 const WidgetWraper = ({
   carryFowardDays,
@@ -16,75 +17,26 @@ const WidgetWraper = ({
   balanceByType,
   totalBalance,
 }) => {
-  const [activeIndex, setActiveIndex] = useState(null);
+  const [hoveredInfoIndex, setHoveredInfoIndex] = useState(null);
 
   const cards = [
-    {
-      icon: <FaArrowRotateRight size={36} color="#FCBB42" />,
-      label: "Carry Foward Days",
-      value: carryFowardDays,
-      bgColor: "#fff8e6",
-      iconBg: "#ffeebf",
-    },
-    {
-      icon: <FaCalendarCheck size={36} color="#FCBB42" />,
-      label: "Entitled Days",
-      value: entitledDays,
-      bgColor: "#fff8e6",
-      iconBg: "#ffeebf",
-    },
-    {
-      icon: <FaChartBar size={36} color="#FCBB42" />,
-      label: "Total Entitlement",
-      value: totalEntitlement,
-      bgColor: "#fff8e6",
-      iconBg: "#ffeebf",
-    },
-    {
-      icon: <FaCalendarMinus size={36} color="#FCBB42" />,
-      label: "Used Days",
-      value: usedDays,
-      bgColor: "#fff8e6",
-      iconBg: "#ffeebf",
-    },
-    {
-      icon: <FaCalendarDay size={36} color="#FCBB42" />,
-      label: "Balance This Year",
-      value: balanceThisYear,
-      bgColor: "#fff8e6",
-      iconBg: "#ffeebf",
-    },
-    {
-      icon: <FaClipboardList size={36} color="#FCBB42" />,
-      label: "Total Balance",
-      value: totalBalance,
-      bgColor: "#fff8e6",
-      iconBg: "#ffeebf",
-    },
-    {
-      icon: <FaLayerGroup size={36} color="#FCBB42" />,
-      label: "Balance By Type",
-      value: balanceByType,
-      bgColor: "#fff8e6",
-      iconBg: "#ffeebf",
-    }
+    { icon: <FaArrowRotateRight size={36} color="#FF8C42" />, label: "Carry Forward Days", value: carryFowardDays, bgColor: "#FFF3E0", iconBg: "#FFDAB3", info: "Days carried forward from last year" },
+    { icon: <FaCalendarCheck size={36} color="#4DB6AC" />, label: "Entitled Days", value: entitledDays, bgColor: "#E0F2F1", iconBg: "#B2DFDB", info: "Total days you are entitled to this year" },
+    { icon: <FaChartBar size={36} color="#7986CB" />, label: "Total Entitlement", value: totalEntitlement, bgColor: "#E8EAF6", iconBg: "#C5CAE9", info: "Sum of all leave entitlements" },
+    { icon: <FaCalendarMinus size={36} color="#FFB74D" />, label: "Used Days", value: usedDays, bgColor: "#FFF8E1", iconBg: "#FFE0B2", info: "Days you have already used" },
+    { icon: <FaCalendarDay size={36} color="#BA68C8" />, label: "Balance This Year", value: balanceThisYear, bgColor: "#F3E5F5", iconBg: "#E1BEE7", info: "Remaining days for this year" },
+    { icon: <FaClipboardList size={36} color="#4FC3F7" />, label: "Total Balance", value: totalBalance, bgColor: "#E1F5FE", iconBg: "#B3E5FC", info: "Total leave balance including carry forward" },
+    { icon: <FaLayerGroup size={36} color="#AED581" />, label: "Balance By Type", value: balanceByType, bgColor: "#F1F8E9", iconBg: "#DCEDC8", info: "Remaining days separated by leave type" }
   ];
-
-  const handleCardClick = (index) => {
-    if (window.innerWidth <= 575.98) {
-      setActiveIndex(activeIndex === index ? null : index);
-    }
-  };
 
   return (
     <>
       <Row className="g-4">
-        {cards.map(({ icon, label, value, bgColor, iconBg }, index) => (
+        {cards.map(({ icon, label, value, bgColor, iconBg, info }, index) => (
           <Col key={index} xs="6" sm="6" md="6" lg="3">
             <Card
               className="shadow-sm border-0 rounded-3 position-relative"
-              style={{ backgroundColor: bgColor, cursor: "pointer" }}
-              onClick={() => handleCardClick(index)}
+              style={{ backgroundColor: bgColor }}
             >
               <CardBody className="d-flex align-items-center gap-3 widget-card-body">
                 <div
@@ -101,75 +53,57 @@ const WidgetWraper = ({
                 >
                   {icon}
                 </div>
-                <div className="text-content">
-                  <h6 className="label-text mb-0 text-muted">{label}</h6>
+
+                <div className="text-content" style={{ position: "relative" }}>
+                  <h6 className="label-text mb-0 text-muted d-flex align-items-center gap-1">
+                    {label}
+                    <AiOutlineInfoCircle
+                      size={16}
+                      color="#888"
+                      style={{ cursor: "pointer" }}
+                      onMouseEnter={() => setHoveredInfoIndex(index)}
+                      onMouseLeave={() => setHoveredInfoIndex(null)}
+                    />
+                  </h6>
                   <h3 className="value-text mb-0 text-dark">{value}</h3>
                 </div>
               </CardBody>
-
-              {/* Stylish Mobile Tooltip */}
-              {activeIndex === index && (
-                <div className="mobile-tooltip">
-                  {label}
-                  <span className="tooltip-arrow" />
-                </div>
-              )}
             </Card>
           </Col>
         ))}
       </Row>
 
+      {/* Fullscreen overlay on hover */}
+      {hoveredInfoIndex !== null && (
+        <div className="info-overlay">
+          <div className="info-box">{cards[hoveredInfoIndex].info}</div>
+        </div>
+      )}
+
       <style jsx>{`
-        @media (max-width: 575.98px) {
-          .label-text {
-            display: none;
-          }
-          .widget-card-body {
-            justify-content: center !important;
-          }
-          .text-content {
-            text-align: center;
-          }
+        .info-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-color: rgba(0,0,0,0.6); /* faded background */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          pointer-events: none; /* allows hover out */
+        }
 
-          .mobile-tooltip {
-            position: absolute;
-            top: -38px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #222;
-            color: #fff;
-            padding: 6px 12px;
-            font-size: 13px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 20;
-            animation: fadeIn 0.2s ease-in-out;
-            white-space: nowrap;
-            font-weight: 500;
-          }
-
-          .tooltip-arrow {
-            position: absolute;
-            bottom: -6px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 6px solid #222;
-          }
-
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: translateX(-50%) translateY(5px);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(-50%) translateY(0);
-            }
-          }
+        .info-box {
+          background-color: #fff;
+          padding: 24px 32px;
+          border-radius: 12px;
+          max-width: 90%;
+          text-align: center;
+          font-size: 18px;
+          font-weight: 500;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
       `}</style>
     </>
