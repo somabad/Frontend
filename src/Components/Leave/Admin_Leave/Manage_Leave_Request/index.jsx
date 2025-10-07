@@ -1,7 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import {
-  Container, Row, Col, Card, CardHeader, CardBody, Button,
-  FormGroup, Label, Input, Form
+import { Container, Row, Col, Card, CardHeader, CardBody, Button, FormGroup, Label, Input, Form
 } from 'reactstrap';
 import DataTable from 'react-data-table-component';
 import { deleteLeaveApplication, getAdminLeaveHistory } from '../../../Attendance/utils';

@@ -1,15 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  FormGroup,
-  Label,
-  Input,
-  Form,
-} from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button, FormGroup, Label, Input, Form } from 'reactstrap';
 import { updateLeaveStatus } from '../../../Attendance/utils'; // adjust path if needed
 
 const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
@@ -32,7 +22,7 @@ const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
       const updatedData = {
         status,
         remarks,
-        approved_by: adminId, // include admin ID for tracking
+        approved_by: adminId,
       };
 
       // Call the update function

@@ -5,6 +5,7 @@ import LatestLeave from "../Staff_Leave_Dashboard/LatestLeave";
 import { getStaffLeaveDashboard } from "../../../Attendance/utils"
 import Loader from "../../../Attendance/Loader"; // Adjust the path if needed
 import { useNavigate } from "react-router-dom"; // Ensure correct import for useNavigate
+ 
 
 const StaffLeaveDashboard = () => {
   const [loading, setLoading] = useState(true);

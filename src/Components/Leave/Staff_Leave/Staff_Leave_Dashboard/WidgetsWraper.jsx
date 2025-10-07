@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Row, Col, Card, CardBody } from "reactstrap";
-import {FaCalendarMinus, FaCalendarDay, FaForward} from "react-icons/fa";
-import {CgToday} from "react-icons/cg";
-import {HiOutlineCalendarDays} from "react-icons/hi2";
-import {TbChartInfographic} from"react-icons/tb";
-
+import { FaArrowRotateRight, FaClipboardList } from "react-icons/fa6"; 
+import { FaCalendarCheck } from "react-icons/fa6";
+import { FaChartBar } from "react-icons/fa"; 
+import { FaCalendarMinus } from "react-icons/fa6"; 
+import { FaCalendarDay } from "react-icons/fa6"; 
+import { FaLayerGroup } from "react-icons/fa6"; 
 
 const WidgetWraper = ({
   carryFowardDays,
@@ -19,21 +20,21 @@ const WidgetWraper = ({
 
   const cards = [
     {
-      icon: <FaForward size={36} color="#FCBB42" />,
+      icon: <FaArrowRotateRight size={36} color="#FCBB42" />,
       label: "Carry Foward Days",
       value: carryFowardDays,
       bgColor: "#fff8e6",
       iconBg: "#ffeebf",
     },
     {
-      icon: <FaCalendarDay size={36} color="#FCBB42" />,
+      icon: <FaCalendarCheck size={36} color="#FCBB42" />,
       label: "Entitled Days",
       value: entitledDays,
       bgColor: "#fff8e6",
       iconBg: "#ffeebf",
     },
     {
-      icon: <CgToday size={36} color="#FCBB42" />,
+      icon: <FaChartBar size={36} color="#FCBB42" />,
       label: "Total Entitlement",
       value: totalEntitlement,
       bgColor: "#fff8e6",
@@ -47,21 +48,21 @@ const WidgetWraper = ({
       iconBg: "#ffeebf",
     },
     {
-      icon: <HiOutlineCalendarDays size={36} color="#FCBB42" />,
+      icon: <FaCalendarDay size={36} color="#FCBB42" />,
       label: "Balance This Year",
       value: balanceThisYear,
       bgColor: "#fff8e6",
       iconBg: "#ffeebf",
     },
     {
-      icon: <TbChartInfographic size={36} color="#FCBB42" />,
+      icon: <FaClipboardList size={36} color="#FCBB42" />,
       label: "Total Balance",
       value: totalBalance,
       bgColor: "#fff8e6",
       iconBg: "#ffeebf",
     },
     {
-      icon: <TbChartInfographic size={36} color="#FCBB42" />,
+      icon: <FaLayerGroup size={36} color="#FCBB42" />,
       label: "Balance By Type",
       value: balanceByType,
       bgColor: "#fff8e6",
