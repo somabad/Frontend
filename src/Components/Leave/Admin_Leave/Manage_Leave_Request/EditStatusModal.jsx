@@ -4,7 +4,6 @@ import { updateLeaveStatus } from '../../../Attendance/utils'; // adjust path if
 
 const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
   const [status, setStatus] = useState(leave?.status || 'Pending');
-  const [remarks, setRemarks] = useState(leave?.remarks || '');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +20,6 @@ const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
     try {
       const updatedData = {
         status,
-        remarks,
         approved_by: adminId,
       };
 
@@ -65,17 +63,7 @@ const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
             </Input>
           </FormGroup>
 
-          <FormGroup>
-            <Label for="remarks">Remarks (optional)</Label>
-            <Input
-              type="textarea"
-              id="remarks"
-              rows="3"
-              placeholder="Add admin remarks here..."
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-            />
-          </FormGroup>
+          {/* Remarks field removed */}
         </Form>
       </ModalBody>
       <ModalFooter>

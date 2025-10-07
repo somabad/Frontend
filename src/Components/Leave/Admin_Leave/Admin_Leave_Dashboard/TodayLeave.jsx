@@ -4,31 +4,71 @@ import DataTable from 'react-data-table-component';
 
 const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
   const columns = [
-    { 
-      name: 'Staff Name', 
+   {
+      name: 'Name',
       selector: row => row.staff_name,
-      sortable: true 
+      sortable: true,
+      cell: row => (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '60%' }}>
+          {row.staff_name || '-'}
+        </div>
+      ),
+      width: '110px',
     },
     { 
-      name: 'Staff Department', 
+      name: 'Department', 
       selector: row => row.staff_department,
-      sortable: true
+      sortable: true,
+      cell: row => (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '60%' }}>
+          {row.staff_department || '-'}
+        </div>
+      ),
+      width: '150px',
     },
-    { name: 'Leave Type', 
-      selector: row => row.leave_type, 
-      sortable: true 
+    {
+      name: 'Leave Type',
+      selector: row => row.leave_type,
+      sortable: true,
+      cell: row => (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '60%' }}>
+          {row.leave_type || '-'}
+        </div>
+      ),
+      width: '120px',
     },
-    { name: 'Start Date', 
-      selector: row => row.start_date, 
-      sortable: true 
+    {
+      name: 'Start Date',
+      selector: row => row.start_date,
+      sortable: true,
+      cell: row => (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '60%' }}>
+          {row.start_date || '-'}
+        </div>
+      ),
+      width: '190px',
     },
-    { name: 'End Date', 
-      selector: row => row.end_date, 
-      sortable: true 
+    {
+      name: 'End Date',
+      selector: row => row.end_date,
+      sortable: true,
+      cell: row => (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '60%' }}>
+          {row.end_date || '-'}
+        </div>
+      ),
+      width: '160px',
     },
     { name: 'Job Taken by', 
       selector: row => row.job_taken_over_by, 
-      sortable: true },
+      sortable: true,
+      cell: row => (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '60%' }}>
+          {row.job_taken_over_by || '-'}
+        </div>
+      ),
+      width: '170px',
+    },
     {
       name: 'Status',
       selector: row => row.status || '-',
@@ -36,10 +76,11 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
         const color = row.status === 'Pending' ? 'text-danger' : 'text-success';
         return <span className={color} style={{ fontWeight: 'bold' }}>{row.status}</span>;
       },
+      width: '150px'
     },
-    { 
-      name: 'Submitted At', 
-      selector: row => row.created_at 
+    {
+      name: 'Submitted At',
+      selector: row => row.created_at
     },
   ];
 

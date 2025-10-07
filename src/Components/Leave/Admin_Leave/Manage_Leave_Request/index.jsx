@@ -41,7 +41,8 @@ const ManageLeaveRequest = () => {
       setError('Failed to load leave history');
       console.error('Error fetching leave history:', err);
     } finally {
-      setLoading(false);
+      // Delay loader for 2 seconds for better UX
+      setTimeout(() => setLoading(false), 2000);
     }
   };
 
@@ -127,9 +128,28 @@ const ManageLeaveRequest = () => {
 
   // Data table columns
   const columns = [
-    { name: 'Name', selector: row => row.staff_name, sortable: true, width: '150px' },
-    { name: 'Department', selector: row => row.staff_department, sortable: true, width: '120px' },
-    { name: 'Leave Type', selector: row => row.leave_type, sortable: true, width: '120px' },
+    { name: 'Name',
+      selector: row => row.staff_name, 
+      sortable: true, 
+      width: '140px' 
+    },
+    { 
+      name: 'Department', 
+      selector: row => row.staff_department, 
+      sortable: true,
+      cell: row => (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '70%' }}>
+          {row.staff_department || '-'}
+        </div>
+      ), 
+      width: '140px' 
+    },
+    { 
+      name: 'Leave Type', 
+      selector: row => row.leave_type, 
+      sortable: true, 
+      width: '120px' 
+    },
     {
       name: 'Applied Date',
       selector: row => row.created_at,
@@ -138,14 +158,14 @@ const ManageLeaveRequest = () => {
       width: '120px'
     },
     {
-      name: 'From',
+      name: <div style={{textAlign: 'center', width: '110px'}}>From</div>,
       selector: row => row.start_date,
       sortable: true,
       cell: row => new Date(row.start_date).toLocaleDateString(),
       width: '120px'
     },
     {
-      name: 'To',
+      name: <div style={{textAlign: 'center', width: '110px'}}>To</div>,
       selector: row => row.end_date,
       sortable: true,
       cell: row => new Date(row.end_date).toLocaleDateString(),
