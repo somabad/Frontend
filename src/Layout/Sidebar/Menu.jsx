@@ -1,3 +1,6 @@
+import { FaClipboardList } from "react-icons/fa";
+import { AiOutlineForm } from "react-icons/ai";
+
 export const getMenuItems = () => {
   const userType = sessionStorage.getItem("userType");
 
@@ -15,7 +18,7 @@ export const getMenuItems = () => {
     active: true,
     Items: [
       { path: `/admin-leave/leave-dashboard/` , icon: "home", title: "Leave Dashboard", type: "link", active: true},
-      { path: `/admin-leave/manage-leave-request/` , icon: "user", title: "Manage Leave Request", type: "link", active:true},
+      { path: `/admin-leave/manage-leave-request/` , icon: "form", title: "Manage Leave Request", type: "link", active:true},
       { path: `/admin-leave/leave-history/` , icon: "file", title: "Leave History", type: "link", active:true},
     ]}
   ]
@@ -34,7 +37,7 @@ export const getMenuItems = () => {
     active: true,
     Items: [
       { path: `/staff-leave/leave-dashboard/`, icon: "home", title: "Leave Dashboard", type: "link", active: true },
-      { path: `/staff-leave/leave-request/`, icon: "user", title: "Leave Request Form", type: "link", active: true },
+      { path: `/staff-leave/leave-request/`, icon: "form", title: "Leave Request Form", type: "link", active: true },
       { path: `/staff-leave/leave-history/`, icon: "file", title: "Leave History", type: "link", active: true }
     ]},
   ]

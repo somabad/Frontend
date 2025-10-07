@@ -43,6 +43,11 @@ export const getRoleList = async () => {
   return response.data;
 };
 
+export const getStaffList = async () => {
+  const response = await axios.get(`${BASE_URL}/staff-list/`);
+  return response.data;
+};
+
 export const createNewUser = async (userData) => {
   const response = await axios.post(`${BASE_URL}/create-new-user/`, userData);
   return response.data;
@@ -134,9 +139,10 @@ export const updateLeaveApplication = async (leaveId, data) => {
 };
 
 export const deleteLeaveApplication = async (leaveId) => {
-  const response = await axios.delete(`${BASE_URL}/manage-leave-request/${leaveId}/delete/`);
+  const response = await axios.delete(`${BASE_URL}/manage-leave-request/${leaveId}/delete-form/`);
   return response.data;
 };
+
 
 export const getAdminLeaveHistory = async (staffId) => {
   const response = await axios.get(`${BASE_URL}/admin-leave-history/${staffId}/`);

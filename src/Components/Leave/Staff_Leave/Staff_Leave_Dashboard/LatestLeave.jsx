@@ -31,8 +31,9 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
     },
     {
       name: 'Is Half Day',
-      selector: row => row.is_half_day || '-',
+      selector: row => row.is_half_day,
       sortable: true,
+      cell: row => (row.is_half_day ? 'Yes' : 'No')
     },
     {
       name: 'Total days',

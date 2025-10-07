@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getStaffDashboard, applyLeave } from '../../../Attendance/utils';
+import { getStaffDashboard, applyLeave, getStaffList } from '../../../Attendance/utils';
 import Swal from 'sweetalert2';
 
 const leaveTypes = [
@@ -35,7 +35,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   const [endDate, setEndDate] = useState('');
   const [totalDays, setTotalDays] = useState('');
   const [reason, setReason] = useState('');
-  const [isHalfDay, setIsHalfDay] = useState('');
+  const [isHalfDay, setIsHalfDay] = useState(false);
   const [jobTakenOverBy, setJobTakenOverBy] = useState('');
   const [attachment, setAttachment] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -49,20 +49,30 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       if (!currentStaffId) throw new Error("No staff Id found in session");
       
       setStaffId(currentStaffId);
-      const data = await getStaffDashboard(currentStaffId);
-      console.log("API.Response:", data);
+      // Prefer detail from staff list for consistent shape
+      const [list, data] = await Promise.all([
+        getStaffList().catch(() => null),
+        getStaffDashboard(currentStaffId).catch(() => null)
+      ]);
+      console.log("API.Response:", { list, dashboard: data });
       
       // Set staff details from API response
-      if (data) {
-        console.log("Staff data received:", {
-          name: data.name,
-          position: data.position,
-          department: data.department,
-          staff_id: data.staff_id
-        });
-        setStaffName(data.name || '');
-        setStaffPosition(data.position || '');
-        setStaffDepartment(data.department || '');
+      if (list && Array.isArray(list)) {
+        const detail = list.find((s) => String(s.staffId) === String(currentStaffId));
+        if (detail) {
+          setStaffName(detail.name || '');
+          setStaffPosition(detail.position || '');
+          setStaffDepartment(detail.department || '');
+        }
+      }
+
+      if (data && (!staffName || !staffPosition || !staffDepartment)) {
+        const resolvedName = data?.name || '';
+        const resolvedPosition = data?.position || '';
+        const resolvedDepartment = data?.department || '';
+        setStaffName(resolvedName);
+        setStaffPosition(resolvedPosition);
+        setStaffDepartment(resolvedDepartment);
         // Set current timestamp when form is displayed
         setCreatedAt(new Date().toLocaleString());
       }
@@ -80,7 +90,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       setEndDate('');
       setTotalDays('');
       setReason('');
-      setIsHalfDay('');
+      setIsHalfDay(false);
       setJobTakenOverBy('');
       setAttachment(null);
       setError('');
@@ -257,10 +267,11 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   <label className="form-label">Leave Type</label>
                   <select
                     className="form-select"
-                    value={leaveTypes}
+                    value={leaveType}
                     onChange={e => setLeaveType(e.target.value)}
                     required
                   >
+                    <option value="" disabled>Select leave type</option>
                     {leaveTypes.map(type => (
                       <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
@@ -310,13 +321,16 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   />
                 </div>
                 <div className='mb-3'>
-                  <label className='form-label'>Is Half Day</label>
-                  <input
-                  type= 'checkbox'
-                  className='form-check-input'
-                  checked={isHalfDay}
-                  onChange={e => setIsHalfDay(e.target.checked)}
-                />
+                  <div className='form-check'>
+                    <input
+                      id='half-day-checkbox'
+                      type='checkbox'
+                      className='form-check-input'
+                      checked={!!isHalfDay}
+                      onChange={e => setIsHalfDay(e.target.checked)}
+                    />
+                    <label className='form-check-label' htmlFor='half-day-checkbox'>Is Half Day</label>
+                  </div>
                 </div>
                 <div className='mb-3'>
                   <label className='form-label'>Job Taken Over By:</label>
