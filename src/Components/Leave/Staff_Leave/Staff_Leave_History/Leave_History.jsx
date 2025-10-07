@@ -126,11 +126,13 @@ const LeaveHistory = () => {
     {
       name: 'Action',
       cell: row => (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', 
+        alignItems: 'center', gap: '8px' }}>
           <button
             className="btn btn-xs"
             title="View"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+            style={{ background: 'none', border: 'none', 
+              cursor: 'pointer', padding: '4px' }}
             onClick={() => setViewModal({ open: true, leave: row })}
           >
             <i className="fa fa-eye" style={{ fontSize: '16px', color: '#555' }} />

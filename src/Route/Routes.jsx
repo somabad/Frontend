@@ -34,8 +34,8 @@ export const routes = [
   { path: `/staff-attendance/all-records/`, Component: <ClockLogPage /> },
   { path: `/staff-attendance/manage-profile/`, Component: <ProfilePage /> },
   { path: `/staff-leave/leave-dashboard/` , Component: <StaffLeaveDashboard />},
-  { path: `/staff-leave/leave-request-form/`, Component: <LeaveRequestForm />},
-    { path: `/staff-leave/leave-request/`, Component: <LeaveRequest />},
+  { path: `/staff-leave/apply-leave-request/`, Component: <LeaveRequestForm />},
+  { path: `/staff-leave/leave-request/`, Component: <LeaveRequest />},
   { path: `/staff-leave/leave-history/`, Component: <LeaveHistory />}
 
 ];

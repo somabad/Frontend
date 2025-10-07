@@ -3,10 +3,10 @@ import { getStaffDashboard, applyLeave } from '../../../Attendance/utils';
 import Swal from 'sweetalert2';
 
 const leaveTypes = [
-  { value: 'Annual', label: 'Annual Leave' },
-  { value: 'MC', label: 'Medical Certificate' },
-  { value: 'Unpaid', label: 'Unpaid Leave'},
-  { value: 'Compassionate', label: 'Compassionate Leave'},
+  { value: '2', label: 'Annual Leave' },
+  { value: '3', label: 'Medical Certificate' },
+  { value: '4', label: 'Unpaid Leave'},
+  { value: '5', label: 'Compassionate Leave'},
 ];
 
 // Helper to ensure date is YYYY-MM-DD
@@ -38,7 +38,6 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   const [isHalfDay, setIsHalfDay] = useState('');
   const [jobTakenOverBy, setJobTakenOverBy] = useState('');
   const [attachment, setAttachment] = useState('');
-  const [scannedForm, setScannedForm] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -73,7 +72,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
     }
   };
 
-  // Reset form fields when modal opens and fetch staff data
+      // Reset form fields when modal opens and fetch staff data
   useEffect(() => {
     if (isOpen) {
       setLeaveType('');
@@ -84,11 +83,11 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       setIsHalfDay('');
       setJobTakenOverBy('');
       setAttachment(null);
-      setScannedForm('');
       setError('');
     }
     fetchData();
   }, [isOpen]);
+
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -120,7 +119,6 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       const safeIsHalfDay = Array.isArray(isHalfDay) ? isHalfDay[0] : isHalfDay;
       const safeJobTakenOverBy = Array.isArray(jobTakenOverBy) ? jobTakenOverBy[0] : jobTakenOverBy;
       const safeAttachment = Array.isArray(attachment) ? attachment[0] : attachment;
-      const safeScannedForm = Array.isArray(scannedForm) ? scannedForm[0] : scannedForm;
 
       const leaveData = {
         leave_type: clean(safeLeaveType),
@@ -144,7 +142,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
 
       const formData = new FormData();
       formData.append('staffId', staffId);
-      formData.append('leave_type', leaveData.leave_type);
+      formData.append('leave_type_id', leaveData.leave_type);
       formData.append('start_date', leaveData.start_date);
       formData.append('end_date', leaveData.end_date);
       formData.append('total_days', leaveData.total_days);
@@ -154,7 +152,6 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       if (attachment) {
         formData.append('attachment', attachment);
       }
-      formData.append('scanned_form', leaveData.scannedForm);
 
       // Log all FormData entries for debugging
       for (let pair of formData.entries()) {
@@ -186,7 +183,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
 
   // Modal hidden state: don't render
   // (Parent should unmount, but for safety)
-  // if (!show) return null;
+  if (!isOpen) return null;
 
   return (
     <>
@@ -196,12 +193,12 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
             {/* Modal Header */}
             <div className="modal-header bg-primary text-white">
               <h5 className="modal-title">Apply for Leave</h5>
-              <button
-                type="button"
-                className="btn-close"
-                aria-label="Close"
-                onClick={onClose}
-              ></button>
+               <button
+                 type="button"
+                 className="btn-close"
+                 aria-label="Close"
+                 onClick={onClose}
+               ></button>
             </div>
             {/* Modal Body */}
             <div className="modal-body">
@@ -260,7 +257,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   <label className="form-label">Leave Type</label>
                   <select
                     className="form-select"
-                    value={leaveType}
+                    value={leaveTypes}
                     onChange={e => setLeaveType(e.target.value)}
                     required
                   >
@@ -365,10 +362,9 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
             </div>
           </div>
         </div>
-      </div>
-      <div className="modal-backdrop fade show"></div>
-    </>
-  );
+       </div>
+     </>
+   );
 };
 
 export default ApplyLeaveModal; 

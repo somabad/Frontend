@@ -73,10 +73,14 @@ const LeaveRequest = () => {
       </div>
 
       {showModal && (
-        <ApplyLeaveModal
-          onClose={handleModalClose}
-          onSubmitted={handleLeaveSubmitted}
-        />
+        <>
+          <div className="modal-backdrop fade show"></div>
+          <ApplyLeaveModal
+            isOpen={showModal}
+            onClose={handleModalClose}
+            onSubmitted={handleLeaveSubmitted}
+          />
+        </>
       )}
     </Fragment>
   );
