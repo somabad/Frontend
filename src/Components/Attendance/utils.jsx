@@ -112,6 +112,13 @@ export const applyLeave = async (formData) => {
   return response.data;
 };
 
+// Update Leave Request Status (Admin)
+export const updateLeaveStatus = async (requestId, data) => {
+  const response = await axios.post(`${BASE_URL}/manage-leave-request/${requestId}/update-status/`, data);
+  return response.data;
+};
+
+
 // Staff Leave History
 export const getLeaveHistory = async (staffId) => {
   const response = await axios.get(`${BASE_URL}/staff-leave-history/${staffId}/`);
@@ -127,7 +134,7 @@ export const updateLeaveApplication = async (leaveId, data) => {
 };
 
 export const deleteLeaveApplication = async (leaveId) => {
-  const response = await axios.delete(`http://127.0.0.1:8000/api/leave-application/${leaveId}/delete/`);
+  const response = await axios.delete(`${BASE_URL}/manage-leave-request/${leaveId}/delete/`);
   return response.data;
 };
 
