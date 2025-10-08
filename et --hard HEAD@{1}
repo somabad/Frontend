@@ -1,0 +1,28 @@
+[33m4d5f8dc[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{0}: pull origin main: Merge made by the 'ort' strategy.
+[33mf4ffe24[m HEAD@{1}: commit: .
+[33mfaa6f50[m HEAD@{2}: commit: .
+[33md571198[m HEAD@{3}: pull origin main: Fast-forward
+[33ma1d6ad3[m HEAD@{4}: commit: .
+[33ma2bd9f2[m HEAD@{5}: commit: .
+[33m090d7e5[m HEAD@{6}: commit: .
+[33m77b41b0[m HEAD@{7}: pull origin main --rebase (finish): returning to refs/heads/main
+[33m77b41b0[m HEAD@{8}: pull origin main --rebase (pick): .
+[33mc56b8ca[m HEAD@{9}: pull origin main --rebase (pick): .
+[33m6204f0a[m HEAD@{10}: pull origin main --rebase (start): checkout 6204f0a3b98cdf1c07aa51a6d63d8949364866c4
+[33m3a984c6[m HEAD@{11}: commit: .
+[33meb753ad[m HEAD@{12}: reset: moving to eb753ad
+[33m75f593f[m HEAD@{13}: reset: moving to origin/main
+[33mfa97c02[m HEAD@{14}: checkout: moving from main to main
+[33mfa97c02[m HEAD@{15}: commit: .
+[33meb753ad[m HEAD@{16}: commit (merge): .
+[33m73aeb47[m HEAD@{17}: commit: .
+[33m6792963[m HEAD@{18}: commit (merge): updated frontend
+[33me6ad266[m HEAD@{19}: commit: updated backend
+[33md92a057[m HEAD@{20}: commit: updated backend
+[33mb86204e[m HEAD@{21}: commit: updated frontend
+[33mc155cb6[m HEAD@{22}: commit: updated frontend
+[33me36efb5[m HEAD@{23}: commit: updated frontend
+[33m6d39cde[m HEAD@{24}: commit: updated frontend
+[33m9c66662[m HEAD@{25}: commit: updated frontend
+[33m4c546e8[m HEAD@{26}: Branch: renamed refs/heads/master to refs/heads/main
+[33m4c546e8[m HEAD@{28}: commit (initial): First commit

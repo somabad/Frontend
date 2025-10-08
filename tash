@@ -1,0 +1,134 @@
+[33mcommit f4ffe2483f80aacae01c6b0c6b67c2570d920bb2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Wed Oct 8 14:05:45 2025 +0800
+
+    .
+
+[33mcommit faa6f50b746867094ec28d3649b54aca4c0ecbfe[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Wed Oct 8 09:44:50 2025 +0800
+
+    .
+
+[33mcommit d57119861a69aa0cca719222972c4e3b972d31d7[m
+Merge: f18d29a a1d6ad3
+Author: maisarah <normaisarahnoriman@gmail.com>
+Date:   Wed Oct 8 01:05:42 2025 +0800
+
+    Merge branch 'main' of https://github.com/somabad/Frontend
+
+[33mcommit f18d29ada955d27e02e717397cf6ecf69a70dee5[m
+Author: maisarah <normaisarahnoriman@gmail.com>
+Date:   Wed Oct 8 00:54:38 2025 +0800
+
+    .
+
+[33mcommit a1d6ad3ecb0c9d12677b1a99ed59edbed914fdef[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Tue Oct 7 17:29:42 2025 +0800
+
+    .
+
+[33mcommit a2bd9f2eb0e127f31849aec2b31c635627affdab[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Tue Oct 7 11:11:10 2025 +0800
+
+    .
+
+[33mcommit 090d7e55c75ac4fabeaf13a2bfb696cfa7bc7a89[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Tue Oct 7 10:35:30 2025 +0800
+
+    .
+
+[33mcommit 77b41b014771a1e226a126efe93f1fe5d39b2b08[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Tue Oct 7 08:42:03 2025 +0800
+
+    .
+
+[33mcommit c56b8ca46191fe1c6b377a4f5a78938a648e9a16[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Thu Oct 2 14:01:52 2025 +0800
+
+    .
+
+[33mcommit 6204f0a3b98cdf1c07aa51a6d63d8949364866c4[m
+Author: maisarah <normaisarahnoriman@gmail.com>
+Date:   Mon Oct 6 11:27:00 2025 +0800
+
+    .
+
+[33mcommit 75f593f3ecb258b515e40aca4f68c1aee51edf3c[m
+Author: maisarah <normaisarahnoriman@gmail.com>
+Date:   Thu Oct 2 13:59:01 2025 +0800
+
+    .
+
+[33mcommit 67929636dd739b86b041a3d5fad7496784011073[m
+Merge: e6ad266 a7cc86e
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Tue Sep 30 11:53:13 2025 +0800
+
+    updated frontend
+
+[33mcommit e6ad2664cd449ee506632de44426fe8512c1896e[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Tue Sep 30 11:51:36 2025 +0800
+
+    updated backend
+
+[33mcommit a7cc86ec19dac06bfacf67c07cc35059e784f819[m
+Merge: 3f6ef3f d92a057
+Author: maisarah <normaisarahnoriman@gmail.com>
+Date:   Tue Sep 30 11:39:05 2025 +0800
+
+    .
+
+[33mcommit 3f6ef3f761cbd74c0e663950e2a3e98ef005c225[m
+Author: maisarah <normaisarahnoriman@gmail.com>
+Date:   Tue Sep 30 11:33:18 2025 +0800
+
+    .
+
+[33mcommit d92a057bd01264142908fba9b84fd6fbd6fcbf81[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Tue Sep 30 10:32:53 2025 +0800
+
+    updated backend
+
+[33mcommit b86204e8c7c2a5e23270cd6c9a1f0b81e90de398[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Mon Sep 29 12:11:19 2025 +0800
+
+    updated frontend
+
+[33mcommit c155cb6a0f24ca99bc2579642c6f2bd08c0217f7[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Fri Sep 26 10:40:18 2025 +0800
+
+    updated frontend
+
+[33mcommit e36efb5a8db158d021e587b2b1c1d149c908bf67[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Thu Sep 25 16:58:04 2025 +0800
+
+    updated frontend
+
+[33mcommit 6d39cde3a710c97735322eadc0347eb8bf8e7f2e[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Thu Sep 25 15:05:50 2025 +0800
+
+    updated frontend
+
+[33mcommit 9c666623002d13f39ad1b436b5c13804c51fcf3e[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Wed Sep 24 13:51:48 2025 +0800
+
+    updated frontend
+
+[33mcommit 4c546e8fdcc6687ffb1f270f21e69acd02a05d86[m
+Author: Nurin Batrisyia <nurinbzaman25@gmail.com>
+Date:   Tue Sep 23 10:15:17 2025 +0800
+
+    First commit

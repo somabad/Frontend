@@ -62,7 +62,8 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
       ),
       width: '160px',
     },
-    { name: 'Job Taken by', 
+    { 
+      name: 'Job Taken by', 
       selector: row => row.job_taken_over_by, 
       sortable: true,
       cell: row => (
@@ -85,6 +86,19 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
       name: 'Submitted At',
       selector: row => row.created_at
     },
+    {
+      name: 'Info',
+      cell: (row, index) => (
+        <AiOutlineInfoCircle
+          size={16}
+          color="#888"
+          style={{ cursor: "pointer" }}
+          onMouseEnter={() => setHoveredInfoIndex(index)}
+          onMouseLeave={() => setHoveredInfoIndex(null)}
+        />
+      ),
+      width: '50px',
+    },
   ];
 
   if (loading) return <Col sm="12"><div>Loading...</div></Col>;
@@ -95,15 +109,6 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
       <Card>
         <CardHeader className="d-flex justify-content-between align-items-center flex-wrap">
           <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>Today's Staff Leave</h3>
-          <h6 className="label-text mb-0 text-muted d-flex align-items-center gap-1">
-            {label}
-            <AiOutlineInfoCircle
-            size={16}
-            color="#888"
-            style={{ cursor: "pointer" }}
-            onMouseEnter={() => setHoveredInfoIndex(index)}
-            onMouseLeave={() => setHoveredInfoIndex(null)}
-            /></h6>
         </CardHeader>
 
         <DataTable
