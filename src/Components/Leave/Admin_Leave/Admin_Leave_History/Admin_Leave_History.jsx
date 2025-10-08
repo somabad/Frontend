@@ -434,6 +434,7 @@ const AdminLeaveHistory = () => {
           isOpen={viewModal.open}
           toggle={() => setViewModal({ open: false, leave: null })}
           leave={viewModal.leave}
+          isAdmin={true}
         />
       )}
 

@@ -30,12 +30,12 @@ const StaffLeaveDashboard = () => {
       const data = await getStaffLeaveDashboard(staffId);
       console.log("API.Response:",data);
       setCarryForwardDays(data.carry_forward_days || 0);
-      setEntitledDays(data.leave_entitlement || 0);
+      setEntitledDays(data.leave_entitled || 0);
       setTotalEntitlement(data.total_entitlement || 0);
       setUsedDays(data.used_days || 0);
       setBalanceThisYear(data.current_balance || 0);
       setTotalBalance(data.total_balance || 0);
-      setBalanceByType(data.balanceByType || []);
+      setBalanceByType(data.balance_by_type || {});
       setLatestRequests(data.latestRequests || []);
 
     } catch (err) {

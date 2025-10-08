@@ -137,10 +137,35 @@ export const updateLeaveStatus = async (requestId, data) => {
 };
 
 
+export const getStaffLatestRequests = async (staffId) => {
+  // Backend does not expose /staff/{id}/latest-leave-requests; use staff-leave-dashboard and extract latestRequests
+  const response = await axios.get(`${BASE_URL}/staff-leave-dashboard/${staffId}/`);
+  return response.data?.latestRequests || [];
+};
+
+export const getLeaveBalance = async (staffId) => {
+  // Backend balance is available via staff-leave-dashboard under balance_by_type
+  const response = await axios.get(`${BASE_URL}/staff-leave-dashboard/${staffId}/`);
+  return response.data?.balance_by_type || {};
+};
+
+
 // Staff Leave History
 export const getLeaveHistory = async (staffId) => {
   const response = await axios.get(`${BASE_URL}/staff-leave-history/${staffId}/`);
   return response.data;
+};
+
+
+// All pending requests (newest first) for a staff
+export const getStaffPendingRequests = async (staffId) => {
+  const history = await getLeaveHistory(staffId);
+  const items = history?.leaveHistory || history || [];
+  return Array.isArray(items)
+    ? items
+        .filter((r) => r.status === 'Pending')
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    : [];
 };
 
 
