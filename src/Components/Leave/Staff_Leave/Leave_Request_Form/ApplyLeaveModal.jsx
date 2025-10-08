@@ -197,6 +197,10 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
 
   return (
     <>
+      <style>{`
+        .form-check-input { opacity: 1 !important; position: static !important; appearance: auto !important; }
+        .form-check-label { display: inline-block !important; }
+      `}</style>
       <div className="modal show fade d-block" tabIndex="-1" role="dialog">
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">

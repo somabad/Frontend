@@ -41,38 +41,42 @@ const LeaveHistory = () => {
       name: 'Request ID',
       selector: row => row.request_id || '-',
       sortable: true,
-      minWidth: '140px'
+      width: '140px',
+      cell: row => <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '70%' }}>{row.request_id || '-'}</div>
     },
     {
       name: 'Leave Type',
       selector: row => row.leave_type || '-',
       sortable: true,
-      minWidth: '140px'
+      width: '150px',
+      cell: row => <div style={{ display: 'flex', justifyContent: 'left', alignItems: 'center', width: '100%' }}>{row.leave_type || '-'}</div>
     },
     {
       name: 'Start Date',
       selector: row => row.start_date || '-',
       sortable: true,
-      cell: row => row.start_date ? new Date(row.start_date).toLocaleDateString() : '-',
-      minWidth: '140px'
+      width: '140px',
+      cell: row => <div style={{ display: 'flex', justifyContent: 'left', alignItems: 'left', width: '75%' }}>{row.start_date ? new Date(row.start_date).toLocaleDateString() : '-'}</div>
     },
     {
       name: 'End Date',
       selector: row => row.end_date || '-',
       sortable: true,
-      cell: row => row.end_date ? new Date(row.end_date).toLocaleDateString() : '-',
-      minWidth: '140px'
+      width: '140px',
+      cell: row => <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>{row.end_date ? new Date(row.end_date).toLocaleDateString() : '-'}</div>
     },
     {
       name: 'Total Days',
       selector: row => row.total_days ?? '-',
       sortable: true,
-      minWidth: '120px'
+      width: '140px',
+      cell: row => <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '60%' }}>{row.total_days || '-'}</div>
     },
     {
       name: 'Status',
       selector: row => row.status || '-',
       sortable: true,
+      width: '140px',
       cell: row => {
         const getStatusColor = (status) => {
           switch(status) {
@@ -82,54 +86,63 @@ const LeaveHistory = () => {
             default: return '';
           }
         };
-        return <span className={`${getStatusColor(row.status)} fw-bold`}>{row.status || '-'}</span>
-      },
-      minWidth: '140px'
+        return (
+          <div style={{ display: 'flex', justifyContent: 'left', alignItems: 'left', width: '70%', fontWeight: 'bold' }} className={getStatusColor(row.status)}>
+            {row.status || '-'}
+          </div>
+        );
+      }
     },
     {
       name: 'Submitted At',
       selector: row => row.created_at || '-',
       sortable: true,
-      cell: row => row.created_at ? new Date(row.created_at).toLocaleDateString() : '-',
-      minWidth: '140px'
+      width: '140px',
+      cell: row => <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '75%' }}>{row.created_at ? new Date(row.created_at).toLocaleDateString() : '-'}</div>
     },
     {
       name: 'Action',
-      selector: row => row.status || '-', // dummy selector for alignment
+      selector: row => row.status || '-',
+      width: '140px',
       cell: row => (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', width: '100%' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', width: '40%' }}>
           <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', fontSize: '16px' }} title="View" onClick={() => setViewModal({ open: true, leave: row })}>
             <i className="fa fa-eye" style={{ color: '#555' }} />
-          </button>
-          <button
-            style={{ background: 'none', border: 'none', cursor: row.status === 'Approved' ? 'not-allowed' : 'pointer', padding: '4px', fontSize: '16px', opacity: row.status === 'Approved' ? 0.5 : 1 }}
-            title={row.status === 'Approved' ? 'Cannot edit approved leave' : 'Edit'}
-            onClick={() => row.status !== 'Approved' && setEditModal({ open: true, leave: row })}
-          >
-            <i className="fa fa-pencil" style={{ color: row.status === 'Approved' ? '#999' : '#555' }} />
-          </button>
-          <button
-            style={{ background: 'none', border: 'none', cursor: row.status === 'Approved' ? 'not-allowed' : 'pointer', padding: '4px', fontSize: '16px', opacity: row.status === 'Approved' ? 0.5 : 1 }}
-            title={row.status === 'Approved' ? 'Cannot delete approved leave' : 'Delete'}
-            onClick={() => row.status !== 'Approved' && setDeleteModal({ open: true, leave: row })}
-          >
-            <i className="fa fa-trash-o" style={{ color: row.status === 'Approved' ? '#999' : '#555' }} />
           </button>
         </div>
       ),
       ignoreRowClick: true,
       allowOverflow: true,
-      button: true,
-      minWidth: '180px'
+      button: true
     },
     {
       name: 'Approver File',
       selector: row => row.approver_file || '-',
-      cell: row => row.status === 'Approved' && row.approver_file 
-        ? <a href={row.approver_file} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#007bff' }}>View File</a>
-        : '-', 
-      minWidth: '160px',
-      sortable: false
+      width: '120px',
+      cell: row => (
+        row.status === 'Approved' && row.approver_file ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+            <button
+              style={{
+                backgroundColor: '#007bff',
+                color: '#fff',
+                border: 'none',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '13px'
+              }}
+              onClick={() => window.open(row.approver_file, '_blank')}
+            >
+              View
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+            -
+          </div>
+        )
+      )
     }
   ];
 
@@ -245,7 +258,7 @@ const LeaveHistory = () => {
         </Row>
       </Container>
 
-      {viewModal.open && <ViewLeaveModal isOpen={viewModal.open} toggle={() => setViewModal({ open: false, leave: null })} leave={viewModal.leave} />}
+      {viewModal.open && <ViewLeaveModal isOpen={viewModal.open} toggle={() => setViewModal({ open: false, leave: null })} leave={viewModal.leave} isAdmin={false} />}
       {editModal.open && <EditLeaveModal isOpen={editModal.open} toggle={() => setEditModal({ open: false, leave: null })} leave={editModal.leave} onSave={fetchLeaveHistory} updateLeaveApplication={updateLeaveApplication} Swal={Swal} />}
       {deleteModal.open && <DeleteConfirmationModal isOpen={deleteModal.open} toggle={() => setDeleteModal({ open: false, leave: null })} onConfirm={handleDelete} userName={`${deleteModal.leave?.leave_type} (${deleteModal.leave?.start_date} to ${deleteModal.leave?.end_date})`} />}
     </Fragment>

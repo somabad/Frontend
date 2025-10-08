@@ -1,11 +1,7 @@
 import React, { useState } from "react";
 import { Row, Col, Card, CardBody } from "reactstrap";
 import { FaArrowRotateRight, FaClipboardList } from "react-icons/fa6"; 
-import { FaCalendarCheck } from "react-icons/fa6";
-import { FaChartBar } from "react-icons/fa"; 
-import { FaCalendarMinus } from "react-icons/fa6"; 
-import { FaCalendarDay } from "react-icons/fa6"; 
-import { FaLayerGroup } from "react-icons/fa6"; 
+import { FaCalendarCheck, FaChartBar, FaCalendarMinus, FaCalendarDay, FaLayerGroup } from "react-icons/fa6"; 
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
 const WidgetWraper = ({
@@ -26,7 +22,7 @@ const WidgetWraper = ({
     { icon: <FaCalendarMinus size={36} color="#FFB74D" />, label: "Used Days", value: usedDays, bgColor: "#FFF8E1", iconBg: "#FFE0B2", info: "Days you have already used" },
     { icon: <FaCalendarDay size={36} color="#BA68C8" />, label: "Balance This Year", value: balanceThisYear, bgColor: "#F3E5F5", iconBg: "#E1BEE7", info: "Remaining days for this year" },
     { icon: <FaClipboardList size={36} color="#4FC3F7" />, label: "Total Balance", value: totalBalance, bgColor: "#E1F5FE", iconBg: "#B3E5FC", info: "Total leave balance including carry forward" },
-    { icon: <FaLayerGroup size={36} color="#AED581" />, label: "Balance By Type", value: balanceByType, bgColor: "#F1F8E9", iconBg: "#DCEDC8", info: "Remaining days separated by leave type" }
+    { icon: <FaLayerGroup size={36} color="#AED581" />, label: "Balance By Type", value: null, bgColor: "#F1F8E9", iconBg: "#DCEDC8", info: "Remaining days separated by leave type", typeDetails: balanceByType }
   ];
 
   return (
@@ -65,7 +61,9 @@ const WidgetWraper = ({
                       onMouseLeave={() => setHoveredInfoIndex(null)}
                     />
                   </h6>
-                  <h3 className="value-text mb-0 text-dark">{value}</h3>
+                  {label !== "Balance By Type" ? (
+                    <h3 className="value-text mb-0 text-dark">{value}</h3>
+                  ) : null}
                 </div>
               </CardBody>
             </Card>
@@ -76,7 +74,29 @@ const WidgetWraper = ({
       {/* Fullscreen overlay on hover */}
       {hoveredInfoIndex !== null && (
         <div className="info-overlay">
-          <div className="info-box">{cards[hoveredInfoIndex].info}</div>
+          <div className="info-box">
+            <p>{cards[hoveredInfoIndex].info}</p>
+            {cards[hoveredInfoIndex].label === "Balance By Type" && cards[hoveredInfoIndex].typeDetails && (
+              <table style={{ width: "100%", marginTop: "12px", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: "left", padding: "6px", borderBottom: "1px solid #eee" }}>Leave Type</th>
+                    <th style={{ textAlign: "center", padding: "6px", borderBottom: "1px solid #eee" }}>Used</th>
+                    <th style={{ textAlign: "center", padding: "6px", borderBottom: "1px solid #eee" }}>Remaining</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(cards[hoveredInfoIndex].typeDetails).map(([type, data], idx) => (
+                    <tr key={idx}>
+                      <td style={{ padding: "6px", borderBottom: "1px solid #eee" }}>{type}</td>
+                      <td style={{ textAlign: "center", padding: "6px", borderBottom: "1px solid #eee" }}>{data.used}</td>
+                      <td style={{ textAlign: "center", padding: "6px", borderBottom: "1px solid #eee" }}>{data.remaining}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       )}
 
@@ -87,14 +107,13 @@ const WidgetWraper = ({
           left: 0;
           width: 100vw;
           height: 100vh;
-          background-color: rgba(0,0,0,0.6); /* faded background */
+          background-color: rgba(0,0,0,0.6);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 9999;
-          pointer-events: none; /* allows hover out */
+          pointer-events: none;
         }
-
         .info-box {
           background-color: #fff;
           padding: 24px 32px;
