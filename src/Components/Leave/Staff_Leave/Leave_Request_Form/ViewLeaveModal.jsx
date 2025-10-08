@@ -200,6 +200,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                 </FormGroup>
               </Col>
             </Row>
+
             <hr/>
 
             {/* Leave Balance Section (HR panel) */}
