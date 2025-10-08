@@ -1,14 +1,24 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Container, Row, Col, Card, CardHeader, CardBody, Button, FormGroup, Label, Input, Form
+import {
+  Container, Row, Col, Card, CardHeader, CardBody, Button,
+  FormGroup, Label, Input, Form
 } from 'reactstrap';
 import DataTable from 'react-data-table-component';
-import { deleteLeaveApplication, getAdminLeaveHistory } from '../../../Attendance/utils';
+import {
+  deleteLeaveApplication,
+  getAdminLeaveHistory,
+  getScannedForm
+} from '../../../Attendance/utils';
 import Loader from '../../../Attendance/Loader';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import ViewLeaveModal from '../../Staff_Leave/Leave_Request_Form/ViewLeaveModal';
 import EditStatusModal from '../Manage_Leave_Request/EditStatusModal';
 import DeleteConfirmationModal from '../../common/deleteUserModal';
+
+// Modular Upload/View components
+import UploadImageModal from "./UploadImageModal";
+import ViewImageModal from "./ViewImageModal";
 
 const ManageLeaveRequest = () => {
   const [leaveHistory, setLeaveHistory] = useState([]);
@@ -19,6 +29,15 @@ const ManageLeaveRequest = () => {
   const [viewModal, setViewModal] = useState([]);
   const [deleteModal, setDeleteModal] = useState([]);
   const [editModal, setEditModal] = useState([]);
+
+  // Modular upload/view states
+  const [uploadModal, setUploadModal] = useState({ 
+    open: false, 
+    leave: null,
+    existingScannedForm: null 
+  });
+  const [imagePreview, setImagePreview] = useState({ open: false, imageUrl: null, loading: false });
+
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -28,7 +47,7 @@ const ManageLeaveRequest = () => {
 
   const navigate = useNavigate();
   const staffId = sessionStorage.getItem("staffId");
-  const adminId = staffId; // used for updating status
+  const adminId = staffId;
 
   // Fetch leave history
   const fetchLeaveHistory = async () => {
@@ -41,12 +60,119 @@ const ManageLeaveRequest = () => {
       setError('Failed to load leave history');
       console.error('Error fetching leave history:', err);
     } finally {
-      // Delay loader for 2 seconds for better UX
-      setTimeout(() => setLoading(false), 2000);
+      setLoading(false);
     }
   };
 
-  // Apply filters
+  // View scanned form (robust: uses getScannedForm util)
+  const handleViewScannedForm = async (leave) => {
+    const requestId = leave?.request_id || leave;
+    if (!requestId) return;
+
+    setImagePreview({ open: true, imageUrl: null, loading: true });
+
+    try {
+      // getScannedForm should return something like: { success: true, file_url: '/media/...' }
+      const result = await getScannedForm(requestId);
+
+      if (!result) throw new Error('Empty response from server');
+
+      // possible fields: file_url or url — be flexible
+      let fileUrl = result.file_url || result.fileUrl || result.url || null;
+
+      // If backend returned a blob or direct data, handle fallback (rare)
+      if (!fileUrl && result instanceof Blob) {
+        const blobUrl = URL.createObjectURL(result);
+        setImagePreview({ open: true, imageUrl: blobUrl, loading: false });
+        return;
+      }
+
+      if (!fileUrl) {
+        throw new Error(result.message || 'No scanned file url returned');
+      }
+
+      // If fileUrl is already absolute leave it; otherwise prefix with base URL
+      const isAbsolute = /^https?:\/\//i.test(fileUrl);
+      const baseUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+
+      if (!isAbsolute) {
+        // ensure leading slash
+        if (!fileUrl.startsWith('/')) fileUrl = `/${fileUrl}`;
+        fileUrl = `${baseUrl}${fileUrl}`;
+      }
+
+      setImagePreview({ open: true, imageUrl: fileUrl, loading: false });
+    } catch (err) {
+      console.error('Error loading scanned form:', err);
+      setImagePreview({ open: false, imageUrl: null, loading: false });
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err.response?.data?.error || err.message || 'Failed to load scanned form'
+      });
+    }
+  };
+
+  // Handle upload/reupload button click
+  const handleUploadClick = async (leave) => {
+    const requestId = leave?.request_id;
+    
+    if (!requestId) {
+      Swal.fire('Error', 'No leave request selected', 'error');
+      return;
+    }
+
+    // Check if there's an existing scanned form
+    let existingScannedForm = null;
+    
+    if (leave.scanned_form) {
+      try {
+        setImagePreview({ open: false, imageUrl: null, loading: true });
+        
+        const result = await getScannedForm(requestId);
+        let fileUrl = result.file_url || result.fileUrl || result.url || null;
+
+        if (fileUrl) {
+          // If fileUrl is already absolute leave it; otherwise prefix with base URL
+          const isAbsolute = /^https?:\/\//i.test(fileUrl);
+          const baseUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+
+          if (!isAbsolute) {
+            if (!fileUrl.startsWith('/')) fileUrl = `/${fileUrl}`;
+            fileUrl = `${baseUrl}${fileUrl}`;
+          }
+
+          existingScannedForm = {
+            id: requestId,
+            preview: fileUrl,
+            name: 'existing_scanned_form.jpg',
+            uploadDate: leave.created_at || 'Previously uploaded'
+          };
+        }
+      } catch (err) {
+        console.error('Error fetching existing scanned form:', err);
+        // Continue without existing form if there's an error
+      } finally {
+        setImagePreview({ open: false, imageUrl: null, loading: false });
+      }
+    }
+
+    setUploadModal({ 
+      open: true, 
+      leave: leave,
+      existingScannedForm: existingScannedForm 
+    });
+  };
+
+  // Ensure blob URLs are revoked when closing preview
+  const closeImagePreview = () => {
+    if (imagePreview.imageUrl && imagePreview.imageUrl.startsWith('blob:')) {
+      try { URL.revokeObjectURL(imagePreview.imageUrl); } catch (e) { /* ignore */ }
+    }
+    setImagePreview({ open: false, imageUrl: null, loading: false });
+  };
+
+  // Filtering functions
   const applyFilters = () => {
     let filtered = [...leaveHistory];
 
@@ -78,7 +204,6 @@ const ManageLeaveRequest = () => {
     setShowFilter(false);
   };
 
-  // Clear filters
   const clearFilters = () => {
     setFilters({
       startDate: '',
@@ -90,7 +215,6 @@ const ManageLeaveRequest = () => {
     setShowFilter(false);
   };
 
-  // Get unique dropdown options
   const getUniqueLeaveTypes = () => {
     const types = [...new Set(leaveHistory.map(item => item.leave_type).filter(Boolean))];
     return types;
@@ -126,30 +250,11 @@ const ManageLeaveRequest = () => {
     }
   };
 
-  // Data table columns
+  // Data table columns (updated Upload column)
   const columns = [
-    { name: 'Name',
-      selector: row => row.staff_name, 
-      sortable: true, 
-      width: '140px' 
-    },
-    { 
-      name: 'Department', 
-      selector: row => row.staff_department, 
-      sortable: true,
-      cell: row => (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '70%' }}>
-          {row.staff_department || '-'}
-        </div>
-      ), 
-      width: '140px' 
-    },
-    { 
-      name: 'Leave Type', 
-      selector: row => row.leave_type, 
-      sortable: true, 
-      width: '120px' 
-    },
+    { name: 'Name', selector: row => row.staff_name, sortable: true, width: '150px' },
+    { name: 'Department', selector: row => row.staff_department, sortable: true, width: '120px' },
+    { name: 'Leave Type', selector: row => row.leave_type, sortable: true, width: '120px' },
     {
       name: 'Applied Date',
       selector: row => row.created_at,
@@ -158,14 +263,14 @@ const ManageLeaveRequest = () => {
       width: '120px'
     },
     {
-      name: <div style={{textAlign: 'center', width: '110px'}}>From</div>,
+      name: 'From',
       selector: row => row.start_date,
       sortable: true,
       cell: row => new Date(row.start_date).toLocaleDateString(),
       width: '120px'
     },
     {
-      name: <div style={{textAlign: 'center', width: '110px'}}>To</div>,
+      name: 'To',
       selector: row => row.end_date,
       sortable: true,
       cell: row => new Date(row.end_date).toLocaleDateString(),
@@ -227,21 +332,36 @@ const ManageLeaveRequest = () => {
       width: '120px'
     },
     {
-      name: 'Scan',
-      selector: row => row.upload,
-      cell: row =>
-        row.upload ? (
-          <Button color="success" size="sm" onClick={() => window.open(row.upload, '_blank')}>View</Button>
-        ) : (
-          <Button color="primary" size="sm" onClick={() => Swal.fire('Scan button clicked!')}>Scan</Button>
-        ),
-      width: '120px'
+      name: 'Upload',
+      cell: row => (
+        <Button
+          color="primary"
+          size="sm"
+          onClick={() => handleUploadClick(row)}
+          style={{ minWidth: '95px', padding: '6px 12px' }}
+        >
+          {row.scanned_form ? 'Re-upload' : 'Upload'}
+        </Button>
+      ),
+      width: '130px'
     },
     {
-      name: 'Uploaded File',
-      selector: row => row.upload,
-      sortable: true,
-    }
+      name: 'View Scanned Form',
+      cell: row =>
+        row.scanned_form ? (
+          <Button
+            color="success"
+            size="sm"
+            onClick={() => handleViewScannedForm(row)}
+            style={{ minWidth: '80px', padding: '6px 12px' }}
+          >
+            <i className="fa fa-eye me-1" /> View
+          </Button>
+        ) : (
+          <span className="text-muted">No file</span>
+        ),
+      width: '150px'
+    },
   ];
 
   useEffect(() => {
@@ -355,12 +475,27 @@ const ManageLeaveRequest = () => {
         </Row>
       </Container>
 
+      {/* Modular Upload & View Modals */}
+      <UploadImageModal
+        isOpen={uploadModal.open}
+        leave={uploadModal.leave}
+        existingScannedForm={uploadModal.existingScannedForm}
+        onClose={() => setUploadModal({ open: false, leave: null, existingScannedForm: null })}
+        fetchLeaveHistory={fetchLeaveHistory}
+      />
+
+      <ViewImageModal
+        isOpen={imagePreview.open}
+        imageUrl={imagePreview.imageUrl}
+        loading={imagePreview.loading}
+        onClose={closeImagePreview}
+      />
+
       {viewModal.open && (
         <ViewLeaveModal
           isOpen={viewModal.open}
           toggle={() => setViewModal({ open: false, leave: null })}
           leave={viewModal.leave}
-          isAdmin={true}
         />
       )}
 
