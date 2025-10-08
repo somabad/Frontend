@@ -19,11 +19,10 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     roleId: '',
     locations: [],
     created_at: '',
-    department: '',   // ###################### ADDED
-    position: '',     // ###################### ADDED
-    contract_type_id: '' // ###################### ADDED
+    department: '',   // ADDED
+    position: '',     // ADDED
+    contract_type_id: '' // ADDED
   };
-
 
   const [modal, setModal] = useState(false);
   const [formData, setFormData] = useState(defaultFormData);
@@ -40,31 +39,29 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     setModal(!modal);
   };
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const [roleData, locationRes, contractRes] = await Promise.all([
-        getRoleList(),
-        getLocationList(),
-        axios.get('http://127.0.0.1:8000/api/contract-type-list/'), 
-      ]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [roleData, locationRes, contractRes] = await Promise.all([
+          getRoleList(),
+          getLocationList(),
+          axios.get('http://127.0.0.1:8000/api/contract-type-list/'), 
+        ]);
 
-      setRoles(roleData);
-      setLocations(locationRes.data);
+        setRoles(roleData);
+        setLocations(locationRes.data);
 
-      // ✅ Important — check the shape of returned data
-      console.log('Contract types response:', contractRes.data);
+        // ✅ Important — check the shape of returned data
+        console.log('Contract types response:', contractRes.data);
 
-      setContractTypes(contractRes.data.data || contractRes.data);
-    } catch (err) {
-      console.error('Failed to fetch data:', err);
-    }
-  };
+        setContractTypes(contractRes.data.data || contractRes.data);
+      } catch (err) {
+        console.error('Failed to fetch data:', err);
+      }
+    };
 
-  fetchData();
-}, []);
-
-
+    fetchData();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -89,7 +86,8 @@ useEffect(() => {
     const seconds = now.toLocaleString('en-US', { ...options, second: '2-digit' }).padStart(2, '0');
     const milliseconds = now.getMilliseconds().toString().padStart(6, '0');
 
-    return ${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds};
+    // FIXED: Proper template literal syntax
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
   };
 
   const handleSubmit = async (e) => {
@@ -112,18 +110,18 @@ useEffect(() => {
 
     try {
       // Create user first (without locations)
-  const userData = {
-    userId: formData.userId,
-    name: formData.name,
-    email: formData.email,
-    phone: formData.phone,
-    password: formData.password,
-    roleId: formData.roleId,
-    department: formData.department,      // ###################### ADDED
-    position: formData.position,          // ###################### ADDED
-    contract_type_id: formData.contract_type_id, // ###################### ADDED
-    created_at: malaysiaTime
-  };
+      const userData = {
+        userId: formData.userId,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        roleId: formData.roleId,
+        department: formData.department,      // ADDED
+        position: formData.position,          // ADDED
+        contract_type_id: formData.contract_type_id, // ADDED
+        created_at: malaysiaTime
+      };
 
       console.log('Creating user with data:', userData);
       const res = await createNewUser(userData);
@@ -170,7 +168,8 @@ useEffect(() => {
           Swal.fire({
             icon: 'warning',
             title: 'User Created with Warning',
-            text: User was created successfully but there was an issue assigning locations: ${locationError.message},
+            // FIXED: Proper template literal syntax
+            text: `User was created successfully but there was an issue assigning locations: ${locationError.message}`,
             confirmButtonText: 'OK'
           });
         }

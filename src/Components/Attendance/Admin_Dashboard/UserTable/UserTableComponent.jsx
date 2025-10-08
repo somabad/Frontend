@@ -25,12 +25,12 @@ const UserTableComponent = ({ filteredData, onRefresh }) => {
     try {
       await Promise.all(
         idsToDelete.map((user) =>
-          axios.post(http://127.0.0.1:8000/api/delete-staff/${user.staffId}/)
+          axios.post(`http://127.0.0.1:8000/api/delete-staff/${user.staffId}/`)
         )
       );
       Swal.fire({
         title: 'Deleted!',
-        text: Deleted: ${idsToDelete.map((u) => u.name).join(', ')},
+        text: `Deleted: ${idsToDelete.map((u) => u.name).join(', ')}`,
         icon: 'success',
       }).then(() => {
         setIsModalOpen(false);
