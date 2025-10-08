@@ -3,10 +3,9 @@ import { Col, Card, CardHeader } from 'reactstrap';
 import DataTable from 'react-data-table-component';
 
 const LatestLeave = ({ staffLeave, loading, error }) => {
-  // Show only the 3 newest requests
+  // Show staff who submitted requests today OR start their leave today (no limit)
   const latestRequests = staffLeave
-    ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    .slice(0, 3) || [];
+    ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) || [];
   const columns = [
     {
       name: 'Name',
