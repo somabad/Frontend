@@ -31,11 +31,11 @@ const ActionButtons = ({ row, onUpdateSuccess }) => {
   const [clockLogModalOpen, setClockLogModalOpen] = useState(false);
   const toggleClockLogModal = () => setClockLogModalOpen(!clockLogModalOpen);
 
-  const [generateReportModalOpen, setGenerateReportModalOpen] = useState(false);
-  const toggleGenerateReportModal = () => setGenerateReportModalOpen(!generateReportModalOpen);
+  const [GenerateReportModalOpen, setGenerateReportModalOpen] = useState(false);
+  const toggleGenerateReportModal = () => setGenerateReportModalOpen(!GenerateReportModalOpen);
 
-  const [resetDeviceModalOpen, setResetDeviceModalOpen] = useState(false);
-  const toggleResetDeviceModal = () => setResetDeviceModalOpen(!resetDeviceModalOpen);
+  const [ResetDeviceModalOpen, setResetDeviceModalOpen] = useState(false);
+  const toggleResetDeviceModal = () => setResetDeviceModalOpen(!ResetDeviceModalOpen);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const toggleDeleteModal = () => setDeleteModalOpen(!deleteModalOpen);
@@ -160,7 +160,7 @@ const ActionButtons = ({ row, onUpdateSuccess }) => {
           >
             <i className="fa fa-ellipsis-v" />
           </DropdownToggle>
-          <DropdownMenu end>
+          <DropdownMenu right>
             <DropdownItem onClick={toggleClockLogModal}>View User Detail</DropdownItem>
             <DropdownItem onClick={toggleGenerateReportModal}>Generate Report</DropdownItem>
             <DropdownItem onClick={toggleResetDeviceModal}>Reset Device Info</DropdownItem>
@@ -187,8 +187,8 @@ const ActionButtons = ({ row, onUpdateSuccess }) => {
         onUpdateSuccess={onUpdateSuccess}
       />
       <ClockLogModal isOpen={clockLogModalOpen} toggle={toggleClockLogModal} user={row} />
-      <GenerateReport isOpen={generateReportModalOpen} toggle={toggleGenerateReportModal} user={row} />
-      <ResetDevice isOpen={resetDeviceModalOpen} toggle={toggleResetDeviceModal} user={row} />
+      <GenerateReport isOpen={GenerateReportModalOpen} toggle={toggleGenerateReportModal} user={row} />
+      <ResetDevice isOpen={ResetDeviceModalOpen} toggle={toggleResetDeviceModal} user={row} />
 
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
@@ -205,31 +205,49 @@ export default ActionButtons;
 export const tableColumns = (onUpdateSuccess) => [
   {
     name: 'User ID',
-    selector: (row) => row.userId,
+    selector: (row) => row.userId ?? '-',
     sortable: true,
     center: true,
   },
   {
     name: 'Name',
-    selector: (row) => row.name,
+    selector: (row) => row.name ?? '-',
     sortable: true,
     center: true,
   },
   {
     name: 'Email',
-    selector: (row) => row.email,
+    selector: (row) => row.email ?? '-',
     sortable: true,
     center: true,
   },
   {
     name: 'Phone',
-    selector: (row) => row.phone,
+    selector: (row) => row.phone ?? '-',
+    sortable: true,
+    center: true,
+  },
+  {
+    name: 'Contract Type',
+    selector: (row) => row.contract_type_id?.name ?? '-',
+    sortable: true,
+    center: true,
+  },
+  {
+    name: 'Position',
+    selector: (row) => row.position ?? '-',
+    sortable: true,
+    center: true,
+  },
+  {
+    name: 'Department',
+    selector: (row) => row.department ?? '-',
     sortable: true,
     center: true,
   },
   {
     name: 'Role',
-    selector: (row) => row.roleId?.name,
+    selector: (row) => row.roleId?.name ?? '-',
     sortable: true,
     center: true,
   },
