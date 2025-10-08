@@ -1,43 +1,87 @@
 import React, { useState } from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Spinner } from 'reactstrap';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
-const BASE_URL = "http://127.0.0.1:8000/api"; // update if needed
+const BASE_URL = "http://127.0.0.1:8000/api";
 
-const ImageList = ({ images, setImages, onEditImage }) => {
+const ImageList = ({ images, setImages, onEditImage, onRemoveImage }) => {
   const [showConfirm, setShowConfirm] = useState(false);
-  const [selectedImageId, setSelectedImageId] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const openConfirmModal = (id) => {
-    setSelectedImageId(id);
+  const openConfirmModal = (image) => {
+    setSelectedImage(image);
     setShowConfirm(true);
   };
 
   const closeConfirmModal = () => {
     setShowConfirm(false);
-    setSelectedImageId(null);
+    setSelectedImage(null);
   };
 
   const handleConfirmDelete = async () => {
-    if (!selectedImageId) return;
-    setLoading(true);
+    if (!selectedImage) return;
+    
+    // If it's an existing image from database and has a valid ID
+    if (selectedImage.isExisting && selectedImage.id && selectedImage.id !== 'existing') {
+      setLoading(true);
+      try {
+        // Try different possible API endpoints
+        let deleteUrl = '';
+        
+        // Option 1: Delete by request_id (most common)
+        if (selectedImage.request_id) {
+          deleteUrl = `${BASE_URL}/delete_scanned_form/${selectedImage.request_id}/`;
+        } 
+        // Option 2: Delete by scanned_form_id
+        else if (selectedImage.scanned_form_id) {
+          deleteUrl = `${BASE_URL}/delete_scanned_form/${selectedImage.scanned_form_id}/`;
+        }
+        // Option 3: Delete by the image ID
+        else {
+          deleteUrl = `${BASE_URL}/delete_scanned_form/${selectedImage.id}/`;
+        }
 
-    try {
-      const response = await axios.delete(`${BASE_URL}/delete_scanned_form/${selectedImageId}/`);
-      const data = response.data;
+        console.log('Attempting to delete from:', deleteUrl);
+        
+        const response = await axios.delete(deleteUrl);
+        const data = response.data;
 
-      if (data.success) {
-        // Update frontend list
-        setImages((prev) => prev.filter((img) => img.id !== selectedImageId));
-      } else {
-        alert(data.error || 'Failed to delete scanned form.');
+        if (data.success) {
+          // Update frontend list
+          setImages((prev) => prev.filter((img) => img.id !== selectedImage.id));
+          Swal.fire('Success', 'Scanned form deleted successfully!', 'success');
+        } else {
+          Swal.fire('Error', data.error || 'Failed to delete scanned form.', 'error');
+        }
+      } catch (error) {
+        console.error('Error deleting image:', error);
+        
+        // If API delete fails, fall back to local removal
+        if (error.response?.status === 404) {
+          Swal.fire({
+            title: 'API Endpoint Not Found',
+            text: 'The delete endpoint was not found. Removing from local state only.',
+            icon: 'warning'
+          }).then(() => {
+            setImages((prev) => prev.filter((img) => img.id !== selectedImage.id));
+          });
+        } else {
+          Swal.fire('Error', 'An error occurred while deleting the scanned form.', 'error');
+        }
+      } finally {
+        setLoading(false);
+        closeConfirmModal();
       }
-    } catch (error) {
-      console.error('Error deleting image:', error);
-      alert('An error occurred while deleting the scanned form.');
-    } finally {
-      setLoading(false);
+    } else {
+      // For temporary images or existing images without proper ID, use the custom handler
+      if (onRemoveImage) {
+        onRemoveImage(selectedImage.id);
+      } else {
+        // Fallback: just remove from local state
+        setImages((prev) => prev.filter((img) => img.id !== selectedImage.id));
+      }
       closeConfirmModal();
     }
   };
@@ -70,7 +114,7 @@ const ImageList = ({ images, setImages, onEditImage }) => {
           fontWeight: '600',
         }}
       >
-        Uploaded Scanned Forms ({images.length})
+        {images.some(img => img.isExisting) ? 'Existing Scanned Form' : 'Uploaded Scanned Forms'} ({images.length})
       </h3>
 
       <div
@@ -92,11 +136,29 @@ const ImageList = ({ images, setImages, onEditImage }) => {
               textAlign: 'center',
               border: '1px solid #e9ecef',
               position: 'relative',
+              borderLeft: image.isExisting ? '4px solid #ffc107' : '4px solid #28a745'
             }}
           >
+            {/* Existing badge */}
+            {image.isExisting && (
+              <div style={{
+                position: 'absolute',
+                top: '5px',
+                left: '5px',
+                background: '#ffc107',
+                color: '#000',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}>
+                Existing
+              </div>
+            )}
+            
             {/* Delete Button (X mark) */}
             <button
-              onClick={() => openConfirmModal(image.id)}
+              onClick={() => openConfirmModal(image)}
               style={{
                 position: 'absolute',
                 top: '5px',
@@ -153,6 +215,11 @@ const ImageList = ({ images, setImages, onEditImage }) => {
               >
                 {image.uploadDate}
               </p>
+              {image.isExisting && (
+                <p style={{ fontSize: '10px', color: '#999', margin: '5px 0 0 0' }}>
+                  ID: {image.id}
+                </p>
+              )}
             </div>
             <button
               onClick={() => onEditImage(image)}
@@ -176,16 +243,28 @@ const ImageList = ({ images, setImages, onEditImage }) => {
 
       {/* Confirmation Modal */}
       <Modal isOpen={showConfirm} toggle={closeConfirmModal} centered>
-        <ModalHeader toggle={closeConfirmModal}>Confirm Delete</ModalHeader>
+        <ModalHeader toggle={closeConfirmModal}>
+          {selectedImage?.isExisting ? 'Delete Scanned Form' : 'Remove Image'}
+        </ModalHeader>
         <ModalBody className="text-center">
-          Are you sure you want to delete this scanned form?
+          {selectedImage?.isExisting ? (
+            <div>
+              <p>Are you sure you want to delete this scanned form from the database?</p>
+              <p className="text-warning"><small>This action cannot be undone.</small></p>
+              {selectedImage.id && (
+                <p className="text-muted"><small>ID: {selectedImage.id}</small></p>
+              )}
+            </div>
+          ) : (
+            <p>Are you sure you want to remove this image?</p>
+          )}
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={closeConfirmModal}>
             Cancel
           </Button>
           <Button color="danger" onClick={handleConfirmDelete} disabled={loading}>
-            {loading ? <Spinner size="sm" /> : 'Delete'}
+            {loading ? <Spinner size="sm" /> : (selectedImage?.isExisting ? 'Delete Permanently' : 'Remove')}
           </Button>
         </ModalFooter>
       </Modal>

@@ -64,6 +64,25 @@ const ManageLeaveRequest = () => {
     }
   };
 
+  // Update specific leave record when image is deleted
+  const updateLeaveRecord = (requestId, hasScannedForm) => {
+    setLeaveHistory(prev => 
+      prev.map(leave => 
+        leave.request_id === requestId 
+          ? { ...leave, scanned_form: hasScannedForm }
+          : leave
+      )
+    );
+    
+    setFilteredData(prev => 
+      prev.map(leave => 
+        leave.request_id === requestId 
+          ? { ...leave, scanned_form: hasScannedForm }
+          : leave
+      )
+    );
+  };
+
   // View scanned form (robust: uses getScannedForm util)
   const handleViewScannedForm = async (leave) => {
     const requestId = leave?.request_id || leave;
@@ -162,6 +181,12 @@ const ManageLeaveRequest = () => {
       leave: leave,
       existingScannedForm: existingScannedForm 
     });
+  };
+
+  // Handle when image is deleted in upload modal
+  const handleImageDeleted = (requestId) => {
+    // Update the leave record to remove scanned_form
+    updateLeaveRecord(requestId, false);
   };
 
   // Ensure blob URLs are revoked when closing preview
@@ -482,6 +507,7 @@ const ManageLeaveRequest = () => {
         existingScannedForm={uploadModal.existingScannedForm}
         onClose={() => setUploadModal({ open: false, leave: null, existingScannedForm: null })}
         fetchLeaveHistory={fetchLeaveHistory}
+        onImageDeleted={handleImageDeleted}
       />
 
       <ViewImageModal

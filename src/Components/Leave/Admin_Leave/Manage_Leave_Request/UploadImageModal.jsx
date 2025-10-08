@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import Swal from "sweetalert2";
 import ImageUpload from "./ImageUpload";
-import ImageList from "./ImageList"; // Your current ImageList
+import ImageList from "./ImageList";
 import SimpleImageEditor from "./SimpleImageEditor";
 import { uploadScannedForm } from "../../../Attendance/utils";
 
-const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory, existingScannedForm }) => {
+const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory, existingScannedForm, onImageDeleted }) => {
   const [uploadedImages, setUploadedImages] = useState([]);
   const [editingImage, setEditingImage] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -17,11 +17,11 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory, existingS
       // Convert existing form to the same format as new uploads
       const existingImage = {
         id: existingScannedForm.id || 'existing',
-        file: null,
-        preview: existingScannedForm.preview || existingScannedForm.image_url,
+        file: null, // We might not have the file object for existing images
+        preview: existingScannedForm.preview,
         name: existingScannedForm.name || 'Existing Scanned Form',
-        uploadDate: existingScannedForm.uploadDate || existingScannedForm.created_at || 'Previously uploaded',
-        isExisting: true
+        uploadDate: existingScannedForm.uploadDate || 'Previously uploaded',
+        isExisting: true // Flag to identify existing images
       };
       setUploadedImages([existingImage]);
     } else if (isOpen) {
@@ -32,7 +32,7 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory, existingS
 
   const handleImageUpload = (file, preview) => {
     const newImage = {
-      id: Date.now(), // Temporary ID for new uploads
+      id: Date.now(),
       file,
       preview,
       name: file.name,
@@ -60,6 +60,18 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory, existingS
   };
 
   const handleCancelEdit = () => setEditingImage(null);
+  
+  const handleRemoveImage = (id) => {
+    const imageToRemove = uploadedImages.find(img => img.id === id);
+    const wasExistingImage = imageToRemove?.isExisting;
+    
+    setUploadedImages((prev) => prev.filter((img) => img.id !== id));
+    
+    // If an existing image was deleted, notify parent component
+    if (wasExistingImage && onImageDeleted && leave?.request_id) {
+      onImageDeleted(leave.request_id);
+    }
+  };
 
   const handleUploadToServer = async () => {
     if (!leave) {
@@ -143,6 +155,7 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory, existingS
               images={uploadedImages}
               setImages={setUploadedImages}
               onEditImage={handleEditImage}
+              onRemoveImage={handleRemoveImage}
             />
           </>
         )}
