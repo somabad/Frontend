@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Col, Card, CardHeader } from 'reactstrap';
 import DataTable from 'react-data-table-component';
+import { AiOutlineInfoCircle } from 'react-icons/ai';
 
 const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
+  const [hoveredInfoIndex, setHoveredInfoIndex] = useState(null);
+
   const columns = [
-   {
+    {
       name: 'Name',
       selector: row => row.staff_name,
       sortable: true,
@@ -92,6 +95,15 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
       <Card>
         <CardHeader className="d-flex justify-content-between align-items-center flex-wrap">
           <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>Today's Staff Leave</h3>
+          <h6 className="label-text mb-0 text-muted d-flex align-items-center gap-1">
+            {label}
+            <AiOutlineInfoCircle
+            size={16}
+            color="#888"
+            style={{ cursor: "pointer" }}
+            onMouseEnter={() => setHoveredInfoIndex(index)}
+            onMouseLeave={() => setHoveredInfoIndex(null)}
+            /></h6>
         </CardHeader>
 
         <DataTable
@@ -108,6 +120,49 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
           }
         />
       </Card>
+
+      {/* Fullscreen overlay on hover */}
+      {hoveredInfoIndex !== null && (
+        <div className="info-overlay">
+          <div className="info-box">
+            <p>{onLeaveTodayNames[hoveredInfoIndex]?.info || "No additional info available"}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Info icon hover */}
+      <style jsx>{`
+        .info-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-color: rgba(0,0,0,0.6);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          pointer-events: none;
+        }
+        .info-box {
+          background-color: #fff;
+          padding: 24px 32px;
+          border-radius: 12px;
+          max-width: 90%;
+          text-align: center;
+          font-size: 18px;
+          font-weight: 500;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .info-box p {
+          margin: 0;
+          font-size: 1.2rem;
+        }
+        .icon-wrapper {
+          cursor: pointer;
+        }
+      `}</style>
     </Col>
   );
 };

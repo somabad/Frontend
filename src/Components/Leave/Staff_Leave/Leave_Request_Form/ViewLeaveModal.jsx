@@ -175,6 +175,32 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                 </FormGroup>
               </Col>
             </Row>
+            <Row>
+              <Col md="4">
+                <FormGroup>
+                  <Label><b>Tandatangan Pemohon:</b></Label>
+                  <Input value={''} disabled />
+                  <Label><b>Tarikh:</b></Label>
+                </FormGroup>
+              </Col>
+              <Col md="6">
+                <FormGroup>
+                  <Label><b>Disokong/Tidak Sokong:</b></Label>
+                  <Input value={''} disabled />
+                  <Label><b>T/tangan Ketua Seksyen:</b></Label>
+                  <Label><b>Tarikh:</b></Label>
+                </FormGroup>
+              </Col>
+              <Col md="6">
+                <FormGroup>
+                  <Label><b>Diluluskan/Tidak Lulus:</b></Label>
+                  <Input value={''} disabled />
+                  <Label><b>T/tangan ketua Bahagian/Ketua Bahagian Eksekutif:</b></Label>
+                  <Label><b>Tarikh:</b></Label>
+                </FormGroup>
+              </Col>
+            </Row>
+            <hr/>
 
             {/* Leave Balance Section (HR panel) */}
             <h5 className="text-primary">Untuk pengesahan (Sumber Manusia & Pentadbiran)</h5>

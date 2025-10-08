@@ -40,6 +40,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   const [attachment, setAttachment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [availableLeaveTypes, setAvailableLeaveTypes] = useState(leaveTypes);
 
   const today = new Date().toISOString().slice(0, 10);
 

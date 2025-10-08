@@ -31,6 +31,9 @@ const EditLeaveModal = ({ isOpen, toggle, leave, onSave, updateLeaveApplication,
       formData.append('leave_type', form.leave_type);
       formData.append('start_date', form.start_date);
       formData.append('end_date', form.end_date);
+      formData.append('total_days', form.total_days);
+      formData.append('is_half_day', form.is_half_day);
+      formData.append('job_taken_over_by', form.job_taken_over_by);
       formData.append('reason', form.reason);
       if (form.document && typeof form.document !== 'string') {
         formData.append('document', form.document);

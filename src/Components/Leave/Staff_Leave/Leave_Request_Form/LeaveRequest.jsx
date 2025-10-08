@@ -119,6 +119,7 @@ const LeaveRequest = () => {
               <p>No recent leave requests.</p>
             )}
 
+            <hr/>
             
             {/* Leave Balance Summary */}
             {balanceByType && Object.keys(balanceByType).length > 0 && (

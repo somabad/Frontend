@@ -23,9 +23,9 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
       name: 'Leave Type',
       selector: row => row.leave_type,
       sortable: true,
-      width: '130px',
+      width: '150px',
       cell: row => (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '70%' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '80%' }}>
           {row.leave_type || '-'}
         </div>
       ),
