@@ -26,16 +26,16 @@ const ActionButtons = ({ row, onUpdateSuccess }) => {
   const toggleUpdateModal = () => setUpdateModalOpen(!updateModalOpen);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const toggleDropdown = () => setDropdownOpen(prev => !prev);
+  const toggleDropdown = () => setDropdownOpen((prev) => !prev);
 
   const [clockLogModalOpen, setClockLogModalOpen] = useState(false);
   const toggleClockLogModal = () => setClockLogModalOpen(!clockLogModalOpen);
 
-  const [GenerateReportModalOpen, setGenerateReportModalOpen] = useState(false);
-  const toggleGenerateReportModal = () => setGenerateReportModalOpen(!GenerateReportModalOpen);
+  const [generateReportModalOpen, setGenerateReportModalOpen] = useState(false);
+  const toggleGenerateReportModal = () => setGenerateReportModalOpen(!generateReportModalOpen);
 
-  const [ResetDeviceModalOpen, setResetDeviceModalOpen] = useState(false);
-  const toggleResetDeviceModal = () => setResetDeviceModalOpen(!ResetDeviceModalOpen);
+  const [resetDeviceModalOpen, setResetDeviceModalOpen] = useState(false);
+  const toggleResetDeviceModal = () => setResetDeviceModalOpen(!resetDeviceModalOpen);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const toggleDeleteModal = () => setDeleteModalOpen(!deleteModalOpen);
@@ -48,7 +48,7 @@ const ActionButtons = ({ row, onUpdateSuccess }) => {
   const { layoutURL } = useContext(CustomizerContext);
 
   const handleConfirmDelete = () => {
-    fetch(`https://v21.mysutera.my/api/delete-staff/${row.staffId}/`, {
+    fetch(`http://127.0.0.1:8000/api/delete-staff/${row.staffId}/`, {
       method: 'POST',
     })
       .then(async (response) => {
@@ -160,7 +160,7 @@ const ActionButtons = ({ row, onUpdateSuccess }) => {
           >
             <i className="fa fa-ellipsis-v" />
           </DropdownToggle>
-          <DropdownMenu right>
+          <DropdownMenu end>
             <DropdownItem onClick={toggleClockLogModal}>View User Detail</DropdownItem>
             <DropdownItem onClick={toggleGenerateReportModal}>Generate Report</DropdownItem>
             <DropdownItem onClick={toggleResetDeviceModal}>Reset Device Info</DropdownItem>
@@ -184,11 +184,11 @@ const ActionButtons = ({ row, onUpdateSuccess }) => {
         modal={updateModalOpen}
         toggle={toggleUpdateModal}
         user={row}
-        onUpdateSuccess={onUpdateSuccess} // ✅ refresh parent on update
+        onUpdateSuccess={onUpdateSuccess}
       />
       <ClockLogModal isOpen={clockLogModalOpen} toggle={toggleClockLogModal} user={row} />
-      <GenerateReport isOpen={GenerateReportModalOpen} toggle={toggleGenerateReportModal} user={row} />
-      <ResetDevice isOpen={ResetDeviceModalOpen} toggle={toggleResetDeviceModal} user={row} />
+      <GenerateReport isOpen={generateReportModalOpen} toggle={toggleGenerateReportModal} user={row} />
+      <ResetDevice isOpen={resetDeviceModalOpen} toggle={toggleResetDeviceModal} user={row} />
 
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
@@ -202,42 +202,39 @@ const ActionButtons = ({ row, onUpdateSuccess }) => {
 
 export default ActionButtons;
 
-
-
-
 export const tableColumns = (onUpdateSuccess) => [
   {
     name: 'User ID',
-    selector: row => `${row.userId}`,
+    selector: (row) => row.userId,
     sortable: true,
     center: true,
   },
   {
     name: 'Name',
-    selector: row => `${row.name}`,
+    selector: (row) => row.name,
     sortable: true,
     center: true,
   },
   {
     name: 'Email',
-    selector: row => `${row.email}`,
+    selector: (row) => row.email,
     sortable: true,
     center: true,
   },
   {
     name: 'Phone',
-    selector: row => `${row.phone}`,
+    selector: (row) => row.phone,
     sortable: true,
     center: true,
   },
   {
     name: 'Role',
-    selector: row => `${row.roleId.name}`,
+    selector: (row) => row.roleId?.name,
     sortable: true,
     center: true,
   },
   {
     name: 'Action',
     cell: (row) => <ActionButtons row={row} onUpdateSuccess={onUpdateSuccess} />,
-  }
+  },
 ];

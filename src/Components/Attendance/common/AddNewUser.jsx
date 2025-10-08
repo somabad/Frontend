@@ -18,13 +18,18 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     password: '',
     roleId: '',
     locations: [],
-    created_at: ''
+    created_at: '',
+    department: '',   // ###################### ADDED
+    position: '',     // ###################### ADDED
+    contract_type_id: '' // ###################### ADDED
   };
+
 
   const [modal, setModal] = useState(false);
   const [formData, setFormData] = useState(defaultFormData);
   const [roles, setRoles] = useState([]);
   const [locations, setLocations] = useState([]);
+  const [contractTypes, setContractTypes] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
 
   const toggle = () => {
@@ -35,21 +40,31 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     setModal(!modal);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [roleData, locationRes] = await Promise.all([
-          getRoleList(),
-          getLocationList(),
-        ]);
-        setRoles(roleData);
-        setLocations(locationRes.data);
-      } catch (err) {
-        console.error('Failed to fetch data:', err);
-      }
-    };
-    fetchData();
-  }, []);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [roleData, locationRes, contractRes] = await Promise.all([
+        getRoleList(),
+        getLocationList(),
+        axios.get('http://127.0.0.1:8000/api/contract-type-list/'), 
+      ]);
+
+      setRoles(roleData);
+      setLocations(locationRes.data);
+
+      // ✅ Important — check the shape of returned data
+      console.log('Contract types response:', contractRes.data);
+
+      setContractTypes(contractRes.data.data || contractRes.data);
+    } catch (err) {
+      console.error('Failed to fetch data:', err);
+    }
+  };
+
+  fetchData();
+}, []);
+
+
 
   const handleChange = (e) => {
     setFormData({
@@ -74,7 +89,7 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     const seconds = now.toLocaleString('en-US', { ...options, second: '2-digit' }).padStart(2, '0');
     const milliseconds = now.getMilliseconds().toString().padStart(6, '0');
 
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+    return ${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds};
   };
 
   const handleSubmit = async (e) => {
@@ -97,15 +112,18 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
 
     try {
       // Create user first (without locations)
-      const userData = {
-        userId: formData.userId,
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        password: formData.password,
-        roleId: formData.roleId,
-        created_at: malaysiaTime
-      };
+  const userData = {
+    userId: formData.userId,
+    name: formData.name,
+    email: formData.email,
+    phone: formData.phone,
+    password: formData.password,
+    roleId: formData.roleId,
+    department: formData.department,      // ###################### ADDED
+    position: formData.position,          // ###################### ADDED
+    contract_type_id: formData.contract_type_id, // ###################### ADDED
+    created_at: malaysiaTime
+  };
 
       console.log('Creating user with data:', userData);
       const res = await createNewUser(userData);
@@ -124,7 +142,7 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
             await new Promise(resolve => setTimeout(resolve, 1000));
             
             try {
-              const userListResponse = await axios.get('https://v21.mysutera.my/api/staff-list/');
+              const userListResponse = await axios.get('http://127.0.0.1:8000/api/staff-list/');
               const createdUser = userListResponse.data.find(user => 
                 user.userId === formData.userId || user.email === formData.email
               );
@@ -152,7 +170,7 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
           Swal.fire({
             icon: 'warning',
             title: 'User Created with Warning',
-            text: `User was created successfully but there was an issue assigning locations: ${locationError.message}`,
+            text: User was created successfully but there was an issue assigning locations: ${locationError.message},
             confirmButtonText: 'OK'
           });
         }
@@ -267,6 +285,46 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
               <option value="">Select a role</option>
               {roles.map(role => (
                 <option key={role.roleId} value={role.roleId}>{role.name}</option>
+              ))}
+            </Input>
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Department</Label>
+            <Input
+              type="text"
+              name="department"
+              value={formData.department}
+              onChange={handleChange}
+              placeholder="Enter department"
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Position</Label>
+            <Input
+              type="text"
+              name="position"
+              value={formData.position}
+              onChange={handleChange}
+              placeholder="Enter position"
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Contract Type</Label>
+            <Input
+              type="select"
+              name="contract_type_id"
+              value={formData.contract_type_id}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select contract type</option>
+              {contractTypes.map(contract => (
+                <option key={contract.contract_type_id} value={contract.contract_type_id}>
+                  {contract.name}
+                </option>
               ))}
             </Input>
           </FormGroup>

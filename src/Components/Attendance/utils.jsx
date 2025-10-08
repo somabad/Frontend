@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://127.0.0.1:8000/api';
+const BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://v21.mysutera.my/api"
+    : "http://127.0.0.1:8000/api";
+
 
 // Dashboard APIs
 export const getStaffDashboard = async (staffId) => {
@@ -52,6 +56,15 @@ export const createNewUser = async (userData) => {
   const response = await axios.post(`${BASE_URL}/create-new-user/`, userData);
   return response.data;
 };
+
+//Leave Module - Contract Type List ###
+
+export const getContractTypeList = async () => {
+  const response = await axios.get(`${BASE_URL}/contract-type-list/`);
+  return response.data;
+};
+
+//###
 
 export const updateProfile = async (staffId, updatedData) => {
   const response = await axios.post(`${BASE_URL}/update-profile/${staffId}/`, updatedData);
