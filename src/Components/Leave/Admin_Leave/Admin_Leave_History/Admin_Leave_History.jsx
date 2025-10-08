@@ -456,18 +456,7 @@ const AdminLeaveHistory = () => {
                     <div>Processing...</div>
                   </div>
                 ) : (
-                  <>
-                    <p>Are you sure you want to archive this record?</p>
-                    {archiveModal.leave && (
-                      <ul>
-                        <li><b>Name:</b> {archiveModal.leave.staff_name}</li>
-                        <li><b>Department:</b> {archiveModal.leave.staff_department}</li>
-                        <li><b>Leave Type:</b> {archiveModal.leave.leave_type}</li>
-                        <li><b>From:</b> {archiveModal.leave.start_date}</li>
-                        <li><b>To:</b> {archiveModal.leave.end_date}</li>
-                      </ul>
-                    )}
-                  </>
+                  <p>Are you sure you want to archive this record?</p>
                 )}
               </div>
               <div className="modal-footer">

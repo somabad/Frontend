@@ -176,6 +176,26 @@ export const updateLeaveApplication = async (leaveId, data) => {
   return response.data;
 };
 
+// Upload Scanned Form
+export const uploadScannedForm = async (requestId, file) => {
+  const formData = new FormData();
+  formData.append('scanned_form', file);
+  formData.append('request_id', requestId);
+
+  console.log('Uploading scanned form for request:', requestId); // Debug log
+  
+  const response = await axios.post(`${BASE_URL}/upload-scanned-form/`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+// Get Scanned Form
+export const getScannedForm = async (requestId) => {
+  const response = await axios.get(`${BASE_URL}/get-scanned-form/${requestId}/`);
+  return response.data;
+};
+
 export const deleteLeaveApplication = async (leaveId) => {
   const response = await axios.delete(`${BASE_URL}/manage-leave-request/${leaveId}/delete-form/`);
   return response.data;
