@@ -106,7 +106,7 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
     <Col sm="12">
       <Card>
         <CardHeader>
-          <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>Staff Leave Requests</h3>
+          <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>Today's Leave Request</h3>
         </CardHeader>
 
         <DataTable
@@ -127,3 +127,5 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
 };
 
 export default LatestLeave;
+
+
