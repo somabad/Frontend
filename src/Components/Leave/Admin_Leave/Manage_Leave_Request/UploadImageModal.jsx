@@ -1,25 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import Swal from "sweetalert2";
 import ImageUpload from "./ImageUpload";
-import ImageList from "./ImageList";
+import ImageList from "./ImageList"; // Your current ImageList
 import SimpleImageEditor from "./SimpleImageEditor";
 import { uploadScannedForm } from "../../../Attendance/utils";
 
-const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory }) => {
+const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory, existingScannedForm }) => {
   const [uploadedImages, setUploadedImages] = useState([]);
   const [editingImage, setEditingImage] = useState(null);
   const [uploading, setUploading] = useState(false);
 
+  // Load existing scanned form when modal opens
+  useEffect(() => {
+    if (isOpen && existingScannedForm) {
+      // Convert existing form to the same format as new uploads
+      const existingImage = {
+        id: existingScannedForm.id || 'existing',
+        file: null,
+        preview: existingScannedForm.preview || existingScannedForm.image_url,
+        name: existingScannedForm.name || 'Existing Scanned Form',
+        uploadDate: existingScannedForm.uploadDate || existingScannedForm.created_at || 'Previously uploaded',
+        isExisting: true
+      };
+      setUploadedImages([existingImage]);
+    } else if (isOpen) {
+      // Reset if no existing form
+      setUploadedImages([]);
+    }
+  }, [isOpen, existingScannedForm]);
+
   const handleImageUpload = (file, preview) => {
     const newImage = {
-      id: Date.now(),
+      id: Date.now(), // Temporary ID for new uploads
       file,
       preview,
       name: file.name,
       uploadDate: new Date().toLocaleString(),
+      isExisting: false
     };
-    setUploadedImages((prev) => [newImage, ...prev]);
+    
+    // If there's an existing image, replace it with the new one
+    if (uploadedImages.some(img => img.isExisting)) {
+      setUploadedImages([newImage]);
+    } else {
+      setUploadedImages((prev) => [newImage, ...prev]);
+    }
   };
 
   const handleEditImage = (image) => setEditingImage(image);
@@ -34,8 +60,6 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory }) => {
   };
 
   const handleCancelEdit = () => setEditingImage(null);
-  const handleRemoveImage = (id) =>
-    setUploadedImages((prev) => prev.filter((img) => img.id !== id));
 
   const handleUploadToServer = async () => {
     if (!leave) {
@@ -51,13 +75,19 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory }) => {
     setUploading(true);
     try {
       const image = uploadedImages[0];
-      const response = await fetch(image.preview);
-      const blob = await response.blob();
-      const file = new File([blob], image.name, { type: "image/jpeg" });
-
-      await uploadScannedForm(leave.request_id, file);
+      
+      // For new uploads, we have the file object
+      if (image.file) {
+        await uploadScannedForm(leave.request_id, image.file);
+      } else {
+        // For existing images that were edited, we need to convert dataURL to file
+        const response = await fetch(image.preview);
+        const blob = await response.blob();
+        const file = new File([blob], image.name, { type: "image/jpeg" });
+        await uploadScannedForm(leave.request_id, file);
+      }
+      
       Swal.fire("Success", "Scanned form uploaded successfully!", "success");
-
       fetchLeaveHistory?.();
       onClose();
     } catch (error) {
@@ -84,7 +114,17 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory }) => {
       size="xl"
     >
       <ModalHeader toggle={() => { reset(); onClose(); }}>
-        Upload Scanned Form - {leave?.staff_name}
+        {existingScannedForm ? "Reupload" : "Upload"} Scanned Form - {leave?.staff_name}
+        {existingScannedForm && (
+          <span style={{ 
+            fontSize: '14px', 
+            color: '#666', 
+            marginLeft: '10px',
+            fontStyle: 'italic'
+          }}>
+            (Existing scanned form will be replaced)
+          </span>
+        )}
       </ModalHeader>
       <ModalBody style={{ maxHeight: "70vh", overflowY: "auto" }}>
         {editingImage ? (
@@ -95,11 +135,14 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory }) => {
           />
         ) : (
           <>
-            <ImageUpload onImageUpload={handleImageUpload} />
+            <ImageUpload 
+              onImageUpload={handleImageUpload} 
+              existingImages={uploadedImages}
+            />
             <ImageList
               images={uploadedImages}
+              setImages={setUploadedImages}
               onEditImage={handleEditImage}
-              onRemoveImage={handleRemoveImage}
             />
           </>
         )}
@@ -119,7 +162,7 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory }) => {
           ) : (
             <>
               <i className="fa fa-upload me-2" />
-              Upload to Database
+              {existingScannedForm ? "Replace" : "Upload"} to Database
             </>
           )}
         </Button>
@@ -138,5 +181,3 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory }) => {
 };
 
 export default UploadImageModal;
-
-

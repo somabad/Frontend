@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-const ImageUpload = ({ onImageUpload }) => {
+const ImageUpload = ({ onImageUpload, existingImages = [] }) => {
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (event) => {
@@ -12,6 +12,8 @@ const ImageUpload = ({ onImageUpload }) => {
       };
       reader.readAsDataURL(file);
     }
+    // Reset the file input to allow selecting the same file again
+    event.target.value = '';
   };
 
   const handleUploadClick = () => {
@@ -56,9 +58,18 @@ const ImageUpload = ({ onImageUpload }) => {
       }}>
         Supported formats: JPG, PNG, GIF
       </p>
+      {existingImages.length > 0 && (
+        <p style={{
+          marginTop: '5px',
+          color: '#28a745',
+          fontSize: '14px',
+          fontWeight: '500'
+        }}>
+          {existingImages.length} image(s) uploaded. You can upload more or delete existing ones.
+        </p>
+      )}
     </div>
   );
 };
 
 export default ImageUpload;
-

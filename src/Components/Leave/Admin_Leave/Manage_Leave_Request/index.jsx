@@ -31,7 +31,11 @@ const ManageLeaveRequest = () => {
   const [editModal, setEditModal] = useState([]);
 
   // Modular upload/view states
-  const [uploadModal, setUploadModal] = useState({ open: false, leave: null });
+  const [uploadModal, setUploadModal] = useState({ 
+    open: false, 
+    leave: null,
+    existingScannedForm: null 
+  });
   const [imagePreview, setImagePreview] = useState({ open: false, imageUrl: null, loading: false });
 
   const [filters, setFilters] = useState({
@@ -107,6 +111,57 @@ const ManageLeaveRequest = () => {
         text: err.response?.data?.error || err.message || 'Failed to load scanned form'
       });
     }
+  };
+
+  // Handle upload/reupload button click
+  const handleUploadClick = async (leave) => {
+    const requestId = leave?.request_id;
+    
+    if (!requestId) {
+      Swal.fire('Error', 'No leave request selected', 'error');
+      return;
+    }
+
+    // Check if there's an existing scanned form
+    let existingScannedForm = null;
+    
+    if (leave.scanned_form) {
+      try {
+        setImagePreview({ open: false, imageUrl: null, loading: true });
+        
+        const result = await getScannedForm(requestId);
+        let fileUrl = result.file_url || result.fileUrl || result.url || null;
+
+        if (fileUrl) {
+          // If fileUrl is already absolute leave it; otherwise prefix with base URL
+          const isAbsolute = /^https?:\/\//i.test(fileUrl);
+          const baseUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+
+          if (!isAbsolute) {
+            if (!fileUrl.startsWith('/')) fileUrl = `/${fileUrl}`;
+            fileUrl = `${baseUrl}${fileUrl}`;
+          }
+
+          existingScannedForm = {
+            id: requestId,
+            preview: fileUrl,
+            name: 'existing_scanned_form.jpg',
+            uploadDate: leave.created_at || 'Previously uploaded'
+          };
+        }
+      } catch (err) {
+        console.error('Error fetching existing scanned form:', err);
+        // Continue without existing form if there's an error
+      } finally {
+        setImagePreview({ open: false, imageUrl: null, loading: false });
+      }
+    }
+
+    setUploadModal({ 
+      open: true, 
+      leave: leave,
+      existingScannedForm: existingScannedForm 
+    });
   };
 
   // Ensure blob URLs are revoked when closing preview
@@ -195,7 +250,7 @@ const ManageLeaveRequest = () => {
     }
   };
 
-  // Data table columns (unchanged)
+  // Data table columns (updated Upload column)
   const columns = [
     { name: 'Name', selector: row => row.staff_name, sortable: true, width: '150px' },
     { name: 'Department', selector: row => row.staff_department, sortable: true, width: '120px' },
@@ -282,7 +337,7 @@ const ManageLeaveRequest = () => {
         <Button
           color="primary"
           size="sm"
-          onClick={() => setUploadModal({ open: true, leave: row })}
+          onClick={() => handleUploadClick(row)}
           style={{ minWidth: '95px', padding: '6px 12px' }}
         >
           {row.scanned_form ? 'Re-upload' : 'Upload'}
@@ -424,7 +479,8 @@ const ManageLeaveRequest = () => {
       <UploadImageModal
         isOpen={uploadModal.open}
         leave={uploadModal.leave}
-        onClose={() => setUploadModal({ open: false, leave: null })}
+        existingScannedForm={uploadModal.existingScannedForm}
+        onClose={() => setUploadModal({ open: false, leave: null, existingScannedForm: null })}
         fetchLeaveHistory={fetchLeaveHistory}
       />
 
@@ -467,6 +523,3 @@ const ManageLeaveRequest = () => {
 };
 
 export default ManageLeaveRequest;
-
-
-
