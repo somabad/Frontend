@@ -541,6 +541,11 @@ const AdminLeaveHistory = () => {
                              }`}>
                                {item.status || '-'}
                              </span>
+                             {item.is_deleted && (
+                               <span className="badge bg-secondary ms-2" style={{ fontSize: '0.7em' }}>
+                                 DELETED
+                               </span>
+                             )}
                            </td>
                            <td>
                              <div style={{ display: 'flex', gap: '8px' }}>

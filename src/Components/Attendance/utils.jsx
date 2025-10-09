@@ -197,7 +197,15 @@ export const getScannedForm = async (requestId) => {
 };
 
 export const deleteLeaveApplication = async (leaveId) => {
-  const response = await axios.delete(`${BASE_URL}/manage-leave-request/${leaveId}/delete-form/`);
+  const response = await axios.delete(`${BASE_URL}/leave-application/${leaveId}/delete/`);
+  return response.data;
+};
+
+export const getManageLeaveRequest = async (statusFilter = null) => {
+  const url = statusFilter 
+    ? `${BASE_URL}/manage-leave-request/?status=${statusFilter}`
+    : `${BASE_URL}/manage-leave-request/`;
+  const response = await axios.get(url);
   return response.data;
 };
 
