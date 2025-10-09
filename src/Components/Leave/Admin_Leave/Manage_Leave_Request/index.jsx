@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, Fragment } from 'react';
 import {
   Container, Row, Col, Card, CardHeader, CardBody, Button,
@@ -6,8 +7,8 @@ import {
 import DataTable from 'react-data-table-component';
 import {
   deleteLeaveApplication,
-  getAdminLeaveHistory,
-  getScannedForm
+  getScannedForm,
+  getManageLeaveRequest
 } from '../../../Attendance/utils';
 import Loader from '../../../Attendance/Loader';
 import { useNavigate } from 'react-router-dom';
@@ -53,9 +54,9 @@ const ManageLeaveRequest = () => {
   const fetchLeaveHistory = async () => {
     try {
       setLoading(true);
-      const data = await getAdminLeaveHistory(staffId);
-      setLeaveHistory(data.leaveHistory || []);
-      setFilteredData(data.leaveHistory || []);
+      const data = await getManageLeaveRequest(); // Use the correct API for manage leave request
+      setLeaveHistory(data.leaveRequests || []);
+      setFilteredData(data.leaveRequests || []);
     } catch (err) {
       setError('Failed to load leave history');
       console.error('Error fetching leave history:', err);
