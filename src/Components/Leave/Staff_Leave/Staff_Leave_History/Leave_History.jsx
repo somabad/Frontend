@@ -5,9 +5,10 @@ import Swal from 'sweetalert2';
 import DeleteConfirmationModal from '../../common/deleteUserModal';
 import ViewLeaveModal from '../Leave_Request_Form/ViewLeaveModal';
 import EditLeaveModal from '../Leave_Request_Form/EditLeaveModal';
-import { getLeaveHistory, updateLeaveApplication, deleteLeaveApplication } from '../../../Attendance/utils';
+import { getLeaveHistory, updateLeaveApplication, deleteLeaveApplication, getScannedForm } from '../../../Attendance/utils';
+import ViewImageModal from '../../Admin_Leave/Manage_Leave_Request/ViewImageModal';
 
-const LeaveHistory = () => {
+const LeaveHistory = ({}) => {
   const [leaveApplications, setLeaveApplications] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +18,12 @@ const LeaveHistory = () => {
   const [viewModal, setViewModal] = useState({ open: false, leave: null });
   const [editModal, setEditModal] = useState({ open: false, leave: null });
   const [deleteModal, setDeleteModal] = useState({ open: false, leave: null });
+
+  const BACKEND_URL = 'http://127.0.0.1:8000';
+  const buildFileUrl = (path) => {
+    if (!path) return null;
+    return path.startsWith('http') ? path : `${BACKEND_URL}${path}`;
+  };
 
   const fetchLeaveHistory = async () => {
     try {
@@ -117,10 +124,10 @@ const LeaveHistory = () => {
     },
     {
       name: 'Approver File',
-      selector: row => row.approver_file || '-',
-      width: '120px',
+      selector: row => row.scanned_form || '-',
+      width: '100px',
       cell: row => (
-        row.status === 'Approved' && row.approver_file ? (
+        row.status === 'Approved' && row.scanned_form ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
             <button
               style={{
@@ -132,7 +139,10 @@ const LeaveHistory = () => {
                 cursor: 'pointer',
                 fontSize: '13px'
               }}
-              onClick={() => window.open(row.approver_file, '_blank')}
+              onClick={() => {
+                const url = buildFileUrl(row.scanned_form);
+                if (url) window.open(url, '_blank');
+              }}
             >
               View
             </button>

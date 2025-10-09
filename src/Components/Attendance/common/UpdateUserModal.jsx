@@ -10,6 +10,7 @@ import {
   updateStaff,
   updateStaffLocations,
   getRoleList,
+  updateCarryFowardDays,
 } from '../utils';
 import axios from 'axios'; // ADDED: For contract types API call
 
@@ -25,13 +26,15 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     locations: [],
     department: '',   // ADDED: Department field
     position: '',     // ADDED: Position field
-    contract_type_id: '' // ADDED: Contract type field
+    contract_type_id: '', // ADDED: Contract type field
+    carry_foward_days: '' //ADDED: Carry foward 
   });
 
   const [roles, setRoles] = useState([]);
   const [locations, setLocations] = useState([]);
   const [staffLocations, setStaffLocations] = useState([]);
   const [contractTypes, setContractTypes] = useState([]); // ADDED: Contract types state
+  const [carryFowardDays, setCarryFowardDays] = useState(0); //ADDED
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [loading, setLoading] = useState(false);

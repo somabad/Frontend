@@ -252,10 +252,10 @@ export const tableColumns = (onUpdateSuccess) => [
     center: true,
   },
   {
-    name: 'Carry Foward Days',
-    selector: (row) => row.carryFowardDays?? '-',
+    name: 'Carry Forward Days',
+    selector: (row) => row.carryForwardDays?? '-',
     sortable: true,
-    center: true,
+    center: true
   },
   {
     name: 'Action',

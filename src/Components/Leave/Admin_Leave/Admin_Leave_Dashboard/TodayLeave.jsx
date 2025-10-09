@@ -115,7 +115,7 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
               target="today-staff-leave-info"
               toggle={toggleTooltip}
             >
-              This section shows staff who are currently on leave today.
+              Staff who are currently on leave today.
             </Tooltip>
           </h3>
         </CardHeader>

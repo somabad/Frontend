@@ -71,12 +71,6 @@ export const updateProfile = async (staffId, updatedData) => {
   return response.data;
 };
 
-//carryfoward day for leave
-export const updateCarryFowardDays = async (staffId, updatedData) => {
-  const response = await axios.post(`${BASE_URL}/update-carry-foward-days/${staffId}/`, updatedData)
-  return response.data;
-}
-
 export const resetPassword = async (staffId, oldPassword, newPassword) => {
   const response = await axios.post(`${BASE_URL}/update-password/${staffId}/`, {
     old_password: oldPassword,
