@@ -11,6 +11,7 @@ import {
   updateStaffLocations,
   getRoleList,
 } from '../utils';
+import axios from 'axios'; // ADDED: For contract types API call
 
 const { Option } = Select;
 
@@ -22,11 +23,15 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     phone: '',
     roleId: '',
     locations: [],
+    department: '',   // ADDED: Department field
+    position: '',     // ADDED: Position field
+    contract_type_id: '' // ADDED: Contract type field
   });
 
   const [roles, setRoles] = useState([]);
   const [locations, setLocations] = useState([]);
   const [staffLocations, setStaffLocations] = useState([]);
+  const [contractTypes, setContractTypes] = useState([]); // ADDED: Contract types state
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,15 +41,18 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
 
     const fetchData = async () => {
       try {
-        const [roleData, locationRes, staffLocationData] = await Promise.all([
+        // ADDED: Fetch contract types along with other data
+        const [roleData, locationRes, staffLocationData, contractRes] = await Promise.all([
           getRoleList(),
           getLocationList(),
           getStaffLocations(),
+          axios.get('http://127.0.0.1:8000/api/contract-type-list/'), // ADDED: Contract types API
         ]);
 
         setRoles(roleData);
         setLocations(locationRes.data);
         setStaffLocations(staffLocationData);
+        setContractTypes(contractRes.data.data || contractRes.data); // ADDED: Set contract types
         setHasInitialized(false);
       } catch (err) {
         console.error('Failed to fetch data:', err);
@@ -74,6 +82,9 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
         phone: user.phone || '',
         roleId: user.roleId?.roleId || '',
         locations: selectedLocationIds,
+        department: user.department || '',       // ADDED: Initialize department
+        position: user.position || '',           // ADDED: Initialize position
+        contract_type_id: user.contract_type_id || '' // ADDED: Initialize contract type
       });
 
       setHasInitialized(true);
@@ -93,12 +104,16 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // ADDED: Include new fields in the update data
       await updateStaff(user.staffId, {
         userId: formData.userId,
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         roleId: formData.roleId,
+        department: formData.department,      // ADDED: Department
+        position: formData.position,          // ADDED: Position
+        contract_type_id: formData.contract_type_id // ADDED: Contract type
       });
 
       await updateStaffLocations(user.staffId, formData.locations);
@@ -202,6 +217,51 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
               {roles.map((role) => (
                 <option key={role.roleId} value={role.roleId}>
                   {role.name}
+                </option>
+              ))}
+            </Input>
+          </FormGroup>
+
+          {/* ADDED: Department Field */}
+          <FormGroup>
+            <Label for="department">Department</Label>
+            <Input
+              id="department"
+              type="text"
+              name="department"
+              value={formData.department}
+              onChange={handleChange}
+              placeholder="Enter department"
+            />
+          </FormGroup>
+
+          {/* ADDED: Position Field */}
+          <FormGroup>
+            <Label for="position">Position</Label>
+            <Input
+              id="position"
+              type="text"
+              name="position"
+              value={formData.position}
+              onChange={handleChange}
+              placeholder="Enter position"
+            />
+          </FormGroup>
+
+          {/* ADDED: Contract Type Field */}
+          <FormGroup>
+            <Label for="contract_type_id">Contract Type</Label>
+            <Input
+              id="contract_type_id"
+              type="select"
+              name="contract_type_id"
+              value={formData.contract_type_id}
+              onChange={handleChange}
+            >
+              <option value="">Select contract type</option>
+              {contractTypes.map(contract => (
+                <option key={contract.contract_type_id} value={contract.contract_type_id}>
+                  {contract.name}
                 </option>
               ))}
             </Input>

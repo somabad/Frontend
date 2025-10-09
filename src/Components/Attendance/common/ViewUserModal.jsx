@@ -66,6 +66,31 @@ const ViewUserModal = ({ isOpen, toggle, user }) => {
             <div>{user?.roleId?.name || '-'}</div>
           </Col>
         </Row>
+        
+        {/* ADDED: Department Field */}
+        <Row className="mb-2">
+          <Col md="6" className="d-flex">
+            <Label className="fw-bold me-2">Department:</Label>
+            <div>{user?.department || '-'}</div>
+          </Col>
+        </Row>
+        
+        {/* ADDED: Position Field */}
+        <Row className="mb-2">
+          <Col md="6" className="d-flex">
+            <Label className="fw-bold me-2">Position:</Label>
+            <div>{user?.position || '-'}</div>
+          </Col>
+        </Row>
+        
+        {/* ADDED: Contract Type Field */}
+        <Row className="mb-2">
+          <Col md="6" className="d-flex">
+            <Label className="fw-bold me-2">Contract Type:</Label>
+            <div>{user?.contract_type_id?.name || '-'}</div>
+          </Col>
+        </Row>
+
         <Row>
           <Col md="12" className="d-flex">
             <Label className="fw-bold me-2">Assigned Locations:</Label>
