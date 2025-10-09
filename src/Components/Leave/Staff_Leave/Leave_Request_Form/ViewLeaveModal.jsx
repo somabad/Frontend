@@ -50,14 +50,13 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
     document.body.innerHTML = printContents;
     window.print();
     document.body.innerHTML = originalContents;
-    window.location.reload();
-  };
+    };
 
   if (!leave) return <div>Loading...</div>; // Show loading if leave data is not available
 
   return (
     <Modal isOpen={isOpen} toggle={toggle} size="lg" centered>
-      <ModalBody id="printable-content">
+        <ModalBody id="printable-content">
         {leave && (
           <div className="p-3">
             {/* Header of Form */}

@@ -61,7 +61,10 @@ const ManageLeaveRequest = () => {
       setError('Failed to load leave history');
       console.error('Error fetching leave history:', err);
     } finally {
-      setLoading(false);
+      // longer loading time
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000); // 2 seconds delay
     }
   };
 
