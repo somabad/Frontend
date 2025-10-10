@@ -24,7 +24,7 @@ const LeaveRequest = () => {
       const allRequests = latestData?.leaveHistory || latestData || [];
       const pendingOnly = Array.isArray(allRequests)
         ? allRequests
-            .filter((r) => r.status === "Pending")
+            .filter((r) => r.status === "Pending" && !r.is_deleted)
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         : [];
       setLatestRequests(pendingOnly);

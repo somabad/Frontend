@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getStaffDashboard, applyLeave, getStaffList } from '../../../Attendance/utils';
 import Swal from 'sweetalert2';
+import { Tooltip} from 'reactstrap';
+import { AiOutlineInfoCircle } from 'react-icons/ai';
 
 const leaveTypes = [
   { value: '2', label: 'Annual Leave' },
@@ -25,6 +27,7 @@ const clean = (val) =>
     : val;
 
 const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
+  // ...existing useState declarations...
   const [staffName, setStaffName] = useState('');
   const [staffId, setStaffId] = useState('');
   const [staffPosition, setStaffPosition] = useState('');
@@ -41,6 +44,28 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [availableLeaveTypes, setAvailableLeaveTypes] = useState(leaveTypes);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+
+  // Auto-calculate totalDays when dates change
+  useEffect(() => {
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (!isNaN(start) && !isNaN(end) && end >= start) {
+        let days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        if (isHalfDay) {
+          setTotalDays('0.5');
+        } else {
+          setTotalDays(days.toString());
+        }
+      } else {
+        setTotalDays('');
+      }
+    } else {
+      setTotalDays('');
+    }
+  }, [startDate, endDate, isHalfDay]);
+
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -64,16 +89,19 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
           setStaffName(detail.name || '');
           setStaffPosition(detail.position || '');
           setStaffDepartment(detail.department || '');
+          setTotalDays(detail.totalDays || '');
         }
       }
 
-      if (data && (!staffName || !staffPosition || !staffDepartment)) {
+      if (data && (!staffName || !staffPosition || !staffDepartment || !totalDays)) {
         const resolvedName = data?.name || '';
         const resolvedPosition = data?.position || '';
         const resolvedDepartment = data?.department || '';
+        const resolvedTotalDays = data?.totalDays || '';
         setStaffName(resolvedName);
         setStaffPosition(resolvedPosition);
         setStaffDepartment(resolvedDepartment);
+        setTotalDays(resolvedTotalDays)
         // Set current timestamp when form is displayed
         setCreatedAt(new Date().toLocaleString());
       }
@@ -89,7 +117,6 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       setLeaveType('');
       setStartDate('');
       setEndDate('');
-      setTotalDays('');
       setReason('');
       setIsHalfDay(false);
       setJobTakenOverBy('');
@@ -118,6 +145,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setSubmitting(true);
     setError('');
     try {
@@ -125,17 +153,37 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       const safeLeaveType = Array.isArray(leaveType) ? leaveType[0] : leaveType;
       const safeStartDate = Array.isArray(startDate) ? startDate[0] : startDate;
       const safeEndDate = Array.isArray(endDate) ? endDate[0] : endDate;
-      const safeTotalDays = Array.isArray(totalDays) ? totalDays[0] : totalDays;
       const safeReason = Array.isArray(reason) ? reason[0] : reason;
       const safeIsHalfDay = Array.isArray(isHalfDay) ? isHalfDay[0] : isHalfDay;
       const safeJobTakenOverBy = Array.isArray(jobTakenOverBy) ? jobTakenOverBy[0] : jobTakenOverBy;
       const safeAttachment = Array.isArray(attachment) ? attachment[0] : attachment;
 
+
+      // Require leave type
+      if (!safeLeaveType) {
+        setError('Please choose leave');
+        setSubmitting(false);
+        return;
+      }
+
+      // Require start date
+      if (!safeStartDate) {
+        setError('Please select start date');
+        setSubmitting(false);
+        return;
+      }
+
+      // Require end date
+      if (!safeEndDate) {
+        setError('Please select end date');
+        setSubmitting(false);
+        return;
+      }
+
       const leaveData = {
         leave_type: clean(safeLeaveType),
         start_date: formatDate(clean(safeStartDate)),
         end_date: formatDate(clean(safeEndDate)),
-        total_days: parseFloat(clean(safeTotalDays)),
         reason: String(clean(safeReason)).trim(),
         is_half_day: isHalfDay || false,
         job_taken_over_by: String(clean(safeJobTakenOverBy)),
@@ -156,7 +204,6 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       formData.append('leave_type_id', leaveData.leave_type);
       formData.append('start_date', leaveData.start_date);
       formData.append('end_date', leaveData.end_date);
-      formData.append('total_days', leaveData.total_days);
       formData.append('reason', leaveData.reason); // Always append
       formData.append('is_half_day', leaveData.is_half_day);
       formData.append('job_taken_over_by', leaveData.job_taken_over_by);
@@ -294,11 +341,28 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                 </div>
                 <div className='mb-3'>
                   <label className='form-label'>Total Days</label>
+                  <span
+                    id="info-icon"
+                    style={{ marginLeft: '8px', cursor: 'pointer', color: '#888'}}
+                    onMouseEnter={() => setTooltipOpen(true)}
+                    onMouseLeave={() => setTooltipOpen(false)}
+                  >
+                    <AiOutlineInfoCircle size={20} />
+                  </span>
+                  <Tooltip
+                    placement='right'
+                    isOpen={tooltipOpen}
+                    target="info-icon"
+                    toggle={() => setTooltipOpen(!tooltipOpen)}
+                  >
+                    Total days will be automatically calculated based on start and end dates.
+                  </Tooltip>
+
                   <input
+                  type= 'text'
                   className='form-control'
                   value={totalDays}
-                  onChange= {e => setTotalDays(e.target.value)}
-                  required
+                  readOnly
                   />
                 </div>
                 <div className="mb-3">

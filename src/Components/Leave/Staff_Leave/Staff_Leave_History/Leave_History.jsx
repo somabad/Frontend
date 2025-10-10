@@ -18,12 +18,7 @@ const LeaveHistory = ({}) => {
   const [viewModal, setViewModal] = useState({ open: false, leave: null });
   const [editModal, setEditModal] = useState({ open: false, leave: null });
   const [deleteModal, setDeleteModal] = useState({ open: false, leave: null });
-
-  const BACKEND_URL = 'http://127.0.0.1:8000';
-  const buildFileUrl = (path) => {
-    if (!path) return null;
-    return path.startsWith('http') ? path : `${BACKEND_URL}${path}`;
-  };
+  const [imagePreview, setImagePreview] = useState({ open: false, imageUrl: null, loading: false });
 
   const fetchLeaveHistory = async () => {
     try {
@@ -41,6 +36,54 @@ const LeaveHistory = ({}) => {
   useEffect(() => {
     if (staffId) fetchLeaveHistory();
   }, [staffId]);
+
+  const closeImagePreview = () => {
+    if (imagePreview.imageUrl && imagePreview.imageUrl.startsWith('blob:')) {
+      try { URL.revokeObjectURL(imagePreview.imageUrl); } catch (e) { /* ignore */ }
+    }
+    setImagePreview({ open: false, imageUrl: null, loading: false });
+  };
+
+  const handleViewScannedForm = async (leave) => {
+    const requestId = leave?.request_id || leave;
+    if (!requestId) return;
+
+    setImagePreview({ open: true, imageUrl: null, loading: true });
+
+    try {
+      const result = await getScannedForm(requestId);
+      if (!result) throw new Error('Empty response from server');
+
+      let fileUrl = result.file_url || result.fileUrl || result.url || null;
+
+      if (!fileUrl && result instanceof Blob) {
+        const blobUrl = URL.createObjectURL(result);
+        setImagePreview({ open: true, imageUrl: blobUrl, loading: false });
+        return;
+      }
+
+      if (!fileUrl) {
+        throw new Error(result.message || 'No scanned file url returned');
+      }
+
+      const isAbsolute = /^https?:\/\//i.test(fileUrl);
+      const baseUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+      if (!isAbsolute) {
+        if (!fileUrl.startsWith('/')) fileUrl = `/${fileUrl}`;
+        fileUrl = `${baseUrl}${fileUrl}`;
+      }
+
+      setImagePreview({ open: true, imageUrl: fileUrl, loading: false });
+    } catch (err) {
+      console.error('Error loading scanned form:', err);
+      setImagePreview({ open: false, imageUrl: null, loading: false });
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err.response?.data?.error || err.message || 'Failed to load scanned form'
+      });
+    }
+  };
 
   // Columns
   const columns = [
@@ -125,7 +168,7 @@ const LeaveHistory = ({}) => {
     {
       name: 'Approver File',
       selector: row => row.scanned_form || '-',
-      width: '100px',
+      width: '120px',
       cell: row => (
         row.status === 'Approved' && row.scanned_form ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
@@ -139,10 +182,7 @@ const LeaveHistory = ({}) => {
                 cursor: 'pointer',
                 fontSize: '13px'
               }}
-              onClick={() => {
-                const url = buildFileUrl(row.scanned_form);
-                if (url) window.open(url, '_blank');
-              }}
+              onClick={() => handleViewScannedForm(row)}
             >
               View
             </button>
@@ -271,6 +311,7 @@ const LeaveHistory = ({}) => {
       {viewModal.open && <ViewLeaveModal isOpen={viewModal.open} toggle={() => setViewModal({ open: false, leave: null })} leave={viewModal.leave} isAdmin={false} />}
       {editModal.open && <EditLeaveModal isOpen={editModal.open} toggle={() => setEditModal({ open: false, leave: null })} leave={editModal.leave} onSave={fetchLeaveHistory} updateLeaveApplication={updateLeaveApplication} Swal={Swal} />}
       {deleteModal.open && <DeleteConfirmationModal isOpen={deleteModal.open} toggle={() => setDeleteModal({ open: false, leave: null })} onConfirm={handleDelete} userName={`${deleteModal.leave?.leave_type} (${deleteModal.leave?.start_date} to ${deleteModal.leave?.end_date})`} />}
+      <ViewImageModal isOpen={imagePreview.open} imageUrl={imagePreview.imageUrl} loading={imagePreview.loading} onClose={closeImagePreview} />
     </Fragment>
   );
 };
