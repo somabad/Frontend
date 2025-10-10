@@ -7,6 +7,7 @@ import ViewLeaveModal from '../Leave_Request_Form/ViewLeaveModal';
 import EditLeaveModal from '../Leave_Request_Form/EditLeaveModal';
 import { getLeaveHistory, updateLeaveApplication, deleteLeaveApplication, getScannedForm } from '../../../Attendance/utils';
 import ViewImageModal from '../../Admin_Leave/Manage_Leave_Request/ViewImageModal';
+import Loader from '../../../Attendance/Loader';
 
 const LeaveHistory = ({}) => {
   const [leaveApplications, setLeaveApplications] = useState([]);
@@ -29,7 +30,10 @@ const LeaveHistory = ({}) => {
     } catch (err) {
       console.error('Error fetching leave history:', err);
     } finally {
-      setLoading(false);
+      // Add delay to show loader longer
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000); // 2 seconds delay
     }
   };
 
@@ -228,6 +232,8 @@ const LeaveHistory = ({}) => {
     }
   };
 
+  if (loading) return <Loader />;
+
   return (
     <Fragment>
       <Container fluid style={{ paddingTop: '30px' }}>
@@ -292,7 +298,6 @@ const LeaveHistory = ({}) => {
                   striped
                   highlightOnHover
                   responsive
-                  progressPending={loading}
                   noDataComponent={<div style={{ fontSize: '1.3rem', padding: '2rem', textAlign: 'center' }}>
                     {leaveApplications.length === 0 ? 'No leave history found.' : 'No records match the current filter criteria.'}
                   </div>}

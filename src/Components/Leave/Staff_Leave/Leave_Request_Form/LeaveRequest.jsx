@@ -6,6 +6,7 @@ import EditLeaveModal from "../Leave_Request_Form/EditLeaveModal";
 import DeleteConfirmationModal from "../../common/deleteUserModal";
 import { getLeaveHistory, getLeaveBalance, deleteLeaveApplication } from "../../../Attendance/utils";
 import Swal from "sweetalert2";
+import Loader from "../../../Attendance/Loader";
 
 const LeaveRequest = () => {
   const staffId = sessionStorage.getItem("staffId");
@@ -16,10 +17,12 @@ const LeaveRequest = () => {
   const [viewModal, setViewModal] = useState({ open: false, leave: null });
   const [editModal, setEditModal] = useState({ open: false, leave: null });
   const [deleteModal, setDeleteModal] = useState({ open: false, leave: null });
+  const [loading, setLoading] = useState(true);
 
   // Fetch pending requests (all, newest first) & balance
   const fetchData = async () => {
     try {
+      setLoading(true);
       const latestData = await getLeaveHistory(staffId);
       const allRequests = latestData?.leaveHistory || latestData || [];
       const pendingOnly = Array.isArray(allRequests)
@@ -33,6 +36,11 @@ const LeaveRequest = () => {
       setBalanceByType(balanceData);
     } catch (err) {
       console.error("Error fetching data:", err);
+    } finally {
+      // Add delay to show loader longer
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000); // 2 seconds delay
     }
   };
 
@@ -60,6 +68,8 @@ const LeaveRequest = () => {
       Swal.fire({ icon: "error", title: "Delete failed", text: err.response?.data?.error || "Something went wrong." });
     }
   };
+
+  if (loading) return <Loader />;
 
   return (
     <Fragment>
