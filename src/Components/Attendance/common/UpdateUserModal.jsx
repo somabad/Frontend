@@ -10,7 +10,6 @@ import {
   updateStaff,
   updateStaffLocations,
   getRoleList,
-  updateCarryFowardDays,
 } from '../utils';
 import axios from 'axios'; // ADDED: For contract types API call
 
@@ -26,18 +25,20 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     locations: [],
     department: '',   // ADDED: Department field
     position: '',     // ADDED: Position field
-    contract_type_id: '', // ADDED: Contract type field
-    carry_foward_days: '' //ADDED: Carry foward 
+    contract_type_id: '' // ADDED: Contract type field
   });
 
   const [roles, setRoles] = useState([]);
   const [locations, setLocations] = useState([]);
   const [staffLocations, setStaffLocations] = useState([]);
   const [contractTypes, setContractTypes] = useState([]); // ADDED: Contract types state
-  const [carryFowardDays, setCarryFowardDays] = useState(0); //ADDED
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
+  // ADDED: State for leave types and carry forward days
+  const [leaveTypes, setLeaveTypes] = useState([]);
+  const [carryForwardDays, setCarryForwardDays] = useState({});
+  const [currentLeaveBalances, setCurrentLeaveBalances] = useState({});
 
   useEffect(() => {
     if (!modal) return;
@@ -64,6 +65,73 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
 
     fetchData();
   }, [modal]);
+
+  // ADDED: Fetch leave types when contract type is selected OR when user has existing contract type
+  useEffect(() => {
+    const fetchLeaveTypes = async () => {
+      // CHANGED: Check both form data AND user's existing contract type
+      const contractTypeId = formData.contract_type_id || (user && user.contract_type_id);
+      
+      if (contractTypeId) {
+        try {
+          const response = await axios.get(`http://127.0.0.1:8000/api/contract-type-leave-entitlements/${contractTypeId}/`);
+          console.log('Leave types response:', response.data);
+          
+          const leaveData = response.data.data || response.data;
+          setLeaveTypes(Array.isArray(leaveData) ? leaveData : []);
+          
+          // Initialize carry forward days with current values or 0
+          const initialCarryForward = {};
+          if (Array.isArray(leaveData)) {
+            leaveData.forEach(leaveType => {
+              // Use current balance if available, otherwise 0
+              initialCarryForward[leaveType.leave_type_id] = currentLeaveBalances[leaveType.leave_type_id] || 0;
+            });
+          }
+          setCarryForwardDays(initialCarryForward);
+        } catch (err) {
+          console.error('Failed to fetch leave types:', err);
+          setLeaveTypes([]);
+          setCarryForwardDays({});
+        }
+      } else {
+        setLeaveTypes([]);
+        setCarryForwardDays({});
+      }
+    };
+
+    fetchLeaveTypes();
+  }, [formData.contract_type_id, user]); // CHANGED: Added user dependency
+
+  // ADDED: Fetch current leave balances when user data is loaded
+  useEffect(() => {
+    const fetchCurrentLeaveBalances = async () => {
+      if (user && user.staffId) {
+        try {
+          const currentYear = new Date().getFullYear();
+          const response = await axios.get(`http://127.0.0.1:8000/api/staff/${user.staffId}/leave-balance/?year=${currentYear}`);
+          console.log('Current leave balances:', response.data);
+          
+          const balances = {};
+          if (Array.isArray(response.data)) {
+            response.data.forEach(balance => {
+              if (balance.leave_type_id) {
+                balances[balance.leave_type_id.leave_type_id || balance.leave_type_id] = balance.carry_forward_days || 0;
+              }
+            });
+          }
+          setCurrentLeaveBalances(balances);
+        } catch (err) {
+          console.error('Failed to fetch current leave balances:', err);
+          setCurrentLeaveBalances({});
+        }
+      }
+    };
+
+    if (user && user.staffId) {
+      fetchCurrentLeaveBalances();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (modal) {
@@ -103,6 +171,14 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     setFormData((prev) => ({ ...prev, locations: value }));
   };
 
+  // ADDED: Handle carry forward days input change
+  const handleCarryForwardChange = (leaveTypeId, value) => {
+    setCarryForwardDays(prev => ({
+      ...prev,
+      [leaveTypeId]: parseFloat(value) || 0
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -120,6 +196,41 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
       });
 
       await updateStaffLocations(user.staffId, formData.locations);
+
+      // ADDED: Update carry forward days if contract type is selected and there are leave types
+      // CHANGED: Check both form data AND user's existing contract type
+      const contractTypeId = formData.contract_type_id || (user && user.contract_type_id);
+      if (contractTypeId && leaveTypes.length > 0) {
+        try {
+          const currentYear = new Date().getFullYear();
+          const carryForwardData = Object.keys(carryForwardDays).map(leaveTypeId => ({
+            leave_type_id: leaveTypeId,
+            days: carryForwardDays[leaveTypeId]
+          }));
+
+          console.log('Updating carry forward days:', {
+            staffId: user.staffId,
+            year: currentYear,
+            carryForwardData
+          });
+
+          await axios.post(`http://127.0.0.1:8000/api/staff/${user.staffId}/set-carry-forward/`, {
+            year: currentYear,
+            carry_forward_days: carryForwardData
+          });
+
+          console.log('Carry forward days updated successfully');
+        } catch (carryForwardError) {
+          console.error('Error updating carry forward days:', carryForwardError);
+          // Don't fail the entire operation if carry forward update fails
+          Swal.fire({
+            icon: 'warning',
+            title: 'User Updated with Warning',
+            text: `User was updated successfully but there was an issue updating carry forward days: ${carryForwardError.message}`,
+            confirmButtonText: 'OK'
+          });
+        }
+      }
 
       toggle(); // close the modal
 
@@ -269,6 +380,33 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
               ))}
             </Input>
           </FormGroup>
+
+          {/* ADDED: Carry Forward Days Input for Each Leave Type */}
+          {/* CHANGED: Show immediately if user has existing contract type OR new contract type selected */}
+          {(formData.contract_type_id || (user && user.contract_type_id)) && leaveTypes.length > 0 && (
+            <FormGroup>
+              <Label>Carry Forward Days (Current Year: {new Date().getFullYear()})</Label>
+              {leaveTypes.map(leaveType => (
+                <FormGroup key={leaveType.leave_type_id} style={{ marginBottom: '15px' }}>
+                  <Label for={`carry-forward-${leaveType.leave_type_id}`} style={{ fontSize: '14px', marginBottom: '5px' }}>
+                    {leaveType.leave_name} (Entitled: {leaveType.entitled_days} days)
+                  </Label>
+                  <Input
+                    type="number"
+                    id={`carry-forward-${leaveType.leave_type_id}`}
+                    step="0.5"
+                    min="0"
+                    value={carryForwardDays[leaveType.leave_type_id] || 0}
+                    onChange={(e) => handleCarryForwardChange(leaveType.leave_type_id, e.target.value)}
+                    placeholder="Enter carry forward days"
+                  />
+                  <small className="text-muted">
+                    Current: {currentLeaveBalances[leaveType.leave_type_id] || 0} days
+                  </small>
+                </FormGroup>
+              ))}
+            </FormGroup>
+          )}
 
           <FormGroup>
             <Label>Locations</Label>

@@ -18,7 +18,6 @@ import LeaveRequest from "../Components/Leave/Staff_Leave/Leave_Request_Form/Lea
 import LeaveHistory  from "../Components/Leave/Staff_Leave/Staff_Leave_History/Leave_History";
 
 
-
 export const routes = [
 
   //admin

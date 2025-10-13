@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getStaffDashboard, applyLeave, getStaffList } from '../../../Attendance/utils';
+import { getStaffDashboard, applyLeave, getStaffList, getLeaveBalance, getLeaveTypeList } from '../../../Attendance/utils';
 import Swal from 'sweetalert2';
 import { Tooltip} from 'reactstrap';
 import { AiOutlineInfoCircle } from 'react-icons/ai';
@@ -44,6 +44,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [availableLeaveTypes, setAvailableLeaveTypes] = useState(leaveTypes);
+  const [leaveBalances, setLeaveBalances] = useState({});
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
   // Auto-calculate totalDays when dates change
@@ -76,11 +77,13 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       
       setStaffId(currentStaffId);
       // Prefer detail from staff list for consistent shape
-      const [list, data] = await Promise.all([
+      const [list, data, balanceData, leaveTypesFromAPI] = await Promise.all([
         getStaffList().catch(() => null),
-        getStaffDashboard(currentStaffId).catch(() => null)
+        getStaffDashboard(currentStaffId).catch(() => null),
+        getLeaveBalance(currentStaffId).catch(() => null),
+        getLeaveTypeList().catch(() => null)
       ]);
-      console.log("API.Response:", { list, dashboard: data });
+      console.log("API.Response:", { list, dashboard: data, balances: balanceData, leaveTypesFromAPI });
       
       // Set staff details from API response
       if (list && Array.isArray(list)) {
@@ -105,6 +108,58 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
         // Set current timestamp when form is displayed
         setCreatedAt(new Date().toLocaleString());
       }
+
+      // Use leave types from API if available, otherwise fall back to static list
+      const leaveTypesToFilter = leaveTypesFromAPI && Array.isArray(leaveTypesFromAPI) ? leaveTypesFromAPI : leaveTypes;
+      console.log("Leave types to filter:", leaveTypesToFilter);
+
+      // Set leave balances and filter available leave types
+      if (balanceData) {
+        setLeaveBalances(balanceData);
+        console.log("Raw balance data:", balanceData);
+        console.log("Balance data keys:", Object.keys(balanceData));
+        
+        // Create a mapping between leave type labels and balance data keys
+        const leaveTypeMapping = {
+          'Annual Leave': 'Annual',
+          'Medical Certificate': 'MC',
+          'Unpaid Leave': 'Unpaid',
+          'Compassionate Leave': 'Compassionate'
+        };
+        
+        // Filter leave types to only show those with remaining balance > 0
+        const filteredLeaveTypes = leaveTypesToFilter.filter(leaveType => {
+          const leaveTypeName = leaveType.label || leaveType.name;
+          console.log(`Looking for balance data for: "${leaveTypeName}"`);
+          
+          // Use mapping to find the correct balance key
+          const balanceKey = leaveTypeMapping[leaveTypeName] || leaveTypeName;
+          const balance = balanceData[balanceKey];
+          
+          console.log(`Mapped "${leaveTypeName}" to balance key "${balanceKey}"`);
+          console.log(`Checking ${leaveTypeName}:`, balance);
+          
+          // If no balance data for this type, assume it's available (e.g., types not tracked)
+          if (!balance) {
+            console.log(`No balance data for ${leaveTypeName}, keeping it available`);
+            return true;
+          }
+          
+          // Only show if remaining balance > 0
+          const remainingDays = Number(balance.remaining || 0);
+          console.log(`${leaveTypeName} has ${remainingDays} remaining days`);
+          const shouldShow = remainingDays > 0;
+          console.log(`${leaveTypeName} will be ${shouldShow ? 'SHOWN' : 'HIDDEN'}`);
+          return shouldShow;
+        });
+        
+        setAvailableLeaveTypes(filteredLeaveTypes);
+        console.log("Filtered leave types:", filteredLeaveTypes);
+      } else {
+        console.log("No balance data available, showing all leave types");
+        // If no balance data available, show all leave types
+        setAvailableLeaveTypes(leaveTypesToFilter);
+      }
     } catch (err) {
       setError("Failed to load staff data");
       console.error(err);
@@ -122,6 +177,8 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       setJobTakenOverBy('');
       setAttachment(null);
       setError('');
+      setAvailableLeaveTypes(leaveTypes); // Reset to all leave types initially
+      setLeaveBalances({}); // Clear previous balance data
     }
     fetchData();
   }, [isOpen]);
@@ -158,6 +215,13 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       const safeJobTakenOverBy = Array.isArray(jobTakenOverBy) ? jobTakenOverBy[0] : jobTakenOverBy;
       const safeAttachment = Array.isArray(attachment) ? attachment[0] : attachment;
 
+
+      // Check if any leave types are available
+      if (availableLeaveTypes.length === 0) {
+        setError('No leave types available. You have used all your allocated leave days.');
+        setSubmitting(false);
+        return;
+      }
 
       // Require leave type
       if (!safeLeaveType) {
@@ -324,10 +388,33 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                     required
                   >
                     <option value="" disabled>Select leave type</option>
-                    {leaveTypes.map(type => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
-                    ))}
+                    {availableLeaveTypes.map(type => {
+                      const leaveTypeName = type.label || type.name;
+                      
+                      // Use the same mapping as in the filtering logic
+                      const leaveTypeMapping = {
+                        'Annual Leave': 'Annual',
+                        'Medical Certificate': 'MC',
+                        'Unpaid Leave': 'Unpaid',
+                        'Compassionate Leave': 'Compassionate'
+                      };
+                      
+                      const balanceKey = leaveTypeMapping[leaveTypeName] || leaveTypeName;
+                      const balance = leaveBalances[balanceKey];
+                      
+                      return (
+                        <option key={type.value || type.id} value={type.value || type.id}>
+                          {leaveTypeName}
+                          {balance && ` (${balance.remaining} days remaining)`}
+                        </option>
+                      );
+                    })}
                   </select>
+                  {availableLeaveTypes.length === 0 && (
+                    <div className="form-text text-warning">
+                      No leave types available. You have used all your allocated leave days.
+                    </div>
+                  )}
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Reason</label>
@@ -338,6 +425,30 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                     required
                     rows={3}
                   />
+                <div className="mb-3">
+                  <label className="form-label">Start Date</label>
+                  <input
+                    type="date"
+                    name="start_date"
+                    className="form-control"
+                    value={startDate}
+                    onChange={e => setStartDate(e.target.value)}
+                    required
+                    min={today}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">End Date</label>
+                  <input
+                    type="date"
+                    name="end_date"
+                    className="form-control"
+                    value={endDate}
+                    onChange={e => setEndDate(e.target.value)}
+                    required
+                    min={today}
+                  />
+                </div>
                 </div>
                 <div className='mb-3'>
                   <label className='form-label'>Total Days</label>
@@ -363,30 +474,6 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   className='form-control'
                   value={totalDays}
                   readOnly
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Start Date</label>
-                  <input
-                    type="date"
-                    name="start_date"
-                    className="form-control"
-                    value={startDate}
-                    onChange={e => setStartDate(e.target.value)}
-                    required
-                    min={today}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">End Date</label>
-                  <input
-                    type="date"
-                    name="end_date"
-                    className="form-control"
-                    value={endDate}
-                    onChange={e => setEndDate(e.target.value)}
-                    required
-                    min={today}
                   />
                 </div>
                 <div className='mb-3'>
@@ -438,9 +525,9 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                 type="button"
                 className="btn btn-primary"
                 onClick={handleSubmit}
-                disabled={submitting}
+                disabled={submitting || availableLeaveTypes.length === 0}
               >
-                {submitting ? 'Submitting...' : 'Submit'}
+                {submitting ? 'Submitting...' : availableLeaveTypes.length === 0 ? 'No Leave Available' : 'Submit'}
               </button>
             </div>
           </div>
