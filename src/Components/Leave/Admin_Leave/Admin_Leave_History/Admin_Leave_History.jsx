@@ -142,47 +142,12 @@ const AdminLeaveHistory = () => {
           >
             <i className='fa fa-eye' style={{ color: '#555' }} />
           </button>
-          <button
-            title='Archive'
-            onClick={() => handleArchive(row)}
-            style={{ border: 'none', background: 'none', cursor: 'pointer' }}
-          >
-            <i className='fa fa-archive' style={{ color: '#555' }} />
-          </button>
         </div>
       ),
       width: '90px'
     }
   ];
 
-  // Archive handler and confirmation modal
-  const [archived, setArchived] = useState(() => {
-    const savedArchived = localStorage.getItem('archivedLeaveRequests');
-    return savedArchived ? JSON.parse(savedArchived) : [];
-  });
-  const [archiveModal, setArchiveModal] = useState({ open: false, leave: null });
-  const [archiveLoading, setArchiveLoading] = useState(false);
-  const handleArchive = (row) => {
-    setArchiveModal({ open: true, leave: row });
-  };
-  const confirmArchive = () => {
-    setArchiveLoading(true);
-    setTimeout(() => {
-      const row = archiveModal.leave;
-      if (row) {
-        const newArchived = [...archived, row];
-        setArchived(newArchived);
-        localStorage.setItem('archivedLeaveRequests', JSON.stringify(newArchived));
-        setLeaveHistory(prev => prev.filter(item => item.request_id !== row.request_id));
-        setFilteredData(prev => prev.filter(item => item.request_id !== row.request_id));
-      }
-      setArchiveModal({ open: false, leave: null });
-      setArchiveLoading(false);
-    }, 1000);
-  };
-  const cancelArchive = () => {
-    setArchiveModal({ open: false, leave: null });
-  };
 
   // View modal state and handler
   const [viewModal, setViewModal] = useState({ open: false, leave: null });
@@ -190,8 +155,6 @@ const AdminLeaveHistory = () => {
     setViewModal({ open: true, leave: row });
   };
 
-  // Archived modal state
-  const [archivedModal, setArchivedModal] = useState(false);
 
   // Fetch leave history data
   const fetchLeaveHistory = async () => {
@@ -200,12 +163,8 @@ const AdminLeaveHistory = () => {
       const data = await getAdminLeaveHistory(staffId);
       const allHistory = data.leaveHistory || [];
       
-      // Filter out archived items
-      const archivedIds = archived.map(item => item.request_id);
-      const filteredHistory = allHistory.filter(item => !archivedIds.includes(item.request_id));
-      
-      setLeaveHistory(filteredHistory);
-      setFilteredData(filteredHistory);
+      setLeaveHistory(allHistory);
+      setFilteredData(allHistory);
     } catch (err) {
       setError('Failed to load leave history');
       console.error('Error fetching leave history:', err);
@@ -279,7 +238,7 @@ const AdminLeaveHistory = () => {
     } else {
       fetchLeaveHistory();
     }
-  }, [staffId, navigate, archived]);
+  }, [staffId, navigate]);
 
   if (loading) {
     return <Loader />;
@@ -304,15 +263,6 @@ const AdminLeaveHistory = () => {
                   >
                     <i className="fa fa-filter"></i>
                     Filter
-                  </Button>
-                  <Button
-                    color="secondary"
-                    size="sm"
-                    onClick={() => setArchivedModal(true)}
-                    className="d-flex align-items-center gap-2"
-                  >
-                    <i className="fa fa-archive"></i>
-                    View Archived
                   </Button>
                 </div>
               </CardHeader>
@@ -449,139 +399,6 @@ const AdminLeaveHistory = () => {
         />
       )}
 
-      {/* Archive Confirmation*/}
-      {archiveModal.open && (
-        <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ background: 'rgba(0,0,0,0.3)' }}>
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header bg-warning text-dark">
-                <h5 className="modal-title">Archive Confirmation</h5>
-                <button type="button" className="btn-close" onClick={cancelArchive}></button>
-              </div>
-              <div className="modal-body">
-                {archiveLoading ? (
-                  <div className="text-center py-4">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                    <div>Processing...</div>
-                  </div>
-                ) : (
-                  <p>Are you sure you want to archive this record?</p>
-                )}
-              </div>
-              <div className="modal-footer">
-                {!archiveLoading && (
-                  <>
-                    <button className="btn btn-secondary" onClick={cancelArchive}>Cancel</button>
-                    <button className="btn btn-warning" onClick={confirmArchive}>Yes, Archive</button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Archived Modal */}
-      {archivedModal && (
-        <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ background: 'rgba(0,0,0,0.3)' }}>
-          <div className="modal-dialog" role="document" style={{ maxWidth: '95vw', width: '95vw', height: '90vh', margin: '2.5vh auto' }}>
-            <div className="modal-content" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <div className="modal-header bg-secondary text-white">
-                <h5 className="modal-title">Archived Leave Requests</h5>
-                <button type="button" className="btn-close" onClick={() => setArchivedModal(false)}></button>
-              </div>
-              <div className="modal-body" style={{ flex: 1, overflow: 'auto', padding: 0 }}>
-                {archiveLoading ? (
-                  <div className="text-center py-4" style={{ padding: '2rem' }}>
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                    <div>Processing...</div>
-                  </div>
-                ) : archived.length === 0 ? (
-                  <div className="text-center py-4" style={{ padding: '2rem' }}>No archived records.</div>
-                ) : (
-                   <table className="table table-bordered table-striped">
-                     <thead>
-                       <tr>
-                         <th>Name</th>
-                         <th>Department</th>
-                         <th>Position</th>
-                         <th>Applied Date</th>
-                         <th>From</th>
-                         <th>To</th>
-                         <th>Total Days</th>
-                         <th>Leave Type</th>
-                         <th>Taken Over By</th>
-                         <th>Reason</th>
-                         <th>Status</th>
-                         <th>Action</th>
-                       </tr>
-                     </thead>
-                     <tbody>
-                       {archived.map((item, idx) => (
-                         <tr key={idx}>
-                           <td>{item.staff_name}</td>
-                           <td>{item.staff_department || '-'}</td>
-                           <td>{item.staff_position || '-'}</td>
-                           <td>{item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}</td>
-                           <td>{item.start_date ? new Date(item.start_date).toLocaleDateString() : '-'}</td>
-                           <td>{item.end_date ? new Date(item.end_date).toLocaleDateString() : '-'}</td>
-                           <td>{item.total_days || '-'}</td>
-                           <td>{item.leave_type}</td>
-                           <td>{item.job_taken_over_by || '-'}</td>
-                           <td>{item.reason || '-'}</td>
-                           <td>
-                             <span className={`fw-bold ${
-                               item.status?.toLowerCase() === 'approved' ? 'text-success' :
-                               item.status?.toLowerCase() === 'rejected' ? 'text-danger' :
-                               item.status?.toLowerCase() === 'pending' ? 'text-warning' : 'text-muted'
-                             }`}>
-                               {item.status || '-'}
-                             </span>
-                             {item.is_deleted && (
-                               <span className="badge bg-secondary ms-2" style={{ fontSize: '0.7em' }}>
-                                 DELETED
-                               </span>
-                             )}
-                           </td>
-                           <td>
-                             <div style={{ display: 'flex', gap: '8px' }}>
-                               <button
-                                 title='View'
-                                 onClick={() => setViewModal({ open: true, leave: item })}
-                                 style={{ border: 'none', background: 'none', cursor: 'pointer' }}
-                               >
-                                 <i className='fa fa-eye' style={{ color: '#555' }} />
-                               </button>
-                               <button className="btn btn-success btn-sm" onClick={() => {
-                                 setArchiveLoading(true);
-                                 setTimeout(() => {
-                                   const newArchived = archived.filter(a => a.request_id !== item.request_id);
-                                   setArchived(newArchived);
-                                   localStorage.setItem('archivedLeaveRequests', JSON.stringify(newArchived));
-                                   setLeaveHistory(prev => [...prev, item]);
-                                   setFilteredData(prev => [...prev, item]);
-                                   setArchiveLoading(false);
-                                 }, 1000);
-                               }}>Unarchive</button>
-                             </div>
-                           </td>
-                         </tr>
-                       ))}
-                     </tbody>
-                   </table>
-                )}
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setArchivedModal(false)}>Close</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };
