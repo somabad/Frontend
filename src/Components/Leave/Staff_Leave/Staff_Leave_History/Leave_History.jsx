@@ -8,8 +8,9 @@ import EditLeaveModal from '../Leave_Request_Form/EditLeaveModal';
 import { getLeaveHistory, updateLeaveApplication, deleteLeaveApplication, getScannedForm } from '../../../Attendance/utils';
 import ViewImageModal from '../../Admin_Leave/Manage_Leave_Request/ViewImageModal';
 import Loader from '../../../Attendance/Loader';
+import dayjs from 'dayjs';
 
-const LeaveHistory = ({}) => {
+const LeaveHistory = ({staffLeave}) => {
   const [leaveApplications, setLeaveApplications] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +21,12 @@ const LeaveHistory = ({}) => {
   const [editModal, setEditModal] = useState({ open: false, leave: null });
   const [deleteModal, setDeleteModal] = useState({ open: false, leave: null });
   const [imagePreview, setImagePreview] = useState({ open: false, imageUrl: null, loading: false });
+
+  const FilteredData = filteredData
+    ?.sort((a, b) => {
+      const timeDiff = dayjs(b.created_at).valueOf() - dayjs(a.created_at).valueOf();
+      return timeDiff !== 0 ? timeDiff : b.request_id - a.request_id;
+  }) || [];
 
   const fetchLeaveHistory = async () => {
     try {
@@ -136,7 +143,6 @@ const LeaveHistory = ({}) => {
           switch(status) {
             case 'Approved': return 'text-success';
             case 'Rejected': return 'text-danger';
-            case 'Pending': return 'text-warning';
             default: return '';
           }
         };
@@ -293,7 +299,7 @@ const LeaveHistory = ({}) => {
               <CardBody className="p-0">
                 <DataTable
                   columns={columns}
-                  data={filteredData}
+                  data={FilteredData.filter(item => item.status !== 'Pending')}
                   pagination
                   striped
                   highlightOnHover

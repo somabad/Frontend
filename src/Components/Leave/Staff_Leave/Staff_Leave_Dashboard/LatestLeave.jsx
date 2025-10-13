@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import { Col, Card, CardHeader, Tooltip } from 'reactstrap';
 import DataTable from 'react-data-table-component';
 import { AiOutlineInfoCircle } from 'react-icons/ai';
+import dayjs from 'dayjs';
 
 const LatestLeave = ({ staffLeave, loading, error }) => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
@@ -9,7 +10,10 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
   const toggleTooltip = () => setTooltipOpen(!tooltipOpen);
 
   const latestRequests = staffLeave
-    ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) || [];
+    ?.sort((a, b) => {
+      const timeDiff = dayjs(b.created_at).valueOf() - dayjs(a.created_at).valueOf();
+      return timeDiff !== 0 ? timeDiff : b.request_id - a.request_id;
+  }) || [];
 
   const columns = [
     {
