@@ -220,7 +220,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                   <Label><b>Jenis cuti:</b> 
                   <br />
                   (Sila tandakan pada kotak berkenaan)</Label>
-                  <div className="mt-2">
+                  <div className="mt-2" style={{fontSize:'12px'}}>
                     {(() => {
                       const selectedType = (leave.leave_type || '').toLowerCase();
                       const types = [
@@ -427,7 +427,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
               <Col md="12">
                 <div>
                   <Label><b>Nota:</b></Label>
-                  <ul style={{ fontSize: '12px', marginTop: '5px', padding: '0 15px' }}>
+                  <ul style={{ fontSize: '10px', marginTop: '5px', padding: '0 15px' }}>
                     <li>Permohonan cuti hendaklah dipohon sekurang-kurangnya 4 hari sebelum cuti kecuali ada kecemasan.</li>
                     <li>Kelayakan cuti kecemasan hanya satu hari kecuali yang melibatkan perjalanan keluar daerah.</li>
                   </ul>
