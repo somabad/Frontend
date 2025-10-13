@@ -347,7 +347,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                     onMouseEnter={() => setTooltipOpen(true)}
                     onMouseLeave={() => setTooltipOpen(false)}
                   >
-                    <AiOutlineInfoCircle size={20} />
+                    <AiOutlineInfoCircle size={16} />
                   </span>
                   <Tooltip
                     placement='right'

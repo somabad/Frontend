@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col } from "reactstrap";
+import { Container, Row, Col, Button } from "reactstrap";
 import WidgetsWraper from "../Staff_Leave_Dashboard/WidgetsWraper";
 import LatestLeave from "../Staff_Leave_Dashboard/LatestLeave";
 import { getStaffLeaveDashboard } from "../../../Attendance/utils"
@@ -62,12 +62,32 @@ const StaffLeaveDashboard = () => {
     }
   }, [staffId, navigate]);  // Add navigate to dependency array
 
+  // Auto-refresh data every 30 seconds
+  useEffect(() => {
+    if (staffId) {
+      const interval = setInterval(() => {
+        console.log("Auto-refreshing staff dashboard data...");
+        fetchData();
+      }, 30000); // 30 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [staffId]);
+
   return (
     <>
       {loading && <Loader />}
       {!loading && (
         <div fluid={true} style={{ paddingTop: "30px" }}>
           <Container fluid={true}>
+            <Row className="mb-3">
+              <Col xl="12">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h4>Leave Dashboard</h4>
+
+              </div>
+              </Col>
+            </Row>
             <Row className="widget-grid">
               <Col xl="12">
                 <WidgetsWraper
