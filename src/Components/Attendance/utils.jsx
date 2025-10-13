@@ -64,17 +64,25 @@ export const getContractTypeList = async () => {
   return response.data;
 };
 
-// Get leave entitlements for a contract type
+// Get contract type leave entitlements
 export const getContractTypeLeaveEntitlements = async (contractTypeId) => {
   const response = await axios.get(`${BASE_URL}/contract-type-leave-entitlements/${contractTypeId}/`);
   return response.data;
 };
 
-// Set carry forward days for a staff member
+// Set carry forward days for staff
 export const setStaffCarryForward = async (staffId, carryForwardData) => {
   const response = await axios.post(`${BASE_URL}/staff/${staffId}/set-carry-forward/`, carryForwardData);
   return response.data;
 };
+
+// Get staff leave balance
+export const getStaffLeaveBalance = async (staffId, year = null) => {
+  const url = year ? `${BASE_URL}/staff/${staffId}/leave-balance/?year=${year}` : `${BASE_URL}/staff/${staffId}/leave-balance/`;
+  const response = await axios.get(url);
+  return response.data;
+};
+
 
 //###
 

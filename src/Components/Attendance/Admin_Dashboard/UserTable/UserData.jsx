@@ -252,12 +252,6 @@ export const tableColumns = (onUpdateSuccess) => [
     center: true,
   },
   {
-    name: 'Carry Forward Days',
-    selector: (row) => row.carryForwardDays?? '-',
-    sortable: true,
-    center: true
-  },
-  {
     name: 'Action',
     cell: (row) => <ActionButtons row={row} onUpdateSuccess={onUpdateSuccess} />,
   },

@@ -425,6 +425,30 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                     required
                     rows={3}
                   />
+                <div className="mb-3">
+                  <label className="form-label">Start Date</label>
+                  <input
+                    type="date"
+                    name="start_date"
+                    className="form-control"
+                    value={startDate}
+                    onChange={e => setStartDate(e.target.value)}
+                    required
+                    min={today}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">End Date</label>
+                  <input
+                    type="date"
+                    name="end_date"
+                    className="form-control"
+                    value={endDate}
+                    onChange={e => setEndDate(e.target.value)}
+                    required
+                    min={today}
+                  />
+                </div>
                 </div>
                 <div className='mb-3'>
                   <label className='form-label'>Total Days</label>
@@ -450,30 +474,6 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   className='form-control'
                   value={totalDays}
                   readOnly
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Start Date</label>
-                  <input
-                    type="date"
-                    name="start_date"
-                    className="form-control"
-                    value={startDate}
-                    onChange={e => setStartDate(e.target.value)}
-                    required
-                    min={today}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">End Date</label>
-                  <input
-                    type="date"
-                    name="end_date"
-                    className="form-control"
-                    value={endDate}
-                    onChange={e => setEndDate(e.target.value)}
-                    required
-                    min={today}
                   />
                 </div>
                 <div className='mb-3'>
