@@ -10,9 +10,6 @@ import {
   updateStaff,
   updateStaffLocations,
   getRoleList,
-  // ADDED: Import the utility functions
-  getContractTypeLeaveEntitlements,
-  setStaffCarryForward
 } from '../utils';
 import axios from 'axios'; // ADDED: For contract types API call
 
@@ -38,11 +35,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
-  
-  // ADDED: State for leave types and carry forward days
-  const [leaveTypes, setLeaveTypes] = useState([]);
-  const [carryForwardDays, setCarryForwardDays] = useState({});
-  const [currentYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     if (!modal) return;
@@ -70,131 +62,9 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     fetchData();
   }, [modal]);
 
-  // ADDED: Fetch leave types when contract type is selected or when user has existing contract
-  useEffect(() => {
-    const fetchLeaveTypesAndBalances = async () => {
-      const contractTypeId = formData.contract_type_id;
-      console.log('Fetching leave types for contract:', contractTypeId); // DEBUG
-      
-      if (contractTypeId) {
-        try {
-          // CHANGED: Use the utility function instead of direct axios call
-          const leaveResponse = await getContractTypeLeaveEntitlements(contractTypeId);
-          console.log('Leave types response:', leaveResponse); // DEBUG
-          
-          const leaveData = leaveResponse.data || leaveResponse;
-          setLeaveTypes(Array.isArray(leaveData) ? leaveData : []);
-          
-          // If user exists and has staffId, fetch current leave balances
-          if (user?.staffId) {
-            try {
-              // CHANGED: Use the existing get_leave_balance endpoint
-              const balanceResponse = await axios.get(`http://127.0.0.1:8000/api/get-leave-balance/${user.staffId}/`);
-              const balances = balanceResponse.data;
-              console.log('Leave balances response:', balances); // DEBUG
-              
-              // Initialize carry forward days with current values or 0
-              const initialCarryForward = {};
-              if (Array.isArray(leaveData)) {
-                leaveData.forEach(leaveType => {
-                  const existingBalance = Array.isArray(balances) ? 
-                    balances.find(balance => balance.leave_type_id === leaveType.leave_type_id) : null;
-                  initialCarryForward[leaveType.leave_type_id] = 
-                    existingBalance?.carry_forward_days || 0;
-                });
-              }
-              setCarryForwardDays(initialCarryForward);
-            } catch (balanceError) {
-              console.error('Failed to fetch leave balances:', balanceError);
-              // Initialize with 0 if balance fetch fails
-              const initialCarryForward = {};
-              if (Array.isArray(leaveData)) {
-                leaveData.forEach(leaveType => {
-                  initialCarryForward[leaveType.leave_type_id] = 0;
-                });
-              }
-              setCarryForwardDays(initialCarryForward);
-            }
-          } else {
-            // For new user or no staffId, initialize with 0
-            const initialCarryForward = {};
-            if (Array.isArray(leaveData)) {
-              leaveData.forEach(leaveType => {
-                initialCarryForward[leaveType.leave_type_id] = 0;
-              });
-            }
-            setCarryForwardDays(initialCarryForward);
-          }
-        } catch (err) {
-          console.error('Failed to fetch leave types:', err);
-          setLeaveTypes([]);
-          setCarryForwardDays({});
-        }
-      } else {
-        setLeaveTypes([]);
-        setCarryForwardDays({});
-      }
-    };
-
-    fetchLeaveTypesAndBalances();
-  }, [formData.contract_type_id, user, currentYear]);
-
-  // ADDED: Fetch leave types when user data is initialized with existing contract type
-  useEffect(() => {
-    const fetchInitialLeaveTypes = async () => {
-      // Only fetch if user has a contract type and form data has been initialized
-      if (user?.contract_type_id && formData.contract_type_id && hasInitialized) {
-        console.log('Fetching initial leave types for existing contract:', formData.contract_type_id); // DEBUG
-        try {
-          // CHANGED: Use the utility function
-          const leaveResponse = await getContractTypeLeaveEntitlements(formData.contract_type_id);
-          const leaveData = leaveResponse.data || leaveResponse;
-          setLeaveTypes(Array.isArray(leaveData) ? leaveData : []);
-          
-          // Fetch current leave balances
-          if (user?.staffId) {
-            try {
-              const balanceResponse = await axios.get(`http://127.0.0.1:8000/api/get-leave-balance/${user.staffId}/`);
-              const balances = balanceResponse.data;
-              
-              const initialCarryForward = {};
-              if (Array.isArray(leaveData)) {
-                leaveData.forEach(leaveType => {
-                  const existingBalance = Array.isArray(balances) ? 
-                    balances.find(balance => balance.leave_type_id === leaveType.leave_type_id) : null;
-                  initialCarryForward[leaveType.leave_type_id] = 
-                    existingBalance?.carry_forward_days || 0;
-                });
-              }
-              setCarryForwardDays(initialCarryForward);
-            } catch (balanceError) {
-              console.error('Failed to fetch leave balances:', balanceError);
-              const initialCarryForward = {};
-              if (Array.isArray(leaveData)) {
-                leaveData.forEach(leaveType => {
-                  initialCarryForward[leaveType.leave_type_id] = 0;
-                });
-              }
-              setCarryForwardDays(initialCarryForward);
-            }
-          }
-        } catch (err) {
-          console.error('Failed to fetch initial leave types:', err);
-          setLeaveTypes([]);
-          setCarryForwardDays({});
-        }
-      }
-    };
-
-    fetchInitialLeaveTypes();
-  }, [hasInitialized, formData.contract_type_id, user, currentYear]);
-
   useEffect(() => {
     if (modal) {
       setHasInitialized(false);
-      // ADDED: Reset leave types when modal opens
-      setLeaveTypes([]);
-      setCarryForwardDays({});
     }
   }, [modal]);
 
@@ -230,14 +100,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     setFormData((prev) => ({ ...prev, locations: value }));
   };
 
-  // ADDED: Handle carry forward days input change
-  const handleCarryForwardChange = (leaveTypeId, value) => {
-    setCarryForwardDays(prev => ({
-      ...prev,
-      [leaveTypeId]: parseFloat(value) || 0
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -255,39 +117,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
       });
 
       await updateStaffLocations(user.staffId, formData.locations);
-
-      // ADDED: Update carry forward days if contract type is selected and there are leave types
-      if (formData.contract_type_id && leaveTypes.length > 0) {
-        try {
-          const carryForwardData = Object.keys(carryForwardDays).map(leaveTypeId => ({
-            leave_type_id: leaveTypeId,
-            days: carryForwardDays[leaveTypeId]
-          }));
-
-          console.log('Updating carry forward days:', {
-            staffId: user.staffId,
-            year: currentYear,
-            carryForwardData
-          });
-
-          // CHANGED: Use the utility function
-          await setStaffCarryForward(user.staffId, {
-            year: currentYear,
-            carry_forward_days: carryForwardData
-          });
-
-          console.log('Carry forward days updated successfully');
-        } catch (carryForwardError) {
-          console.error('Error updating carry forward days:', carryForwardError);
-          // Don't fail the entire operation if carry forward update fails
-          Swal.fire({
-            icon: 'warning',
-            title: 'User Updated with Warning',
-            text: `User was updated successfully but there was an issue updating carry forward days: ${carryForwardError.message}`,
-            confirmButtonText: 'OK'
-          });
-        }
-      }
 
       toggle(); // close the modal
 
@@ -437,29 +266,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
               ))}
             </Input>
           </FormGroup>
-
-          {/* ADDED: Carry Forward Days Input for Each Leave Type */}
-          {formData.contract_type_id && leaveTypes.length > 0 && (
-            <FormGroup>
-              <Label>Carry Forward Days (Current Year: {currentYear})</Label>
-              {leaveTypes.map(leaveType => (
-                <FormGroup key={leaveType.leave_type_id} style={{ marginBottom: '15px' }}>
-                  <Label for={`carry-forward-${leaveType.leave_type_id}`} style={{ fontSize: '14px', marginBottom: '5px' }}>
-                    {leaveType.leave_name} (Entitled: {leaveType.entitled_days} days)
-                  </Label>
-                  <Input
-                    type="number"
-                    id={`carry-forward-${leaveType.leave_type_id}`}
-                    step="0.5"
-                    min="0"
-                    value={carryForwardDays[leaveType.leave_type_id] || 0}
-                    onChange={(e) => handleCarryForwardChange(leaveType.leave_type_id, e.target.value)}
-                    placeholder="Enter carry forward days"
-                  />
-                </FormGroup>
-              ))}
-            </FormGroup>
-          )}
 
           <FormGroup>
             <Label>Locations</Label>

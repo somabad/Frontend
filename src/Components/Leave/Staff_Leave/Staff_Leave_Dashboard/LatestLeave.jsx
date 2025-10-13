@@ -1,11 +1,15 @@
-import React from 'react';
-import { Col, Card, CardHeader } from 'reactstrap';
+import React, {useState} from 'react';
+import { Col, Card, CardHeader, Tooltip } from 'reactstrap';
 import DataTable from 'react-data-table-component';
+import { AiOutlineInfoCircle } from 'react-icons/ai';
 
 const LatestLeave = ({ staffLeave, loading, error }) => {
-  const latestRequests = Array.isArray(staffLeave)
-    ? staffLeave.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 3)
-    : [];
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+
+  const toggleTooltip = () => setTooltipOpen(!tooltipOpen);
+
+  const latestRequests = staffLeave
+    ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) || [];
 
   const columns = [
     {
@@ -127,9 +131,27 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
   return (
     <Col sm="12">
       <Card>
-        <CardHeader>
-          <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>Latest Leave Requests</h3>
+        <CardHeader className='d-flex justify-content-between align-items-center flex-wrap'>
+          <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>Today Leave Request
+          <span 
+            id="info-icon"
+            style={{ marginLeft: '8px', cursor: 'pointer', color: '#888'}}
+            onMouseEnter={toggleTooltip}
+            onMouseLeave={toggleTooltip}
+          >
+            <AiOutlineInfoCircle size={20} />
+          </span>
+          <Tooltip
+            placement='right'
+            isOpen={tooltipOpen}
+            target="info-icon"
+            toggle={toggleTooltip}
+          >
+            Your leave request for today.
+          </Tooltip>
+          </h3>
         </CardHeader>
+
         <DataTable
           columns={columns}
           data={latestRequests}

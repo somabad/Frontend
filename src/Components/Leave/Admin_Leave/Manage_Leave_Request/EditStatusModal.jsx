@@ -18,13 +18,21 @@ const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
     }
 
     try {
+      console.log('=== FRONTEND APPROVAL CALLED ===');
+      console.log('Request ID:', leave.request_id);
+      console.log('Status:', status);
+      console.log('Admin ID:', adminId);
+      
       const updatedData = {
         status,
         approved_by: adminId,
       };
 
+      console.log('Sending data:', updatedData);
+
       // Call the update function
-      await updateLeaveStatus(leave.request_id, updatedData);
+      const result = await updateLeaveStatus(leave.request_id, updatedData);
+      console.log('Backend response:', result);
 
       Swal.fire({
         icon: 'success',
@@ -35,7 +43,11 @@ const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
       onSave(); // Refresh table
       toggle(); // Close modal
     } catch (error) {
+      console.error('=== FRONTEND ERROR ===');
       console.error('Error updating status:', error);
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
+      
       Swal.fire({
         icon: 'error',
         title: 'Update Failed',

@@ -1,11 +1,18 @@
-import React from 'react';
-import { Col, Card, CardHeader } from 'reactstrap';
+import React, { useState } from 'react';
+import { Col, Card, CardHeader, Tooltip } from 'reactstrap';
 import DataTable from 'react-data-table-component';
+import { AiOutlineInfoCircle } from 'react-icons/ai'; // Importing the AiOutlineInfo icon
 
 const LatestLeave = ({ staffLeave, loading, error }) => {
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+
+  // Toggle Tooltip state
+  const toggleTooltip = () => setTooltipOpen(!tooltipOpen);
+
   // Show staff who submitted requests today OR start their leave today (no limit)
   const latestRequests = staffLeave
     ?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) || [];
+
   const columns = [
     {
       name: 'Name',
@@ -104,13 +111,32 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
   return (
     <Col sm="12">
       <Card>
-        <CardHeader>
-          <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>Today's Leave Request</h3>
+        <CardHeader className="d-flex justify-content-between align-items-center flex-wrap">
+          <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>
+            Today's Leave Request
+            <span 
+              id="latest-leave-request-info" 
+              style={{ marginLeft: '8px', cursor: 'pointer', color: '#888' }}
+              onMouseEnter={toggleTooltip}
+              onMouseLeave={toggleTooltip}
+            >
+              <AiOutlineInfoCircle size={20} />
+            </span>
+            <Tooltip 
+              placement="right" 
+              isOpen={tooltipOpen} 
+              target="latest-leave-request-info" 
+              toggle={toggleTooltip}
+            >
+              Staff who submitted leave requests today.
+            </Tooltip>
+          </h3>
         </CardHeader>
 
         <DataTable
           columns={columns}
           data={latestRequests}
+          pagination
           striped
           highlightOnHover
           responsive
@@ -126,5 +152,3 @@ const LatestLeave = ({ staffLeave, loading, error }) => {
 };
 
 export default LatestLeave;
-
-

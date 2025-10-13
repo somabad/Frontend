@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Col, Card, CardHeader } from 'reactstrap';
+import { Col, Card, CardHeader, Tooltip } from 'reactstrap';
 import DataTable from 'react-data-table-component';
 import { AiOutlineInfoCircle } from 'react-icons/ai';
 
 const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
-  const [hoveredInfoIndex, setHoveredInfoIndex] = useState(null);
+
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+
+  // Toggle the tooltip visibility
+  const toggleTooltip = () => setTooltipOpen(!tooltipOpen);
 
   const columns = [
     {
@@ -62,7 +66,8 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
       ),
       width: '160px',
     },
-    { name: 'Job Taken by', 
+    { 
+      name: 'Job Taken by', 
       selector: row => row.job_taken_over_by, 
       sortable: true,
       cell: row => (
@@ -94,7 +99,25 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
     <Col sm="12">
       <Card>
         <CardHeader className="d-flex justify-content-between align-items-center flex-wrap">
-          <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>Today's Staff Leave</h3>
+          <h3 style={{ color: "#555555", marginBottom: '0.5rem' }}>
+            Today's Staff Leave
+            <span
+              id="today-staff-leave-info" 
+              style={{ marginLeft: '8px', cursor: 'pointer', color: '#888'}} 
+              onMouseEnter={toggleTooltip} 
+              onMouseLeave={toggleTooltip} 
+            >
+            <AiOutlineInfoCircle size={20} />
+            </span>
+            <Tooltip
+              placement="right"
+              isOpen={tooltipOpen}
+              target="today-staff-leave-info"
+              toggle={toggleTooltip}
+            >
+              Staff who are currently on leave today.
+            </Tooltip>
+          </h3>
         </CardHeader>
 
         <DataTable
@@ -111,49 +134,6 @@ const TodayLeave = ({ onLeaveTodayNames, loading, error }) => {
           }
         />
       </Card>
-
-      {/* Fullscreen overlay on hover */}
-      {hoveredInfoIndex !== null && (
-        <div className="info-overlay">
-          <div className="info-box">
-            <p>{onLeaveTodayNames[hoveredInfoIndex]?.info || "No additional info available"}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Info icon hover */}
-      <style jsx>{`
-        .info-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          background-color: rgba(0,0,0,0.6);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 9999;
-          pointer-events: none;
-        }
-        .info-box {
-          background-color: #fff;
-          padding: 24px 32px;
-          border-radius: 12px;
-          max-width: 90%;
-          text-align: center;
-          font-size: 18px;
-          font-weight: 500;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .info-box p {
-          margin: 0;
-          font-size: 1.2rem;
-        }
-        .icon-wrapper {
-          cursor: pointer;
-        }
-      `}</style>
     </Col>
   );
 };

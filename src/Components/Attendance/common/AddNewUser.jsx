@@ -22,7 +22,8 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     created_at: '',
     department: '',   // ADDED
     position: '',     // ADDED
-    contract_type_id: '' // ADDED
+    contract_type_id: '', // ADDED
+    carry_foward_days: '' //ADDED
   };
 
   const [modal, setModal] = useState(false);
