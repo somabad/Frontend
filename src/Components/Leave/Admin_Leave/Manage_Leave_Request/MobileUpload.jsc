@@ -1,0 +1,81 @@
+import React, { useState, useRef } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+
+const MobileUpload = () => {
+  const { token } = useParams();
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
+  const handleCapture = (e) => {
+    const file = e.target.files[0];
+    if (file) setImage(file);
+  };
+
+  const handleUpload = async () => {
+    if (!image) return alert("Please take a photo first");
+
+    const formData = new FormData();
+    formData.append("scanned_form", image);
+
+    try {
+      setUploading(true);
+      const res = await axios.post(`/mobile-upload/${token}/`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      alert("✅ Document uploaded successfully!");
+      setTimeout(() => window.close(), 1500);
+    } catch (err) {
+      alert("❌ Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: 20 }}>
+      <h3>📸 Scan Document</h3>
+      <p>Take a clear photo of your document below.</p>
+
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        ref={fileRef}
+        onChange={handleCapture}
+        style={{ display: "none" }}
+      />
+
+      {!image ? (
+        <button
+          style={{ padding: "10px 20px", fontSize: 16 }}
+          onClick={() => fileRef.current.click()}
+        >
+          Open Camera
+        </button>
+      ) : (
+        <>
+          <img
+            src={URL.createObjectURL(image)}
+            alt="preview"
+            style={{
+              width: "90%",
+              borderRadius: 10,
+              marginBottom: 10,
+              border: "1px solid #ccc",
+            }}
+          />
+          <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
+            <button onClick={() => fileRef.current.click()}>Retake</button>
+            <button onClick={handleUpload} disabled={uploading}>
+              {uploading ? "Uploading..." : "Upload"}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default MobileUpload;
