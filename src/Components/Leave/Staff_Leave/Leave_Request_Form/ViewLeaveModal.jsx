@@ -16,7 +16,7 @@ const getDocumentUrl = (doc) => {
   return `${BACKEND_URL}${doc}`;
 };
 
-const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
+const ViewLeaveModal = ({ leave, isOpen, toggle, isStaff = false }) => {
   const [balanceData, setBalanceData] = useState(null);
   const [loading, setLoading] = useState(false);
   
@@ -438,7 +438,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
       </ModalBody>
       <ModalFooter>
         <button className="btn btn-secondary" onClick={toggle}>Close</button>
-        {isAdmin && (
+        {isStaff && (
           <button className="btn btn-primary" onClick={handlePrint}>Print</button>
         )}
       </ModalFooter>
