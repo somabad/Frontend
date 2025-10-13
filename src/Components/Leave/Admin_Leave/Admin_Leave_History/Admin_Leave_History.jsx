@@ -163,8 +163,13 @@ const AdminLeaveHistory = () => {
       const data = await getAdminLeaveHistory(staffId);
       const allHistory = data.leaveHistory || [];
       
-      setLeaveHistory(allHistory);
-      setFilteredData(allHistory);
+      // Filter to show only approved and rejected leave requests
+      const filteredHistory = allHistory.filter(item => 
+        item.status?.toLowerCase() === 'approved' || item.status?.toLowerCase() === 'rejected'
+      );
+      
+      setLeaveHistory(filteredHistory);
+      setFilteredData(filteredHistory);
     } catch (err) {
       setError('Failed to load leave history');
       console.error('Error fetching leave history:', err);
