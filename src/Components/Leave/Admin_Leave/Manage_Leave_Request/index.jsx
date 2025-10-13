@@ -6,7 +6,6 @@ import {
 } from 'reactstrap';
 import DataTable from 'react-data-table-component';
 import {
-  deleteLeaveApplication,
   getScannedForm,
   getManageLeaveRequest
 } from '../../../Attendance/utils';
@@ -15,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import ViewLeaveModal from '../../Staff_Leave/Leave_Request_Form/ViewLeaveModal';
 import EditStatusModal from '../Manage_Leave_Request/EditStatusModal';
-import DeleteConfirmationModal from '../../common/deleteUserModal';
 
 // Modular Upload/View components
 import UploadImageModal from "./UploadImageModal";
@@ -28,7 +26,6 @@ const ManageLeaveRequest = () => {
   const [error, setError] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
   const [viewModal, setViewModal] = useState([]);
-  const [deleteModal, setDeleteModal] = useState([]);
   const [editModal, setEditModal] = useState([]);
 
   // Modular upload/view states
@@ -55,8 +52,37 @@ const ManageLeaveRequest = () => {
     try {
       setLoading(true);
       const data = await getManageLeaveRequest(); // Use the correct API for manage leave request
-      setLeaveHistory(data.leaveRequests || []);
-      setFilteredData(data.leaveRequests || []);
+      const allRequests = data.leaveRequests || [];
+      
+      // Filter to show only pending leave requests
+      const pendingRequests = allRequests.filter(item => 
+        item.status?.toLowerCase() === 'pending'
+      );
+      
+      // Sort by created_at date and time (latest first)
+      const sortedRequests = pendingRequests.sort((a, b) => {
+        // Convert to Date objects for proper comparison
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        
+        // If dates are invalid, fallback to request_id comparison
+        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+          return (b.request_id || 0) - (a.request_id || 0);
+        }
+        
+        // Primary sort: by date/time (latest first)
+        const timeDiff = dateB.getTime() - dateA.getTime();
+        
+        // If same date/time, sort by request_id (higher ID = more recent)
+        if (timeDiff === 0) {
+          return (b.request_id || 0) - (a.request_id || 0);
+        }
+        
+        return timeDiff;
+      });
+      
+      setLeaveHistory(sortedRequests);
+      setFilteredData(sortedRequests);
     } catch (err) {
       setError('Failed to load leave history');
       console.error('Error fetching leave history:', err);
@@ -254,30 +280,6 @@ const ManageLeaveRequest = () => {
     return statuses;
   };
 
-  // Delete leave
-  const handleDelete = async () => {
-    if (!deleteModal.leave) return;
-    const leaveId = deleteModal.leave.request_id || deleteModal.leave.id;
-
-    if (!leaveId) {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Cannot find leave ID' });
-      return;
-    }
-
-    try {
-      await deleteLeaveApplication(leaveId);
-      Swal.fire({ icon: 'success', title: 'Leave deleted successfully!' });
-      setDeleteModal({ open: false, leave: null });
-      fetchLeaveHistory();
-    } catch (err) {
-      console.error('Delete error:', err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Delete failed',
-        text: err.response?.data?.error || 'Something went wrong.'
-      });
-    }
-  };
 
   // Data table columns (updated Upload column)
   const columns = [
@@ -339,22 +341,6 @@ const ManageLeaveRequest = () => {
             style={{ border: 'none', background: 'none', cursor: 'pointer' }}
           >
             <i className='fa fa-pencil' style={{ color: '#555' }} />
-          </button>
-          <button
-            title={row.status === 'Approved' ? 'Cannot delete approved leave' : 'Delete'}
-            onClick={() => {
-              if (row.status !== 'Approved') {
-                setDeleteModal({ open: true, leave: row });
-              }
-            }}
-            style={{
-              border: 'none',
-              background: 'none',
-              cursor: row.status === 'Approved' ? 'not-allowed' : 'pointer',
-              opacity: row.status === 'Approved' ? 0.5 : 1
-            }}
-          >
-            <i className='fa fa-trash-o' style={{ color: '#555' }} />
           </button>
         </div>
       ),
@@ -541,14 +527,6 @@ const ManageLeaveRequest = () => {
         />
       )}
 
-      {deleteModal.open && (
-        <DeleteConfirmationModal
-          isOpen={deleteModal.open}
-          toggle={() => setDeleteModal({ open: false, leave: null })}
-          onConfirm={handleDelete}
-          userName={`${deleteModal.leave?.leave_type} (${deleteModal.leave?.start_date} to ${deleteModal.leave?.end_date})`}
-        />
-      )}
     </Fragment>
   );
 };
