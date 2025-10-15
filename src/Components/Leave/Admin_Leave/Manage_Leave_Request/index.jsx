@@ -54,6 +54,7 @@ const ManageLeaveRequest = () => {
       const data = await getManageLeaveRequest(); // Use the correct API for manage leave request
       const allRequests = data.leaveRequests || [];
       
+      
       // Filter to show only pending leave requests
       const pendingRequests = allRequests.filter(item => 
         item.status?.toLowerCase() === 'pending'
@@ -219,6 +220,39 @@ const ManageLeaveRequest = () => {
     updateLeaveRecord(requestId, false);
   };
 
+  // View attachment file (uploaded in form)
+  const handleViewAttachment = async (leave) => {
+    const attachment = leave?.attachment;
+    if (!attachment) return;
+
+    setImagePreview({ open: true, imageUrl: null, loading: true });
+
+    try {
+      // Build the file URL for attachment
+      let fileUrl = attachment;
+
+      // If fileUrl is already absolute leave it; otherwise prefix with base URL
+      const isAbsolute = /^https?:\/\//i.test(fileUrl);
+      const baseUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+
+      if (!isAbsolute) {
+        // ensure leading slash
+        if (!fileUrl.startsWith('/')) fileUrl = `/${fileUrl}`;
+        fileUrl = `${baseUrl}${fileUrl}`;
+      }
+
+      setImagePreview({ open: true, imageUrl: fileUrl, loading: false });
+    } catch (err) {
+      console.error('Error loading attachment file:', err);
+      setImagePreview({ open: false, imageUrl: null, loading: false });
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to load attachment file'
+      });
+    }
+  };
+
   // Ensure blob URLs are revoked when closing preview
   const closeImagePreview = () => {
     if (imagePreview.imageUrl && imagePreview.imageUrl.startsWith('blob:')) {
@@ -347,21 +381,24 @@ const ManageLeaveRequest = () => {
       width: '120px'
     },
     {
-      name: 'Upload',
-      cell: row => (
-        <Button
-          color="primary"
-          size="sm"
-          onClick={() => handleUploadClick(row)}
-          style={{ minWidth: '95px', padding: '6px 12px' }}
-        >
-          {row.scanned_form ? 'Re-upload' : 'Upload'}
-        </Button>
-      ),
-      width: '130px'
+      name: 'Attachment',
+      cell: row =>
+        row.attachment ? (
+          <Button
+            color="info"
+            size="sm"
+            onClick={() => handleViewAttachment(row)}
+            style={{ minWidth: '80px', padding: '6px 12px' }}
+          >
+            <i className="fa fa-eye me-1" /> View
+          </Button>
+        ) : (
+          <span className="text-muted">No file</span>
+        ),
+      width: '120px'
     },
     {
-      name: 'View Scanned Form',
+      name: 'Approved File',
       cell: row =>
         row.scanned_form ? (
           <Button
@@ -375,7 +412,7 @@ const ManageLeaveRequest = () => {
         ) : (
           <span className="text-muted">No file</span>
         ),
-      width: '150px'
+      width: '120px'
     },
   ];
 

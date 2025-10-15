@@ -438,9 +438,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
       </ModalBody>
       <ModalFooter>
         <button className="btn btn-secondary" onClick={toggle}>Close</button>
-        {isAdmin && (
-          <button className="btn btn-primary" onClick={handlePrint}>Print</button>
-        )}
+        <button className="btn btn-primary" onClick={handlePrint}>Print</button>
       </ModalFooter>
     </Modal>
   );
