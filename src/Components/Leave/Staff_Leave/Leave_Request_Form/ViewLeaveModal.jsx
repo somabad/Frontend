@@ -369,7 +369,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
 
               <div style={{ borderTop: '2px solid black', paddingTop: '10px', marginTop: '20px', marginLeft: '-28px', marginRight: '-28px' }}
               ></div>
-              <h5 className="text-primary">Untuk pengesahan jabatan sumber manusia & pentadbiran</h5>
+              <Label><b>Untuk pengesahan jabatan sumber manusia & pentadbiran:</b></Label>
               {loading ? (
                 <div className="text-center py-3">
                   <div className="spinner-border text-primary" role="status">
@@ -379,141 +379,141 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                 </div>
               ) : (
                 <>
-                  <Row>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label><b>Baki cuti tahun lepas:</b></Label>
-                      </FormGroup>
-                    </Col>
-                    <Col md="2">
-                      <FormGroup>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <LineField value={balanceData?.carry_forward_days || '-'} disabled style={{ width: '80px' }} />
-                          <span>hari</span>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label><b>Kelayakan cuti tahun semasa:</b></Label>
-                      </FormGroup>
-                    </Col>
-                    <Col md="2">
-                      <FormGroup>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <LineField value={balanceData?.leave_entitled || '-'} disabled style={{ width: '80px' }} />
-                          <span>hari</span>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label><b>Jumlah kelayakan:</b></Label>
-                      </FormGroup>
-                    </Col>
-                    <Col md="2">
-                      <FormGroup>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <LineField value={balanceData?.total_entitlement || '-'} disabled style={{ width: '80px' }} />
-                          <span>hari</span>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label><b>Cuti telah diambil:</b></Label>
-                      </FormGroup>
-                    </Col>
-                    <Col md="2">
-                      <FormGroup>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <LineField value={balanceData?.used_days || '-'} disabled style={{ width: '80px' }} />
-                          <span>hari</span>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label><b>Baki semasa:</b></Label>
-                      </FormGroup>
-                    </Col>
-                    <Col md="2">
-                      <FormGroup>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <LineField value={balanceData?.current_balance || '-'} disabled style={{ width: '80px' }} />
-                          <span>hari</span>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label><b>Cuti dipohon:</b></Label>
-                      </FormGroup>
-                    </Col>
-                    <Col md="2">
-                      <FormGroup>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <LineField value={leave.total_days != null ? String(leave.total_days) : '-'} disabled style={{ width: '80px' }} />
-                          <span>hari</span>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label><b>Baki cuti:</b></Label>
-                      </FormGroup>
-                    </Col>
-                    <Col md="2">
-                      <FormGroup>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <LineField value={balanceData?.total_balance || '-'} disabled style={{ width: '80px' }} />
-                          <span>hari</span>
-                        </div>
-                      </FormGroup>
-                    </Col>
-                  </Row>
+                    <Row>
+                      <Col md="6">
+                        <FormGroup>
+                          <Label><b>Baki cuti tahun lepas:</b></Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign:'center' }}>
+                            <LineField value={balanceData?.carry_forward_days || '-'} disabled style={{ width: '80px' }} />
+                            <span>hari</span>
+                          </div>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md="6">
+                        <FormGroup>
+                          <Label><b>Kelayakan cuti tahun semasa:</b></Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign:'center' }}>
+                            <LineField value={balanceData?.leave_entitled || '-'} disabled style={{ width: '80px' }} />
+                            <span>hari</span>
+                          </div>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md="6">
+                        <FormGroup>
+                          <Label><b>Jumlah kelayakan:</b></Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign:'center' }}>
+                            <LineField value={balanceData?.total_entitlement || '-'} disabled style={{ width: '80px' }} />
+                            <span>hari</span>
+                          </div>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md="6">
+                        <FormGroup>
+                          <Label><b>Cuti telah diambil:</b></Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign:'center' }}>
+                            <LineField value={balanceData?.used_days || '-'} disabled style={{ width: '80px' }} />
+                            <span>hari</span>
+                          </div>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md="6">
+                        <FormGroup>
+                          <Label><b>Baki semasa:</b></Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign:'center' }}>
+                            <LineField value={balanceData?.current_balance || '-'} disabled style={{ width: '80px' }} />
+                            <span>hari</span>
+                          </div>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md="6">
+                        <FormGroup>
+                          <Label><b>Cuti dipohon:</b></Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign:'center' }}>
+                            <LineField value={leave.total_days != null ? String(leave.total_days) : '-'} disabled style={{ width: '80px' }} />
+                            <span>hari</span>
+                          </div>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md="6">
+                        <FormGroup>
+                          <Label><b>Baki cuti:</b></Label>
+                        </FormGroup>
+                      </Col>
+                      <Col md="2">
+                        <FormGroup>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign:'center' }}>
+                            <LineField value={balanceData?.total_balance || '-'} disabled style={{ width: '80px' }} />
+                            <span>hari</span>
+                          </div>
+                        </FormGroup>
+                      </Col>
+                    </Row>
                 </>
               )}
-              <Row>
-                <Col md="4">
-                  <FormGroup>
-                    <Label><b>Disemak / Rekod oleh:</b></Label>
+              <Row className="align-items-start" style={{ marginBottom: '10px' }}>
+                <Col md="3">
+                  <FormGroup style={{marginBottom: '0px'}}>
+                    <Label style={{marginTop:'25px'}}><b>Disemak / Rekod oleh:</b></Label>
                   </FormGroup>
                 </Col>
-                <Col md="4">
-                  <FormGroup>
+
+                <Col md="3">
+                  <FormGroup style={{marginBottom:'0px'}}>
                     <LineField value={''} disabled />
                   </FormGroup>
                 </Col>
-                <Col md="4">
-                  <div style={{
-                      borderTop: '2px solid black',
-                      marginTop: '2px',
-                      marginLeft: '-20px',
-                      marginRight: '-28px',
-                      borderLeft: '2px solid black',
-                      height: '100px',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      textAlign: 'center',
 
-                    }}> 
-                      <FormGroup>
-                        <Label><b>COP TARIKH DIPROSES</b></Label>
-                      </FormGroup>
+                <Col md="3" style={{paddingRight:'0px'}}>
+                  <div style={{
+                    borderTop: '2px solid black',
+                    borderLeft: '2px solid black',
+                    height: '100px',
+                    display: 'flex',
+                    marginRight: '-95px',
+                    justifyContent: 'center',
+                    alignItems: 'flex-start',
+                    textAlign: 'center'
+
+                  }}> 
+                    <FormGroup style={{ marginTop: '5px' }}>
+                      <Label><b>COP TARIKH DIPROSES</b></Label>
+                    </FormGroup>
                   </div>
                 </Col>
               </Row>
