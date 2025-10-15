@@ -7,8 +7,9 @@ import ViewLeaveModal from '../Leave_Request_Form/ViewLeaveModal';
 import EditLeaveModal from '../Leave_Request_Form/EditLeaveModal';
 import { getLeaveHistory, updateLeaveApplication, deleteLeaveApplication } from '../../../Attendance/utils';
 import Loader from '../../../Attendance/Loader';
+import dayjs from 'dayjs';
 
-const LeaveHistory = ({}) => {
+const LeaveHistory = ({staffLeave}) => {
   const [leaveApplications, setLeaveApplications] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,6 +19,12 @@ const LeaveHistory = ({}) => {
   const [viewModal, setViewModal] = useState({ open: false, leave: null });
   const [editModal, setEditModal] = useState({ open: false, leave: null });
   const [deleteModal, setDeleteModal] = useState({ open: false, leave: null });
+
+  const FilteredData = filteredData
+    ?.sort((a, b) => {
+      const timeDiff = dayjs(b.created_at).valueOf() - dayjs(a.created_at).valueOf();
+      return timeDiff !== 0 ? timeDiff : b.request_id - a.request_id;
+  }) || [];
 
   const fetchLeaveHistory = async () => {
     try {
@@ -87,7 +94,6 @@ const LeaveHistory = ({}) => {
           switch(status) {
             case 'Approved': return 'text-success';
             case 'Rejected': return 'text-danger';
-            case 'Pending': return 'text-warning';
             default: return '';
           }
         };
@@ -215,7 +221,7 @@ const LeaveHistory = ({}) => {
               <CardBody className="p-0">
                 <DataTable
                   columns={columns}
-                  data={filteredData}
+                  data={FilteredData.filter(item => item.status !== 'Pending')}
                   pagination
                   striped
                   highlightOnHover
