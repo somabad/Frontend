@@ -30,6 +30,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   // ...existing useState declarations...
   const [staffName, setStaffName] = useState('');
   const [staffId, setStaffId] = useState('');
+  const [requestId, setRequestId] = useState('');
   const [staffPosition, setStaffPosition] = useState('');
   const [staffDepartment, setStaffDepartment] = useState('');
   const [createdAt, setCreatedAt] = useState('');
@@ -280,7 +281,12 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
         console.log(pair[0] + ': ' + pair[1]);
       }
 
-      await applyLeave(formData);
+      const response = await applyLeave(formData);
+
+     if (response && response.data && response.data.leave_request) {
+        setRequestId(response.data.leave_request.request_id);
+      }
+
       Swal.fire({
         icon: 'success',
         title: 'Leave application submitted!',
@@ -344,7 +350,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   <input
                   type= 'text'
                   className='form-control'
-                  value={staffId}
+                  value={requestId}
                   readOnly
                   >
                   </input>

@@ -43,7 +43,23 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
     };
 
     fetchBalanceData();
-  }, [isOpen, leave?.staffId]);
+    }, [isOpen, leave?.staffId]);
+
+    const LineField = ({ value }) => (
+    <div
+      style={{
+        borderBottom: '1px solid black',
+        minWidth: '100%',
+        display: 'inline-block',
+        height: '20px',
+        fontSize: '14px',
+        lineHeight: '20px',
+      }}
+    >
+      {value || ''}
+    </div>
+  );
+  
 
   // Print function using react-to-print
   const printRef = useRef();
@@ -174,265 +190,351 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
           <style>{printStyles}</style>
         )}
         {leave && (
-          <div className="p-3" ref={printRef} id="printable-content">
-            {/* Header of Form */}
-            <h5 className="text-center mb-2">BORANG PERMOHONAN CUTI (HR-18)</h5>
-            <h6 className="text-center mb-3">MY-SUTERA SDN. BHD.</h6>
-            <hr />
-            <h5 className="text-primary">Butiran Pemohon</h5>
+          <div style={{
+            border: '2px solid black',
+            borderRadius: '4px',
+            padding: '10px',
+            marginBottom: '15px'
+          }}>
+            <div className="p-3" ref={printRef} id="printable-content">
+              {/* Header of Form */}
+              <h5 className="text-center mb-2">BORANG PERMOHONAN CUTI (HR-18)</h5>
+              <h6 className="text-center mb-3">MY-SUTERA SDN. BHD. (367254-M)</h6>
 
-            {/* Personal and Staff Info Section - 2 columns layout */}
-            <Row>
-              <Col md="6">
-                <FormGroup>
-                  <Label><b>Nama:</b></Label>
-                  <Input value={leave.staff_name || '-'} disabled />
-                </FormGroup>
-                <FormGroup>
-                  <Label><b>Jawatan:</b></Label>
-                  <Input value={leave.staff_position || '-'} disabled />
-                </FormGroup>
-                <FormGroup>
-                  <Label><b>Seksyen:</b></Label>
-                  <Input value={leave.staff_department || '-'} disabled />
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label><b>No. Pekerja:</b></Label>
-                  <Input value={leave.staffId || leave.staff_id || '-'} disabled />
-                </FormGroup>
-                <FormGroup>
-                  <Label><b>Tarikh permohonan:</b></Label>
-                  <Input value={leave.request_date || leave.created_at || '-'} disabled />
-                </FormGroup>
-                <FormGroup>
-                  <Label><b>Bahagian:</b></Label>
-                  <Input value={leave.staff_department || '-'} disabled />
-                </FormGroup>
-              </Col>
-            </Row>
 
-            {/* Jenis Cuti Section */}
-            <Row>
-              <Col md="6">
-                <div>
-                  <Label><b>Jenis cuti:</b> 
-                  <br />
-                  (Sila tandakan pada kotak berkenaan)</Label>
-                  <div className="mt-2" style={{fontSize:'12px'}}>
-                    {(() => {
-                      const selectedType = (leave.leave_type || '').toLowerCase();
-                      const types = [
-                        { key: 'annual', label: 'Cuti tahunan', match: ['annual', 'tahunan'] },
-                        { key: 'unpaid', label: 'Cuti tanpa gaji', match: ['unpaid', 'tanpa gaji'] },
-                        { key: 'emergency', label: 'Cuti sakit', match: ['sick', 'mc', 'sakit'] },
-                        { key: 'compassionate', label: 'Cuti ehsan', match: ['emergency', 'kecemasan', 'compassionate', 'ehsan'] },
-                      ];
+              <Row>
+                <Col md="2">
+                  <FormGroup>
+                    <Label><b>Nama:</b></Label>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label><b>Jawatan:</b></Label>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label><b>Seksyen:</b></Label>
+                  </FormGroup>
+                </Col>
+                <Col md="3">
+                  <FormGroup>
+                    <LineField value={leave.staff_name || '-'} disabled />
+                  </FormGroup>
+                  <FormGroup>
+                    <LineField value={leave.staff_position || '-'} disabled />
+                  </FormGroup>
+                  <FormGroup>
+                    <LineField value={''} disabled />
+                  </FormGroup>
+                </Col>
+                <Col md="3">
+                  <FormGroup>
+                    <Label><b>No. Pekerja:</b></Label>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label><b>Tarikh permohonan:</b></Label>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label><b>Bahagian:</b></Label>
+                  </FormGroup>
+                </Col>
+                <Col md="3">
+                  <FormGroup>
+                    <LineField value={leave.staffId || leave.staff_id || '-'} disabled />
+                  </FormGroup>
+                  <FormGroup>
+                    <LineField value={leave.request_date || leave.created_at || '-'} disabled />
+                  </FormGroup>
+                  <FormGroup>
+                    <LineField value={leave.staff_department || '-'} disabled />
+                  </FormGroup>
+                </Col>
+              </Row>
 
-                      const isChecked = (matches) => matches.some(m => selectedType.includes(m));
+              {/* Jenis Cuti Section */}
+              <Row>
+                <Col md="6">
+                  <div>
+                    <Label><b>Jenis cuti:</b> 
+                    <br />
+                    (Sila tandakan pada kotak berkenaan)</Label>
+                    <div className="mt-2" style={{fontSize:'12px'}}>
+                      {(() => {
+                        const selectedType = (leave.leave_type || '').toLowerCase();
+                        const types = [
+                          { key: 'annual', label: 'Cuti tahunan' , match: ['annual', 'tahunan'] },
+                          { key: 'unpaid', label: 'Cuti tanpa gaji', match: ['unpaid', 'tanpa gaji'] },
+                          { key: 'emergency', label: 'Cuti sakit', match: ['sick', 'mc', 'sakit'] },
+                          { key: 'compassionate', label: 'Cuti ehsan', match: ['emergency', 'kecemasan', 'compassionate', 'ehsan'] },
+                        ];
 
-                      return types.map(t => (
-                        <div key={t.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                          <div style={{ width: 16, height: 16, border: '1px solid #333', display: 'inline-block', textAlign: 'center', lineHeight: '14px', fontSize: 12 }}>
-                            {isChecked(t.match) ? '✓' : ''}
+                        const isChecked = (matches) => matches.some(m => selectedType.includes(m));
+
+                        return types.map(t => (
+                          <div key={t.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                            <div style={{ width: 16, height: 16, border: '2px solid #333', display: 'inline-block', textAlign: 'center', lineHeight: '14px', fontSize: 12 }}>
+                              {isChecked(t.match) ? '✓' : ''}
+                            </div>
+                            <span>{t.label}</span>
                           </div>
-                          <span>{t.label}</span>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                </Col>
+                <Col md="6">
+                  <FormGroup>
+                    <Label><b>Sebab cuti:</b></Label>
+                    <LineField value={leave.reason || '-'} disabled />
+                  </FormGroup>
+                </Col>
+              </Row>
+
+              {/* Leave Period Section */}
+              <Row>
+                <Col md="2">
+                  <FormGroup>
+                    <Label><b>Bilangan cuti diambil:</b></Label>
+                  </FormGroup>
+                </Col>
+                <Col md="2">
+                  <FormGroup>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <LineField
+                        value={leave.total_days != null ? String(leave.total_days) : (leave.is_half_day ? '0.5' : '-')} 
+                        disabled 
+                        style={{ width: '20px', display: 'inline-block' }}
+                      />
+                      <span>hari</span>
+                    </div>
+                  </FormGroup>
+                </Col>
+                <Col md="1">
+                  <FormGroup>
+                    <Label><b>Dari:</b></Label>
+                  </FormGroup>
+                </Col>
+                <Col md="2">
+                  <FormGroup>
+                    <LineField  fontSize='10px' value={leave.start_date || '-'} disabled />
+                  </FormGroup>
+                </Col>
+                <Col md="1">
+                  <FormGroup>
+                    <Label><b>hingga</b></Label>
+                  </FormGroup>
+                </Col>
+                <Col md="2">
+                  <FormGroup>
+                    <LineField value={leave.end_date || '-'} disabled />
+                  </FormGroup>
+                </Col>
+              </Row>
+              <Row>
+                <Col md="6">
+                  <FormGroup>
+                    <Label><b>Tugas harian saya akan dijalankan oleh:</b></Label>
+                  </FormGroup>
+                </Col>
+                <Col md="6">
+                  <FormGroup>
+                    <LineField value={leave.job_taken_over_by || '-'} disabled />
+                  </FormGroup>
+                </Col>
+              </Row>
+              {/* Signature Section - 3 columns */}
+              <Row>
+                <Col md="4">
+                  <FormGroup>
+                    <Label><b>T/tangan Pemohon:</b></Label>
+                    <LineField value={''} disabled style={{ height: '40px' }} />
+                    <Label><b>Tarikh:</b></Label>
+                  </FormGroup>
+                </Col>
+                <Col md="4">
+                  <FormGroup>
+                    <Label><b>Disokong / Tidak Sokong</b></Label>
+                    <LineField value={''} disabled style={{ height: '40px' }} />
+                    <Label><b>T/tangan Ketua Seksyen</b></Label>
+                    <Label><b>Tarikh:</b></Label>
+                  </FormGroup>
+                </Col>
+                <Col md="4">
+                  <FormGroup>
+                    <Label><b>Diluluskan / Tidak Lulus</b></Label>
+                    <LineField value={''} disabled style={{ height: '40px' }} />
+                    <Label><b>T/tangan Ketua Bahagian / Ketua Pegawai Eksekutif</b></Label>
+                    <Label><b>Tarikh:</b></Label>
+                  </FormGroup>
+                </Col>
+              </Row>
+
+              <div style={{ borderTop: '2px solid black', paddingTop: '10px', marginTop: '20px', marginLeft: '-28px', marginRight: '-28px' }}
+              ></div>
+              <h5 className="text-primary">Untuk pengesahan jabatan sumber manusia & pentadbiran</h5>
+              {loading ? (
+                <div className="text-center py-3">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="sr-only">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading balance data...</p>
+                </div>
+              ) : (
+                <>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label><b>Baki cuti tahun lepas:</b></Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="2">
+                      <FormGroup>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <LineField value={balanceData?.carry_forward_days || '-'} disabled style={{ width: '80px' }} />
+                          <span>hari</span>
                         </div>
-                      ));
-                    })()}
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label><b>Kelayakan cuti tahun semasa:</b></Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="2">
+                      <FormGroup>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <LineField value={balanceData?.leave_entitled || '-'} disabled style={{ width: '80px' }} />
+                          <span>hari</span>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label><b>Jumlah kelayakan:</b></Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="2">
+                      <FormGroup>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <LineField value={balanceData?.total_entitlement || '-'} disabled style={{ width: '80px' }} />
+                          <span>hari</span>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label><b>Cuti telah diambil:</b></Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="2">
+                      <FormGroup>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <LineField value={balanceData?.used_days || '-'} disabled style={{ width: '80px' }} />
+                          <span>hari</span>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label><b>Baki semasa:</b></Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="2">
+                      <FormGroup>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <LineField value={balanceData?.current_balance || '-'} disabled style={{ width: '80px' }} />
+                          <span>hari</span>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label><b>Cuti dipohon:</b></Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="2">
+                      <FormGroup>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <LineField value={leave.total_days != null ? String(leave.total_days) : '-'} disabled style={{ width: '80px' }} />
+                          <span>hari</span>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md="6">
+                      <FormGroup>
+                        <Label><b>Baki cuti:</b></Label>
+                      </FormGroup>
+                    </Col>
+                    <Col md="2">
+                      <FormGroup>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <LineField value={balanceData?.total_balance || '-'} disabled style={{ width: '80px' }} />
+                          <span>hari</span>
+                        </div>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                </>
+              )}
+              <Row>
+                <Col md="4">
+                  <FormGroup>
+                    <Label><b>Disemak / Rekod oleh:</b></Label>
+                  </FormGroup>
+                </Col>
+                <Col md="4">
+                  <FormGroup>
+                    <LineField value={''} disabled />
+                  </FormGroup>
+                </Col>
+                <Col md="4">
+                  <div style={{
+                      borderTop: '2px solid black',
+                      marginTop: '2px',
+                      marginLeft: '-20px',
+                      marginRight: '-28px',
+                      borderLeft: '2px solid black',
+                      height: '100px',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      textAlign: 'center',
+
+                    }}> 
+                      <FormGroup>
+                        <Label><b>COP TARIKH DIPROSES</b></Label>
+                      </FormGroup>
                   </div>
-                </div>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label><b>Sebab cuti:</b></Label>
-                  <Input value={leave.reason || '-'} disabled />
-                </FormGroup>
-              </Col>
-            </Row>
+                </Col>
+              </Row>
 
-            {/* Leave Period Section */}
-            <Row>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>Bilangan cuti diambil:</b></Label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Input 
-                      value={leave.total_days != null ? String(leave.total_days) : (leave.is_half_day ? '0.5' : '-')} 
-                      disabled 
-                      style={{ width: '80px', display: 'inline-block' }}
-                    />
-                    <span>hari</span>
-                  </div>
-                </FormGroup>
-              </Col>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>Dari:</b></Label>
-                  <Input value={leave.start_date || '-'} disabled />
-                </FormGroup>
-              </Col>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>hingga:</b></Label>
-                  <Input value={leave.end_date || '-'} disabled />
-                </FormGroup>
-              </Col>
-            </Row>
-            <Row>
-              <Col md="12">
-                <FormGroup>
-                  <Label><b>Tugas harian saya akan dijalankan oleh:</b></Label>
-                  <Input value={leave.job_taken_over_by || '-'} disabled />
-                </FormGroup>
-              </Col>
-            </Row>
-            {/* Signature Section - 3 columns */}
-            <Row>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>T/tangan Pemohon:</b></Label>
-                  <Input value={''} disabled style={{ height: '40px' }} />
-                  <Label><b>Tarikh:</b></Label>
-                </FormGroup>
-              </Col>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>Disokong / Tidak Sokong</b></Label>
-                  <Input value={''} disabled style={{ height: '40px' }} />
-                  <Label><b>T/tangan Ketua Seksyen</b></Label>
-                  <Label><b>Tarikh:</b></Label>
-                </FormGroup>
-              </Col>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>Diluluskan / Tidak Lulus</b></Label>
-                  <Input value={''} disabled style={{ height: '40px' }} />
-                  <Label><b>T/tangan Ketua Bahagian / Ketua Pegawai Eksekutif</b></Label>
-                  <Label><b>Tarikh:</b></Label>
-                </FormGroup>
-              </Col>
-            </Row>
-
-            <hr/>
-
-            {/* Leave Balance Section (HR panel) */}
-            <h5 className="text-primary">Untuk pengesahan jabatan sumber manusia & pentadbiran</h5>
-            {loading ? (
-              <div className="text-center py-3">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <p className="mt-2">Loading balance data...</p>
-              </div>
-            ) : (
-              <>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Baki cuti tahun lepas:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.carry_forward_days || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
+              <div
+                style={{ 
+                  borderTop: '2px solid black',
+                  paddingTop: '10px', 
+                  marginLeft: '-28px',
+                  marginRight: '-28px'
+                }} ></div>
+                  <Col md="12">
+                    <div>
+                      <Label><b>Nota:</b></Label>
+                      <ul style={{ fontSize: '12px', marginTop: '5px', padding: '0 15px' }}>
+                        <li>Permohonan cuti hendaklah dipohon sekurang-kurangnya 4 hari sebelum cuti kecuali ada kecemasan.</li>
+                        <li>Kelayakan cuti kecemasan hanya satu hari kecuali yang melibatkan perjalanan keluar daerah.</li>
+                      </ul>
+                    </div>
                   </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Kelayakan cuti tahun semasa:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.leave_entitled || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Jumlah kelayakan:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.total_entitlement || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Cuti telah diambil:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.used_days || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Baki semasa:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.current_balance || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Cuti dipohon:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={leave.total_days != null ? String(leave.total_days) : '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Baki cuti:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.total_balance || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-              </>
-            )}
-            <Row>
-              <Col md="6">
-                <FormGroup>
-                  <Label><b>Disemak / Rekod oleh:</b></Label>
-                  <Input value={''} disabled />
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label><b>COP TARIKH DIPROSES</b></Label>
-                  <Input value={''} disabled style={{ height: '60px', textAlign: 'center' }} />
-                </FormGroup>
-              </Col>
-            </Row>
-
-            {/* Notes and Copies Section */}
-            <hr style={{ marginTop: '20px' }} />
-              <Col md="12">
-                <div>
-                  <Label><b>Nota:</b></Label>
-                  <ul style={{ fontSize: '10px', marginTop: '5px', padding: '0 15px' }}>
-                    <li>Permohonan cuti hendaklah dipohon sekurang-kurangnya 4 hari sebelum cuti kecuali ada kecemasan.</li>
-                    <li>Kelayakan cuti kecemasan hanya satu hari kecuali yang melibatkan perjalanan keluar daerah.</li>
-                  </ul>
-                </div>
-              </Col>
+            </div>
           </div>
         )}
       </ModalBody>
