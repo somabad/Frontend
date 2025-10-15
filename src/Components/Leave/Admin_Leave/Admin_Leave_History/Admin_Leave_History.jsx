@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, CardHeader, CardBody, Button, FormGroup, Label, Input, Form } from 'reactstrap';
+import { Container, Row, Col, Card, CardHeader, CardBody, Button, FormGroup, Label, Input, Form, Tooltip, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import DataTable from 'react-data-table-component';
 import { getAdminLeaveHistory } from '../../../Attendance/utils';
 import Loader from '../../../Attendance/Loader';
 import { useNavigate } from 'react-router-dom';
 import ViewLeaveModal from '../../Staff_Leave/Leave_Request_Form/ViewLeaveModal';
+import { AiOutlineInfoCircle } from 'react-icons/ai';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 
 const AdminLeaveHistory = () => {
@@ -13,6 +16,9 @@ const AdminLeaveHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState(null); // For managing tooltip state
+  const [exportModal, setExportModal] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState('');
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -25,6 +31,17 @@ const AdminLeaveHistory = () => {
 
   // Define columns for the table
   const columns = [
+    {
+      name: 'Request ID',
+      selector: row => row.request_id,
+      sortable: true,
+      cell: row => (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+          {row.request_id || '-'}
+        </div>
+      ),
+      width: '100px'
+    },
     {
       name: 'Name',
       selector: row => row.staff_name,
@@ -122,10 +139,55 @@ const AdminLeaveHistory = () => {
               return 'text-muted';
           }
         };
+        
+        // Check for admin name who rejected the request (only for rejected status)
+        const rejectedByName = row.approved_by_name;
+        const isRejected = row.status?.toLowerCase() === 'rejected';
+        const remarks = row.remarks && row.remarks.trim() ? `Remarks: ${row.remarks.trim()}` : 'Remarks: No remarks provided';
+        const tooltipId = `tooltip-${row.request_id}`;
+        
         return (
-          <span className={`${getStatusColor(row.status)} fw-bold`}>
-            {row.status || '-'}
-          </span>
+          <div style={{ textAlign: 'center', padding: '4px 2px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+              <div className={`${getStatusColor(row.status)} fw-bold`} style={{ 
+                fontSize: '0.85em'
+              }}>
+                {row.status || '-'}
+              </div>
+              {isRejected && (
+                <>
+                  <span
+                    id={tooltipId}
+                    style={{ cursor: 'pointer', color: '#888' }}
+                    onMouseEnter={() => setTooltipOpen(tooltipId)}
+                    onMouseLeave={() => setTooltipOpen(null)}
+                  >
+                    <AiOutlineInfoCircle size={14} />
+                  </span>
+                  <Tooltip
+                    placement='top'
+                    isOpen={tooltipOpen === tooltipId}
+                    target={tooltipId}
+                    toggle={() => setTooltipOpen(tooltipOpen === tooltipId ? null : tooltipId)}
+                  >
+                    {remarks}
+                  </Tooltip>
+                </>
+              )}
+            </div>
+            {isRejected && rejectedByName && (
+              <div style={{ 
+                fontSize: '0.65em', 
+                color: '#666', 
+                lineHeight: '1.1',
+                wordWrap: 'break-word',
+                whiteSpace: 'normal',
+                marginTop: '2px'
+              }}>
+                Rejected by: {rejectedByName}
+              </div>
+            )}
+          </div>
         );
       },
       width: '100px'
@@ -168,8 +230,30 @@ const AdminLeaveHistory = () => {
         item.status?.toLowerCase() === 'approved' || item.status?.toLowerCase() === 'rejected'
       );
       
-      setLeaveHistory(filteredHistory);
-      setFilteredData(filteredHistory);
+      // Sort by created_at date and time (latest first)
+      const sortedHistory = filteredHistory.sort((a, b) => {
+        // Convert to Date objects for proper comparison
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        
+        // If dates are invalid, fallback to request_id comparison
+        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+          return (b.request_id || 0) - (a.request_id || 0);
+        }
+        
+        // Primary sort: by date/time (latest first)
+        const timeDiff = dateB.getTime() - dateA.getTime();
+        
+        // If same date/time, sort by request_id (higher ID = more recent)
+        if (timeDiff === 0) {
+          return (b.request_id || 0) - (a.request_id || 0);
+        }
+        
+        return timeDiff;
+      });
+      
+      setLeaveHistory(sortedHistory);
+      setFilteredData(sortedHistory);
     } catch (err) {
       setError('Failed to load leave history');
       console.error('Error fetching leave history:', err);
@@ -234,6 +318,133 @@ const AdminLeaveHistory = () => {
     return statuses;
   };
 
+  // Get months for export dropdown
+  const getAvailableMonths = () => {
+    const months = [...new Set(leaveHistory.map(item => {
+      const date = new Date(item.created_at);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }))].sort().reverse();
+    return months;
+  };
+
+  // Export to PDF function
+  const exportToPDF = () => {
+    if (!selectedMonth) {
+      alert('Please select a month to export');
+      return;
+    }
+
+    // Filter data by selected month
+    const filteredByMonth = leaveHistory.filter(item => {
+      const itemDate = new Date(item.created_at);
+      const itemMonth = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}`;
+      return itemMonth === selectedMonth;
+    });
+
+    if (filteredByMonth.length === 0) {
+      alert('No data found for the selected month');
+      return;
+    }
+
+    const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
+    
+    // Add title
+    const [year, month] = selectedMonth.split('-');
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthName = monthNames[parseInt(month) - 1];
+    
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Leave History Report - ${monthName} ${year}`, 148, 20, { align: 'center' });
+    
+    // Add generation date
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 148, 28, { align: 'center' });
+
+    // Prepare table data
+    const tableColumns = [
+      'Request ID',
+      'Name',
+      'Department',
+      'Position', 
+      'Applied Date',
+      'From',
+      'To',
+      'Total Days',
+      'Leave Type',
+      'Taken Over By',
+      'Reason',
+      'Status'
+    ];
+
+    const tableRows = filteredByMonth.map(item => [
+      item.request_id || '-',
+      item.staff_name || '-',
+      item.staff_department || '-',
+      item.staff_position || '-',
+      new Date(item.created_at).toLocaleDateString(),
+      new Date(item.start_date).toLocaleDateString(),
+      new Date(item.end_date).toLocaleDateString(),
+      item.total_days || '-',
+      item.leave_type || '-',
+      item.job_taken_over_by || '-',
+      item.reason || '-',
+      item.status || '-'
+    ]);
+
+    // Add table
+    const tableResult = autoTable(doc, {
+      head: [tableColumns],
+      body: tableRows,
+      startY: 35,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+      },
+      headStyles: {
+        fillColor: [66, 139, 202],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      columnStyles: {
+        0: { cellWidth: 15 }, // Request ID
+        1: { cellWidth: 25 }, // Name
+        2: { cellWidth: 20 }, // Department
+        3: { cellWidth: 20 }, // Position
+        4: { cellWidth: 20 }, // Applied Date
+        5: { cellWidth: 18 }, // From
+        6: { cellWidth: 18 }, // To
+        7: { cellWidth: 15 }, // Total Days
+        8: { cellWidth: 20 }, // Leave Type
+        9: { cellWidth: 25 }, // Taken Over By
+        10: { cellWidth: 30 }, // Reason
+        11: { cellWidth: 15 } // Status
+      },
+      margin: { left: 10, right: 10 }
+    });
+
+    // Add summary
+    const approvedCount = filteredByMonth.filter(item => item.status?.toLowerCase() === 'approved').length;
+    const rejectedCount = filteredByMonth.filter(item => item.status?.toLowerCase() === 'rejected').length;
+    const totalCount = filteredByMonth.length;
+
+    const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 150;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Summary:', 10, finalY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total Requests: ${totalCount}`, 10, finalY + 8);
+    doc.text(`Approved: ${approvedCount}`, 10, finalY + 16);
+    doc.text(`Rejected: ${rejectedCount}`, 10, finalY + 24);
+
+    // Save the PDF
+    doc.save(`Leave_History_${monthName}_${year}.pdf`);
+    setExportModal(false);
+    setSelectedMonth('');
+  };
+
   useEffect(() => {
     // Check sessionStorage for staffId and userType
     const userType = sessionStorage.getItem('userType');
@@ -260,6 +471,15 @@ const AdminLeaveHistory = () => {
                   Leave History
                 </h3>
                 <div className="d-flex align-items-center gap-2">
+                  <Button
+                    color="success"
+                    size="sm"
+                    onClick={() => setExportModal(true)}
+                    className="d-flex align-items-center gap-2"
+                  >
+                    <i className="fa fa-download"></i>
+                    Export PDF
+                  </Button>
                   <Button
                     color="primary"
                     size="sm"
@@ -403,6 +623,50 @@ const AdminLeaveHistory = () => {
           isAdmin={false}
         />
       )}
+
+      {/* Export PDF Modal */}
+      <Modal isOpen={exportModal} toggle={() => setExportModal(false)} centered>
+        <ModalHeader toggle={() => setExportModal(false)}>
+          Export Leave History to PDF
+        </ModalHeader>
+        <ModalBody>
+          <FormGroup>
+            <Label for="monthSelect">Select Month to Export</Label>
+            <Input
+              type="select"
+              id="monthSelect"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              <option value="">Choose a month...</option>
+              {getAvailableMonths().map((month) => {
+                const [year, monthNum] = month.split('-');
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+                const monthName = monthNames[parseInt(monthNum) - 1];
+                return (
+                  <option key={month} value={month}>
+                    {monthName} {year}
+                  </option>
+                );
+              })}
+            </Input>
+          </FormGroup>
+          <div className="text-muted small">
+            <i className="fa fa-info-circle me-1"></i>
+            This will export all leave records (approved and rejected) for the selected month.
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={() => setExportModal(false)}>
+            Cancel
+          </Button>
+          <Button color="success" onClick={exportToPDF} disabled={!selectedMonth}>
+            <i className="fa fa-download me-1"></i>
+            Export PDF
+          </Button>
+        </ModalFooter>
+      </Modal>
 
     </>
   );

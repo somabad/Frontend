@@ -4,6 +4,7 @@ import { updateLeaveStatus } from '../../../Attendance/utils'; // adjust path if
 
 const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
   const [status, setStatus] = useState(leave?.status || 'Pending');
+  const [remarks, setRemarks] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,6 +27,7 @@ const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
       const updatedData = {
         status,
         approved_by: adminId,
+        ...(status === 'Rejected' && { remarks: remarks.trim() }),
       };
 
       console.log('Sending data:', updatedData);
@@ -67,7 +69,13 @@ const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
               type="select"
               id="status"
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                // Clear remarks when status changes from Rejected to something else
+                if (e.target.value !== 'Rejected') {
+                  setRemarks('');
+                }
+              }}
             >
               <option value="Pending">Pending</option>
               <option value="Approved">Approved</option>
@@ -75,7 +83,19 @@ const EditStatusModal = ({ isOpen, toggle, leave, onSave, Swal, adminId }) => {
             </Input>
           </FormGroup>
 
-          {/* Remarks field removed */}
+          {status === 'Rejected' && (
+            <FormGroup>
+              <Label for="remarks">Remarks</Label>
+              <Input
+                type="textarea"
+                id="remarks"
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                placeholder="Enter reason for rejection..."
+                rows="3"
+              />
+            </FormGroup>
+          )}
         </Form>
       </ModalBody>
       <ModalFooter>
