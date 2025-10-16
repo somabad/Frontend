@@ -1,12 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import { updateLeaveApplication } from '../../../Attendance/utils';
 import Swal from 'sweetalert2';
+import { FaLanguage } from 'react-icons/fa';
+
+// Translation object for multilingual support
+const translations = {
+  en: {
+    title: 'Edit Leave',
+    name: 'Name',
+    staffId: 'Staff ID',
+    position: 'Position',
+    department: 'Department',
+    leaveType: 'Leave Type',
+    selectLeaveType: 'Select leave type',
+    reason: 'Reason',
+    totalDays: 'Total Days',
+    startDate: 'Start Date',
+    endDate: 'End Date',
+    isHalfDay: 'Is Half Day',
+    jobTakenOverBy: 'Job Taken Over By',
+    attachment: 'Attachment (optional)',
+    fileSizeNote: 'Note: Please upload files no larger than 2 MB.',
+    cancel: 'Cancel',
+    save: 'Save',
+    saving: 'Saving...',
+    successTitle: 'Leave updated!',
+    errorTitle: 'Update failed',
+    errorText: 'Something went wrong.',
+    errors: {
+      fileSize: 'File size should not exceed 2 MB.'
+    },
+    leaveTypes: {
+      annual: 'Annual Leave',
+      medical: 'Medical Certificate',
+      unpaid: 'Unpaid Leave',
+      compassionate: 'Compassionate Leave'
+    }
+  },
+  ms: {
+    title: 'Edit Cuti',
+    name: 'Nama',
+    staffId: 'ID Pekerja',
+    position: 'Jawatan',
+    department: 'Bahagian',
+    leaveType: 'Jenis Cuti',
+    selectLeaveType: 'Pilih jenis cuti',
+    reason: 'Sebab',
+    totalDays: 'Jumlah Hari',
+    startDate: 'Tarikh Mula',
+    endDate: 'Tarikh Tamat',
+    isHalfDay: 'Separuh Hari',
+    jobTakenOverBy: 'Tugas Diambil Alih Oleh',
+    attachment: 'Lampiran (pilihan)',
+    fileSizeNote: 'Nota: Sila muat naik fail tidak melebihi 2 MB.',
+    cancel: 'Batal',
+    save: 'Simpan',
+    saving: 'Menyimpan...',
+    successTitle: 'Cuti dikemas kini!',
+    errorTitle: 'Kemaskini gagal',
+    errorText: 'Sesuatu yang tidak kena.',
+    errors: {
+      fileSize: 'Saiz fail tidak boleh melebihi 2 MB.'
+    },
+    leaveTypes: {
+      annual: 'Cuti Tahunan',
+      medical: 'Sijil Sakit',
+      unpaid: 'Cuti Tanpa Gaji',
+      compassionate: 'Cuti Ehsan'
+    }
+  }
+};
 
 const EditLeaveModal = ({ isOpen, toggle, leave, onSave }) => {
   // Map leave_type to leave_type_id for editing
   const [form, setForm] = useState({ ...leave, leave_type_id: leave?.leave_type_id || leave?.leave_type });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [language, setLanguage] = useState('en'); // Default to English
+
+  // Get current translation
+  const t = translations[language];
+
+  // Toggle language function
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'en' ? 'ms' : 'en');
+  };
 
 useEffect(() => {
   if (leave) {
@@ -42,7 +120,7 @@ useEffect(() => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        setError('File size should not exceed 2 MB.');
+        setError(t.errors.fileSize);
         setForm((f) => ({ ...f, document: null }));
       } else {
         setError('');
@@ -71,14 +149,14 @@ useEffect(() => {
       // Use leave.request_id for update
       await updateLeaveApplication(leave.request_id || leave.id, formData);
 
-      Swal.fire({ icon: 'success', title: 'Leave updated!' });
+      Swal.fire({ icon: 'success', title: t.successTitle });
       onSave();
       toggle();
     } catch (err) {
       Swal.fire({
         icon: 'error',
-        title: 'Update failed',
-        text: err.response?.data?.error || 'Something went wrong.',
+        title: t.errorTitle,
+        text: err.response?.data?.error || t.errorText,
       });
     } finally {
       setSaving(false);
@@ -110,20 +188,31 @@ useEffect(() => {
       >
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
-            <div className="modal-header bg-primary text-white">
-              <h5 className="modal-title">Edit Leave</h5>
-              <button
-                type="button"
-                className="btn-close"
-                aria-label="Close"
-                onClick={toggle}
-              ></button>
+            <div className="modal-header bg-primary text-white d-flex justify-content-between align-items-center">
+              <h5 className="modal-title mb-0">{t.title}</h5>
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn btn-outline-light btn-sm me-2"
+                  onClick={toggleLanguage}
+                  title={language === 'en' ? 'Switch to Bahasa Malaysia' : 'Switch to English'}
+                >
+                  <FaLanguage className="me-1" />
+                  {language === 'en' ? 'BM' : 'EN'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  aria-label="Close"
+                  onClick={toggle}
+                ></button>
+              </div>
             </div>
             <div className="modal-body">
               <form onSubmit={handleSubmit}>
                 {/* Read-only staff details */}
                 <div className="mb-3">
-                  <label className="form-label">Name</label>
+                  <label className="form-label">{t.name}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -133,7 +222,7 @@ useEffect(() => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Staff ID</label>
+                  <label className="form-label">{t.staffId}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -143,7 +232,7 @@ useEffect(() => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Position</label>
+                  <label className="form-label">{t.position}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -153,7 +242,7 @@ useEffect(() => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Department</label>
+                  <label className="form-label">{t.department}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -163,7 +252,7 @@ useEffect(() => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Leave Type</label>
+                  <label className="form-label">{t.leaveType}</label>
                   <select
                     className="form-select"
                     name="leave_type_id"
@@ -171,16 +260,16 @@ useEffect(() => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="">Select leave type</option>
-                    <option value="2">Annual Leave</option>
-                    <option value="3">Medical Certificate</option>
-                    <option value="4">Unpaid Leave</option>
-                    <option value="5">Compassionate Leave</option>
+                    <option value="">{t.selectLeaveType}</option>
+                    <option value="2">{t.leaveTypes.annual}</option>
+                    <option value="3">{t.leaveTypes.medical}</option>
+                    <option value="4">{t.leaveTypes.unpaid}</option>
+                    <option value="5">{t.leaveTypes.compassionate}</option>
                   </select>
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Reason</label>
+                  <label className="form-label">{t.reason}</label>
                   <textarea
                     className="form-control"
                     name="reason"
@@ -192,7 +281,7 @@ useEffect(() => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Total Days</label>
+                  <label className="form-label">{t.totalDays}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -202,7 +291,7 @@ useEffect(() => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Start Date</label>
+                  <label className="form-label">{t.startDate}</label>
                   <input
                     type="date"
                     name="start_date"
@@ -214,7 +303,7 @@ useEffect(() => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">End Date</label>
+                  <label className="form-label">{t.endDate}</label>
                   <input
                     type="date"
                     name="end_date"
@@ -238,12 +327,12 @@ useEffect(() => {
                     className="form-check-label"
                     htmlFor="edit-half-day-checkbox"
                   >
-                    Is Half Day
+                    {t.isHalfDay}
                   </label>
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Job Taken Over By</label>
+                  <label className="form-label">{t.jobTakenOverBy}</label>
                   <input
                     className="form-control"
                     name="job_taken_over_by"
@@ -253,14 +342,14 @@ useEffect(() => {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Attachment (optional)</label>
+                  <label className="form-label">{t.attachment}</label>
                   <input
                     type="file"
                     className="form-control"
                     onChange={handleFileChange}
                   />
                   <div className="form-text text-danger">
-                    Note: Please upload files no larger than 2 MB.
+                    {t.fileSizeNote}
                   </div>
                 </div>
 
@@ -273,7 +362,7 @@ useEffect(() => {
                 className="btn btn-secondary"
                 onClick={toggle}
               >
-                Cancel
+                {t.cancel}
               </button>
               <button
                 type="button"
@@ -281,7 +370,7 @@ useEffect(() => {
                 onClick={handleSubmit}
                 disabled={saving}
               >
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? t.saving : t.save}
               </button>
             </div>
           </div>
