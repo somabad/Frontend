@@ -228,14 +228,8 @@ export const tableColumns = (onUpdateSuccess) => [
     center: true,
   },
   {
-    name: 'Contract Type',
-    selector: (row) => row.contract_type_id?.name ?? '-',
-    sortable: true,
-    center: true,
-  },
-  {
     name: 'Position',
-    selector: (row) => row.position ?? '-',
+    selector: (row) => row.position?.name ?? '-',
     sortable: true,
     center: true,
   },
