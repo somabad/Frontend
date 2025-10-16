@@ -3,6 +3,7 @@ import { getStaffDashboard, applyLeave, getStaffList, getLeaveBalance, getLeaveT
 import Swal from 'sweetalert2';
 import { Tooltip} from 'reactstrap';
 import { AiOutlineInfoCircle } from 'react-icons/ai';
+import { FaLanguage } from 'react-icons/fa';
 
 const leaveTypes = [
   { value: '2', label: 'Annual Leave' },
@@ -10,6 +11,94 @@ const leaveTypes = [
   { value: '4', label: 'Unpaid Leave'},
   { value: '5', label: 'Compassionate Leave'},
 ];
+
+// Translation object for multilingual support
+const translations = {
+  en: {
+    title: 'Apply for Leave',
+    name: 'Name',
+    staffId: 'Staff Id',
+    position: 'Position',
+    createdAt: 'Created At',
+    department: 'Department',
+    seksyen: 'Section',
+    leaveType: 'Leave Type',
+    selectLeaveType: 'Select leave type',
+    reason: 'Reason',
+    startDate: 'Start Date',
+    endDate: 'End Date',
+    totalDays: 'Total Days',
+    isHalfDay: 'Is Half Day',
+    jobTakenOverBy: 'Job Taken Over By:',
+    attachment: 'Attachment (optional)',
+    fileSizeNote: 'Note: Please attach files no larger than 2 MB. Larger files will not be accepted.',
+    cancel: 'Cancel',
+    submit: 'Submit',
+    submitting: 'Submitting...',
+    noLeaveAvailable: 'No Leave Available',
+    successTitle: 'Leave application submitted!',
+    successText: 'Your leave application has been created successfully.',
+    errors: {
+      noLeaveTypes: 'No leave types available. You have used all your allocated leave days.',
+      chooseLeave: 'Please choose leave',
+      selectStartDate: 'Please select start date',
+      selectEndDate: 'Please select end date',
+      provideReason: 'Please provide a reason for your leave.',
+      fileSize: 'File size should not exceed 2 MB.',
+      loadStaffData: 'Failed to load staff data',
+      applyLeave: 'Failed to apply for leave. Please try again.'
+    },
+    tooltip: 'Total days will be automatically calculated based on start and end dates.',
+    leaveTypes: {
+      annual: 'Annual Leave',
+      medical: 'Medical Certificate', 
+      unpaid: 'Unpaid Leave',
+      compassionate: 'Compassionate Leave'
+    }
+  },
+  ms: {
+    title: 'Borang Permohonan Cuti',
+    name: 'Nama',
+    staffId: 'No. Pekerja',
+    position: 'Jawatan',
+    createdAt: 'Tarikh Permohonan',
+    section: 'Seksyen',
+    department: 'Bahagian',
+    leaveType: 'Jenis Cuti',
+    selectLeaveType: 'Pilih jenis cuti',
+    reason: 'Sebab Cuti',
+    startDate: 'Dari',
+    endDate: 'Hingga',
+    totalDays: 'Bilangan cuti diambil',
+    isHalfDay: 'Separuh Hari',
+    jobTakenOverBy: 'Tugas harian saya akan dijalankan oleh:',
+    attachment: 'Lampiran (pilihan)',
+    fileSizeNote: 'Nota: Sila lampirkan fail tidak melebihi 2 MB. Fail yang lebih besar tidak akan diterima.',
+    cancel: 'Cancel',
+    submit: 'Submit',
+    submitting: 'Menghantar...',
+    noLeaveAvailable: 'Tiada Cuti Tersedia',
+    successTitle: 'Permohonan cuti dihantar!',
+    successText: 'Permohonan cuti anda telah berjaya dibuat.',
+    errors: {
+      noLeaveTypes: 'Tiada jenis cuti tersedia. Anda telah menggunakan semua hari cuti yang diperuntukkan.',
+      chooseLeave: 'Sila pilih cuti',
+      selectStartDate: 'Sila pilih tarikh mula',
+      selectEndDate: 'Sila pilih tarikh tamat',
+      provideReason: 'Sila berikan sebab untuk cuti anda.',
+      fileSize: 'Saiz fail tidak boleh melebihi 2 MB.',
+      loadStaffData: 'Gagal memuatkan data pekerja',
+      applyLeave: 'Gagal memohon cuti. Sila cuba lagi.'
+    },
+    tooltip: 'Jumlah hari akan dikira secara automatik berdasarkan tarikh mula dan tamat.',
+    leaveTypes: {
+      annual: 'Cuti Tahunan',
+      medical: 'Cuti Sakit',
+      unpaid: 'Cuti Tanpa Gaji',
+      compassionate: 'Cuti Ehsan'
+    }
+  }
+};
 
 // Helper to ensure date is YYYY-MM-DD
 const formatDate = (date) => {
@@ -30,6 +119,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   // ...existing useState declarations...
   const [staffName, setStaffName] = useState('');
   const [staffId, setStaffId] = useState('');
+  const [requestId, setRequestId] = useState('');
   const [staffPosition, setStaffPosition] = useState('');
   const [staffDepartment, setStaffDepartment] = useState('');
   const [createdAt, setCreatedAt] = useState('');
@@ -46,6 +136,26 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   const [availableLeaveTypes, setAvailableLeaveTypes] = useState(leaveTypes);
   const [leaveBalances, setLeaveBalances] = useState({});
   const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [language, setLanguage] = useState('en'); // Add language state
+
+  // Get current translation
+  const t = translations[language];
+
+  // Toggle language function
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'en' ? 'ms' : 'en');
+  };
+
+  // Function to translate leave type names
+  const translateLeaveType = (originalName) => {
+    const leaveTypeMapping = {
+      'Annual Leave': t.leaveTypes.annual,
+      'Medical Certificate': t.leaveTypes.medical,
+      'Unpaid Leave': t.leaveTypes.unpaid,
+      'Compassionate Leave': t.leaveTypes.compassionate
+    };
+    return leaveTypeMapping[originalName] || originalName;
+  };
 
   // Auto-calculate totalDays when dates change
   useEffect(() => {
@@ -161,7 +271,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
         setAvailableLeaveTypes(leaveTypesToFilter);
       }
     } catch (err) {
-      setError("Failed to load staff data");
+      setError(t.errors.loadStaffData);
       console.error(err);
     }
   };
@@ -188,7 +298,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) { // 2 MB in bytes
-        setError('File size should not exceed 2 MB.');
+        setError(t.errors.fileSize);
         setAttachment(null);
         return;
       } else {
@@ -218,28 +328,28 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
 
       // Check if any leave types are available
       if (availableLeaveTypes.length === 0) {
-        setError('No leave types available. You have used all your allocated leave days.');
+        setError(t.errors.noLeaveTypes);
         setSubmitting(false);
         return;
       }
 
       // Require leave type
       if (!safeLeaveType) {
-        setError('Please choose leave');
+        setError(t.errors.chooseLeave);
         setSubmitting(false);
         return;
       }
 
       // Require start date
       if (!safeStartDate) {
-        setError('Please select start date');
+        setError(t.errors.selectStartDate);
         setSubmitting(false);
         return;
       }
 
       // Require end date
       if (!safeEndDate) {
-        setError('Please select end date');
+        setError(t.errors.selectEndDate);
         setSubmitting(false);
         return;
       }
@@ -256,7 +366,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
 
       // Require reason
       if (!leaveData.reason) {
-        setError('Please provide a reason for your leave.');
+        setError(t.errors.provideReason);
         setSubmitting(false);
         return;
       }
@@ -280,11 +390,16 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
         console.log(pair[0] + ': ' + pair[1]);
       }
 
-      await applyLeave(formData);
+      const response = await applyLeave(formData);
+
+     if (response && response.data && response.data.leave_request) {
+        setRequestId(response.data.leave_request.request_id);
+      }
+
       Swal.fire({
         icon: 'success',
-        title: 'Leave application submitted!',
-        text: 'Your leave application has been created successfully.',
+        title: t.successTitle,
+        text: t.successText,
         timer: 2000,
         showConfirmButton: false,
       });
@@ -296,7 +411,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
           ? typeof err.response.data === 'object'
             ? JSON.stringify(err.response.data)
             : String(err.response.data)
-          : 'Failed to apply for leave. Please try again.'
+          : t.errors.applyLeave
       );
     } finally {
       setSubmitting(false);
@@ -318,19 +433,31 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
           <div className="modal-content">
             {/* Modal Header */}
             <div className="modal-header bg-primary text-white">
-              <h5 className="modal-title">Apply for Leave</h5>
-               <button
-                 type="button"
-                 className="btn-close"
-                 aria-label="Close"
-                 onClick={onClose}
-               ></button>
+              <h5 className="modal-title">{t.title}</h5>
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn btn-outline-light btn-sm me-2"
+                  style={{marginLeft:'20px'}}
+                  onClick={toggleLanguage}
+                  title={language === 'en' ? 'Switch to Bahasa Malaysia' : 'Switch to English'}
+                >
+                  <FaLanguage className="me-1" />
+                  {language === 'en' ? 'BM' : 'EN'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={onClose}
+                ></button>
+              </div>
             </div>
             {/* Modal Body */}
             <div className="modal-body">
               <form>
                 <div className="mb-3">
-                  <label className="form-label">Name</label>
+                  <label className="form-label">{t.name}</label>
                   <input
                   type= 'text'
                   className='form-control'
@@ -340,17 +467,17 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   </input>
                 </div>
                 <div className='mb-3'>
-                  <label className='form-label'>Staff Id</label>
+                  <label className='form-label'>{t.staffId}</label>
                   <input
                   type= 'text'
                   className='form-control'
-                  value={staffId}
+                  value={requestId}
                   readOnly
                   >
                   </input>
                 </div>
                 <div className='mb-3'>
-                  <label className='form-label'>Position</label>
+                  <label className='form-label'>{t.position}</label>
                   <input
                   type= 'text'
                   className='form-control'
@@ -360,7 +487,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   </input>
                 </div>
                 <div className='mb-3'>
-                  <label className='form-label'>Created At</label>
+                  <label className='form-label'>{t.createdAt}</label>
                   <input
                   type= "text"
                   className='form-control'
@@ -370,7 +497,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   </input>
                 </div>
                 <div className='mb-3'>
-                  <label className='form-label'>Department</label>
+                  <label className='form-label'>{t.department}</label>
                   <input
                   type= 'text'
                   className='form-control'
@@ -380,16 +507,17 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   </input>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Leave Type</label>
+                  <label className="form-label">{t.leaveType}</label>
                   <select
                     className="form-select"
                     value={leaveType}
                     onChange={e => setLeaveType(e.target.value)}
                     required
                   >
-                    <option value="" disabled>Select leave type</option>
+                    <option value="" disabled>{t.selectLeaveType}</option>
                     {availableLeaveTypes.map(type => {
-                      const leaveTypeName = type.label || type.name;
+                      const originalName = type.label || type.name;
+                      const translatedName = translateLeaveType(originalName);
                       
                       // Use the same mapping as in the filtering logic
                       const leaveTypeMapping = {
@@ -399,12 +527,12 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                         'Compassionate Leave': 'Compassionate'
                       };
                       
-                      const balanceKey = leaveTypeMapping[leaveTypeName] || leaveTypeName;
+                      const balanceKey = leaveTypeMapping[originalName] || originalName;
                       const balance = leaveBalances[balanceKey];
                       
                       return (
                         <option key={type.value || type.id} value={type.value || type.id}>
-                          {leaveTypeName}
+                          {translatedName}
                           {balance && ` (${balance.remaining} days remaining)`}
                         </option>
                       );
@@ -412,12 +540,12 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   </select>
                   {availableLeaveTypes.length === 0 && (
                     <div className="form-text text-warning">
-                      No leave types available. You have used all your allocated leave days.
+                      {t.errors.noLeaveTypes}
                     </div>
                   )}
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Reason</label>
+                  <label className="form-label">{t.reason}</label>
                   <textarea
                     className="form-control"
                     value={reason}
@@ -426,7 +554,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                     rows={3}
                   />
                 <div className="mb-3">
-                  <label className="form-label">Start Date</label>
+                  <label className="form-label">{t.startDate}</label>
                   <input
                     type="date"
                     name="start_date"
@@ -438,7 +566,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">End Date</label>
+                  <label className="form-label">{t.endDate}</label>
                   <input
                     type="date"
                     name="end_date"
@@ -451,7 +579,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                 </div>
                 </div>
                 <div className='mb-3'>
-                  <label className='form-label'>Total Days</label>
+                  <label className='form-label'>{t.totalDays}</label>
                   <span
                     id="info-icon"
                     style={{ marginLeft: '8px', cursor: 'pointer', color: '#888'}}
@@ -466,7 +594,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                     target="info-icon"
                     toggle={() => setTooltipOpen(!tooltipOpen)}
                   >
-                    Total days will be automatically calculated based on start and end dates.
+                    {t.tooltip}
                   </Tooltip>
 
                   <input
@@ -485,11 +613,11 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                       checked={!!isHalfDay}
                       onChange={e => setIsHalfDay(e.target.checked)}
                     />
-                    <label className='form-check-label' htmlFor='half-day-checkbox'>Is Half Day</label>
+                    <label className='form-check-label' htmlFor='half-day-checkbox'>{t.isHalfDay}</label>
                   </div>
                 </div>
                 <div className='mb-3'>
-                  <label className='form-label'>Job Taken Over By:</label>
+                  <label className='form-label'>{t.jobTakenOverBy}</label>
                   <input
                   className='form-control'
                   value={jobTakenOverBy}
@@ -498,13 +626,13 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   /> 
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Attachment (optional)</label>
+                  <label className="form-label">{t.attachment}</label>
                   <input
                     type="file"
                     className="form-control"
                     onChange={handleFileChange}
                   />
-                  <div className="form-text text-danger">Note: Please attach files no larger than 2 MB. Larger files will not be accepted.</div>
+                  <div className="form-text text-danger">{t.fileSizeNote}</div>
                 </div>
                 {error && <div className="text-danger mb-2">{error}</div>}
               </form>
@@ -519,7 +647,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   onClose();
                 }}
               >
-                Cancel
+                {t.cancel}
               </button>
               <button
                 type="button"
@@ -527,7 +655,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                 onClick={handleSubmit}
                 disabled={submitting || availableLeaveTypes.length === 0}
               >
-                {submitting ? 'Submitting...' : availableLeaveTypes.length === 0 ? 'No Leave Available' : 'Submit'}
+                {submitting ? t.submitting : availableLeaveTypes.length === 0 ? t.noLeaveAvailable : t.submit}
               </button>
             </div>
           </div>

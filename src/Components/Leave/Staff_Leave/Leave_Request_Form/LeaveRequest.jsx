@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, Fragment, useRef } from "react";
 import { Card, CardHeader, Col, CardBody, Badge, Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import ApplyLeaveModal from "../Leave_Request_Form/ApplyLeaveModal";
 import ViewLeaveModal from "../Leave_Request_Form/ViewLeaveModal";
@@ -9,6 +9,101 @@ import Swal from "sweetalert2";
 import Loader from "../../../Attendance/Loader";
 import UploadImageModal from "../../Admin_Leave/Manage_Leave_Request/UploadImageModal";
 import ViewImageModal from "../../Admin_Leave/Manage_Leave_Request/ViewImageModal";
+import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { useDrawingArea } from '@mui/x-charts/hooks';
+import { styled } from '@mui/material/styles';
+
+const StyledText = styled('text')(({ theme }) => ({
+  fill: theme.palette.text.primary,
+  textAnchor: 'middle',
+  dominantBaseline: 'central',
+  fontSize: 20,
+}));
+
+function PieCenterLabel({ children }) {
+  const { width, height, left, top } = useDrawingArea();
+  return (
+    <StyledText x={left + width / 2} y={top + height / 2}>
+      {children}
+    </StyledText>
+  );
+}
+
+// Component to draw connecting lines from pie segments to labels
+function PieConnectingLines({ data, outerRadius, innerRadius }) {
+  const { width, height, left, top } = useDrawingArea();
+  const centerX = left + width / 2;
+  const centerY = top + height / 2;
+
+  // Calculate total value for percentages
+  const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+
+  // Generate lines for each segment
+  let currentAngle = -Math.PI / 2; // Start from top
+
+  return (
+    <g>
+      {data.map((item, index) => {
+        const percentage = item.value / totalValue;
+        const segmentAngle = percentage * 2 * Math.PI;
+        const midAngle = currentAngle + segmentAngle / 2;
+
+        // Calculate positions - increased distances for better spacing
+        const lineStartRadius = outerRadius + 10; // Start just outside the arc
+        const lineEndRadius = outerRadius + 60; // End before the label (increased from 30 to 60)
+        const labelRadius = outerRadius + 80; // Label position (increased from 50 to 80)
+
+        const x1 = centerX + Math.cos(midAngle) * lineStartRadius;
+        const y1 = centerY + Math.sin(midAngle) * lineStartRadius;
+        const x2 = centerX + Math.cos(midAngle) * lineEndRadius;
+        const y2 = centerY + Math.sin(midAngle) * lineEndRadius;
+
+        // Horizontal line extension - increased for better spacing
+        const isRightSide = Math.cos(midAngle) > 0;
+        const x3 = x2 + (isRightSide ? 35 : -35);
+        const y3 = y2;
+
+        currentAngle += segmentAngle;
+
+        return (
+          <g key={`line-${item.id}`}>
+            {/* First segment: from arc edge to bend point */}
+            <line
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke={item.color || '#666'}
+              strokeWidth="1.5"
+            />
+            {/* Second segment: horizontal line to label */}
+            <line
+              x1={x2}
+              y1={y2}
+              x2={x3}
+              y2={y3}
+              stroke={item.color || '#666'}
+              strokeWidth="1.5"
+            />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+// Convert hex color to rgba with opacity
+const hexToRgba = (hex, alpha) => {
+  const r = parseInt(hex.slice(1, 3), 18);
+  const g = parseInt(hex.slice(3, 5), 18);
+  const b = parseInt(hex.slice(5, 7), 18);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 
 const LeaveRequest = () => {
   const staffId = sessionStorage.getItem("staffId");
@@ -205,6 +300,55 @@ const LeaveRequest = () => {
     setImagePreview({ open: false, imageUrl: null, loading: false });
   };
 
+  const [view, setView] = useState('type'); // toggle between type and usage
+
+  const handleViewChange = (event, newView) => {
+    if (newView !== null) {
+      setView(newView);
+    }
+  };
+
+  const totalLeave = Object.values(balanceByType).reduce(
+    (sum, t) => sum + (Number(t.used) + Number(t.remaining)),
+    0
+  );
+
+  const leaveTypeColors = [
+    '#fa938e', '#98bf45', '#51cbcf', '#d397ff', '#f6c85f', '#6a9fb5',
+  ];
+
+  // Main breakdown (outer ring)
+  const leaveTypeData = Object.entries(balanceByType).map(([type, data], i) => ({
+    id: type,
+    label: `${type}`,
+    value: Number(data.used) + Number(data.remaining),
+    percentage: ((Number(data.used) + Number(data.remaining)) / totalLeave) * 100,
+    color: leaveTypeColors[i % leaveTypeColors.length],
+  }));
+
+  // Usage breakdown (inner ring)
+  const usageData = Object.entries(balanceByType).flatMap(([type, data], i) => {
+    const baseColor = leaveTypeColors[i % leaveTypeColors.length];
+    const total = Number(data.used) + Number(data.remaining);
+    return [
+      {
+        id: `${type}-Used`,
+        label: `${type} Used`,
+        value: Number(data.used),
+        percentage: (Number(data.used) / total) * 100,
+        color: hexToRgba(baseColor, 0.4),
+      },
+      {
+        id: `${type}-Remaining`,
+        label: `${type} Remaining`,
+        value: Number(data.remaining),
+        percentage: (Number(data.remaining) / total) * 100,
+        color: baseColor,
+      },
+    ];
+  });
+
+
   if (loading) return <Loader />;
 
   return (
@@ -326,34 +470,104 @@ const LeaveRequest = () => {
               <p>No recent leave requests.</p>
             )}
 
+            <br></br>
+
             <hr/>
             
-            {/* Leave Balance Summary */}
+            {/* Leave Balance Summary (Pie Chart Version) */}
             {balanceByType && Object.keys(balanceByType).length > 0 && (
-              <div style={{ marginTop: "20px" }}>
-                <h5 style={{ marginBottom: "10px" }}>Remaining Leave by Type</h5>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px" }}>
-                  {Object.entries(balanceByType).map(([type, data]) => {
-                    const used = Number(data?.used ?? 0);
-                    const remaining = Number(data?.remaining ?? 0);
-                    const total = used + remaining;
-                    const pct = total > 0 ? Math.round((remaining / total) * 100) : 0;
-                    return (
-                      <div key={type} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <div style={{ fontWeight: 600, color: "#444" }}>{type}</div>
-                          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                            <Badge color="primary" pill>Remaining {remaining}</Badge>
-                            <Badge color="secondary" pill>Used {used}</Badge>
-                          </div>
-                        </div>
-                        <div style={{ height: "8px", background: "#f0f2f5", borderRadius: "6px", overflow: "hidden" }}>
-                          <div style={{ width: `${pct}%`, height: "100%", background: "#4fc3f7" }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+              <div style={{ marginTop: "40px", alignItems: "center"}}>
+                <Typography variant="h6" gutterBottom >
+                  <span style={{fontSize:"1.5rem", fontWeight:"bold"}}>Leave Balance Summary</span>
+                </Typography>
+
+                <ToggleButtonGroup
+                  color="primary"
+                  size="big"
+                  value={view}
+                  exclusive
+                  onChange={handleViewChange}
+                  sx={{ mb: 4 }}
+                  alignItems="center"
+                >
+                  <ToggleButton value="type">By Leave Type</ToggleButton>
+                  <ToggleButton value="usage">Used vs Remaining</ToggleButton>
+                </ToggleButtonGroup>
+
+                <Box sx={{ display: "flex", justifyContent: "center", height: 550 }}>
+                  {view === "type" ? (
+                    <PieChart
+                      series={[
+                        {
+                          innerRadius: 60,
+                          outerRadius: 130,
+                          data: leaveTypeData,
+                          arcLabelRadius: 220,
+                          arcLabel: (item) => `${item.label} (${item.percentage.toFixed(0)}%)`,
+                          valueFormatter: ({ value }) =>
+                            `${value} days (${((value / totalLeave) * 100).toFixed(0)}%)`,
+                          highlightScope: { fade: 'global', highlight: 'item' },
+                          highlighted: { additionalRadius: 4 },
+                          cornerRadius: 6,
+                        },
+                      ]}
+                      sx={{
+                        [`& .${pieArcLabelClasses.root}`]: { 
+                          fontSize: '11px',
+                          fontWeight: '500',
+                        },
+                      }}
+                      slotProps={{
+                        legend: {
+                          position: {horizontal: 'right'},
+                          direction: 'row',
+                          padding: 0,
+                          itemSpacing: 20,
+                          markup: 'circle',
+                          margin: { right: '50px', left: '50px' },
+                        }
+                      }}
+                    >
+                      <PieConnectingLines data={leaveTypeData} outerRadius={130} innerRadius={60} />
+                      <PieCenterLabel>Leave Type</PieCenterLabel>
+                    </PieChart>
+                  ) : (
+                    <PieChart
+                      series={[
+                        {
+                          innerRadius: 60,
+                          outerRadius: 130,
+                          data: usageData,
+                          arcLabelRadius: 220,
+                          arcLabel: (item) => `${item.label} (${item.percentage.toFixed(0)}%)`,
+                          valueFormatter: ({ value }) => `${value} days`,
+                          highlightScope: { fade: 'global', highlight: 'item' },
+                          highlighted: { additionalRadius: 4 },
+                          cornerRadius: 4,
+                        },
+                      ]}
+                      sx={{
+                        [`& .${pieArcLabelClasses.root}`]: { 
+                          fontSize: '11px',
+                          fontWeight: '500',
+                        },
+                      }}
+                      slotProps={{
+                        legend: {
+                          position: {vertical: 'middle', horizontal: 'right'},
+                          direction: 'column',
+                          padding: 0,
+                          itemSpacing: 20,
+                          markup: 'circle',
+                          margin: { right: '50px', left: '50px' },
+                        }
+                      }}
+                    >
+                      <PieConnectingLines data={usageData} outerRadius={130} innerRadius={60} />
+                      <PieCenterLabel>Usage</PieCenterLabel>
+                    </PieChart>
+                  )}
+                </Box>
               </div>
             )}
           </CardBody>
