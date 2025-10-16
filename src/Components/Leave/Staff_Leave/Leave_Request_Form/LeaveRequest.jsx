@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from "react";
-import { Card, CardHeader, Col, CardBody, Badge } from "reactstrap";
+import { Card, CardHeader, Col, CardBody, Badge, Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import ApplyLeaveModal from "../Leave_Request_Form/ApplyLeaveModal";
 import ViewLeaveModal from "../Leave_Request_Form/ViewLeaveModal";
 import EditLeaveModal from "../Leave_Request_Form/EditLeaveModal";
@@ -52,6 +52,7 @@ const LeaveRequest = () => {
   const [editModal, setEditModal] = useState({ open: false, leave: null });
   const [deleteModal, setDeleteModal] = useState({ open: false, leave: null });
   const [loading, setLoading] = useState(true);
+  const [showReminderModal, setShowReminderModal] = useState(false);
   
   // Upload modal states
   const [uploadModal, setUploadModal] = useState({ 
@@ -89,6 +90,11 @@ const LeaveRequest = () => {
   useEffect(() => {
     if (staffId) fetchData();
   }, [staffId]);
+
+  // Show reminder notification on every page load
+  useEffect(() => {
+    setShowReminderModal(true);
+  }, []);
 
   const handleLeaveSubmitted = () => {
     setShowApplyModal(false);
@@ -496,6 +502,43 @@ const LeaveRequest = () => {
           </CardBody>
         </Card>
       </Col>
+
+      {/* Leave Reminder Modal */}
+      <Modal isOpen={showReminderModal} toggle={() => setShowReminderModal(false)} centered>
+        <ModalHeader toggle={() => setShowReminderModal(false)}>
+          <i className="fa fa-exclamation-circle" style={{ marginRight: '8px', color: '#dc3545', fontSize: '20px' }}></i>
+          Important Reminder
+        </ModalHeader>
+        <ModalBody>
+          <div style={{ padding: '10px' }}>
+            <p style={{ fontSize: '16px', marginBottom: '15px' }}>
+              <strong>Leave Application Policy:</strong>
+            </p>
+            <ul style={{ lineHeight: '1.8', fontSize: '15px' }}>
+              <li>Leave applications must be submitted <strong>at least 4 days before</strong> the intended leave date, except in emergencies.</li>
+              <li>Emergency leave qualification is only <strong>one day</strong> unless it involves travel outside the district.</li>
+              <li>Please plan your leave requests accordingly to ensure proper approval processing.</li>
+            </ul>
+            <div style={{ 
+              marginTop: '20px', 
+              padding: '12px', 
+              backgroundColor: '#e7f3ff', 
+              borderLeft: '4px solid #007bff',
+              borderRadius: '4px'
+            }}>
+              <p style={{ margin: 0, fontSize: '14px', color: '#004085' }}>
+                <i className="fa fa-lightbulb-o" style={{ marginRight: '6px' }}></i>
+                <strong>Tip:</strong> Submit your leave request early to avoid any last-minute issues.
+              </p>
+            </div>
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="primary" onClick={() => setShowReminderModal(false)}>
+            I Understand
+          </Button>
+        </ModalFooter>
+      </Modal>
 
       {/* Modals */}
       {showApplyModal && (
