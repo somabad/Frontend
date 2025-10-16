@@ -3,7 +3,7 @@ import { Form, FormGroup, Input, Label, Button, InputGroup, InputGroupText } fro
 import CommonModal from './modal';
 import Swal from 'sweetalert2';
 // UPDATE IMPORTS: Add the new utility functions
-import { getRoleList, createNewUser, getLocationList, updateStaffLocations, getContractTypeList } from '../utils';
+import { getRoleList, createNewUser, getLocationList, updateStaffLocations } from '../utils';
 import { Eye, EyeOff } from 'react-feather';
 import { Select } from 'antd';
 import axios from 'axios';
@@ -20,21 +20,21 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     roleId: '',
     locations: [],
     created_at: '',
-    department: '',   // ADDED
-    position: '',     // ADDED
-    contract_type_id: '', // ADDED
-    carry_foward_days: '' //ADDED
+    department: '',
+    position_id: '',
+    carry_forward_days: ''
   };
 
   const [modal, setModal] = useState(false);
   const [formData, setFormData] = useState(defaultFormData);
   const [roles, setRoles] = useState([]);
   const [locations, setLocations] = useState([]);
-  const [contractTypes, setContractTypes] = useState([]);
+  const [positions, setPositions] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   // ADDED: State for leave types and carry forward days
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [carryForwardDays, setCarryForwardDays] = useState({});
+  const [entitledOverrides, setEntitledOverrides] = useState({});
 
   const toggle = () => {
     if (modal) {
@@ -42,6 +42,7 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
       setShowPassword(false);
       // ADDED: Reset carry forward days when modal closes
       setCarryForwardDays({});
+      setEntitledOverrides({});
     }
     setModal(!modal);
   };
@@ -49,21 +50,15 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [roleData, locationRes, contractRes] = await Promise.all([
+        const [roleData, locationRes, positionRes] = await Promise.all([
           getRoleList(),
           getLocationList(),
-          // CHANGED: Use the utility function instead of direct axios call
-          getContractTypeList(), 
+          axios.get('http://127.0.0.1:8000/api/position-list/'),
         ]);
 
         setRoles(roleData);
         setLocations(locationRes.data);
-
-        // ✅ Important — check the shape of returned data
-        console.log('Contract types response:', contractRes);
-
-        // CHANGED: Handle the response from utility function
-        setContractTypes(contractRes.data || contractRes);
+        setPositions(positionRes.data || []);
       } catch (err) {
         console.error('Failed to fetch data:', err);
       }
@@ -72,40 +67,39 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     fetchData();
   }, []);
 
-  // ADDED: Fetch leave types when contract type is selected
+  // ADDED: Fetch leave types when position is selected
   useEffect(() => {
     const fetchLeaveTypes = async () => {
-      if (formData.contract_type_id) {
+      if (formData.position_id) {
         try {
-          // CHANGED: Use direct axios call since we don't have the util function yet
-          const response = await axios.get(`http://127.0.0.1:8000/api/contract-type-leave-entitlements/${formData.contract_type_id}/`);
-          console.log('Leave types response:', response.data);
-          
-          // CHANGED: Handle different response structures
+          const response = await axios.get(`http://127.0.0.1:8000/api/position-leave-entitlements/${formData.position_id}/`);
           const leaveData = response.data.data || response.data;
           setLeaveTypes(Array.isArray(leaveData) ? leaveData : []);
-          
-          // Initialize carry forward days with 0 for each leave type
-          const initialCarryForward = {};
-          if (Array.isArray(leaveData)) {
-            leaveData.forEach(leaveType => {
-              initialCarryForward[leaveType.leave_type_id] = 0;
-            });
-          }
-          setCarryForwardDays(initialCarryForward);
+
+          // Initialize carry forward and entitled overrides
+          const initialCarry = {};
+          const initialOverride = {};
+          (Array.isArray(leaveData) ? leaveData : []).forEach(lt => {
+            initialCarry[lt.leave_type_id] = 0;
+            initialOverride[lt.leave_type_id] = '';
+          });
+          setCarryForwardDays(initialCarry);
+          setEntitledOverrides(initialOverride);
         } catch (err) {
-          console.error('Failed to fetch leave types:', err);
+          console.error('Failed to fetch position entitlements:', err);
           setLeaveTypes([]);
           setCarryForwardDays({});
+          setEntitledOverrides({});
         }
       } else {
         setLeaveTypes([]);
         setCarryForwardDays({});
+        setEntitledOverrides({});
       }
     };
 
     fetchLeaveTypes();
-  }, [formData.contract_type_id]);
+  }, [formData.position_id]);
 
   const handleChange = (e) => {
     setFormData({
@@ -123,6 +117,14 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     setCarryForwardDays(prev => ({
       ...prev,
       [leaveTypeId]: parseFloat(value) || 0
+    }));
+  };
+
+  // ADDED: Handle entitled days override input change
+  const handleEntitledOverrideChange = (leaveTypeId, value) => {
+    setEntitledOverrides(prev => ({
+      ...prev,
+      [leaveTypeId]: value
     }));
   };
 
@@ -169,9 +171,8 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
         phone: formData.phone,
         password: formData.password,
         roleId: formData.roleId,
-        department: formData.department,      // ADDED
-        position: formData.position,          // ADDED
-        contract_type_id: formData.contract_type_id, // ADDED
+        department: formData.department,
+        position_id: formData.position_id,
         created_at: malaysiaTime
       };
 
@@ -179,8 +180,8 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
       const res = await createNewUser(userData);
       console.log('User creation response:', res);
 
-      // ADDED: Set carry forward days if contract type is selected and there are leave types
-      if (res && formData.contract_type_id && leaveTypes.length > 0) {
+      // ADDED: Set carry forward + optional entitled overrides if position is selected
+      if (res && formData.position_id && leaveTypes.length > 0) {
         try {
           let staffId = res.staffId || res.id || res.staff_id || res.userId;
           
@@ -204,10 +205,17 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
           
           if (staffId) {
             const currentYear = new Date().getFullYear();
-            const carryForwardData = Object.keys(carryForwardDays).map(leaveTypeId => ({
-              leave_type_id: leaveTypeId,
-              days: carryForwardDays[leaveTypeId]
-            }));
+            const carryForwardData = Object.keys(carryForwardDays).map(leaveTypeId => {
+              const override = entitledOverrides[leaveTypeId];
+              const payload = {
+                leave_type_id: leaveTypeId,
+                days: carryForwardDays[leaveTypeId]
+              };
+              if (override !== '' && override !== null && override !== undefined) {
+                payload.entitled_days = parseFloat(override);
+              }
+              return payload;
+            });
 
             console.log('Setting carry forward days:', {
               staffId,
@@ -215,8 +223,7 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
               carryForwardData
             });
 
-            // CHANGED: Use direct axios call since we don't have the util function yet
-            await axios.post(`http://127.0.0.1:8000/api/staff/${staffId}/set-carry-forward/`, {
+            await axios.post(`http://127.0.0.1:8000/api/set-carry-forward/${staffId}/`, {
               year: currentYear,
               carry_forward_days: carryForwardData
             });
@@ -406,34 +413,22 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
           <FormGroup>
             <Label>Position</Label>
             <Input
-              type="text"
-              name="position"
-              value={formData.position}
-              onChange={handleChange}
-              placeholder="Enter position"
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <Label>Contract Type</Label>
-            <Input
               type="select"
-              name="contract_type_id"
-              value={formData.contract_type_id}
+              name="position_id"
+              value={formData.position_id}
               onChange={handleChange}
-              required
             >
-              <option value="">Select contract type</option>
-              {contractTypes.map(contract => (
-                <option key={contract.contract_type_id} value={contract.contract_type_id}>
-                  {contract.name}
-                </option>
+              <option value="">Select position</option>
+              {positions.map(pos => (
+                <option key={pos.position_id} value={pos.position_id}>{pos.name}</option>
               ))}
             </Input>
           </FormGroup>
 
-          {/* ADDED: Carry Forward Days Input for Each Leave Type */}
-          {formData.contract_type_id && leaveTypes.length > 0 && (
+          {/* Removed Contract Type - using Position-based entitlements */}
+
+          {/* ADDED: Carry Forward + Optional Entitled Override for Each Leave Type */}
+          {formData.position_id && leaveTypes.length > 0 && (
             <FormGroup>
               <Label>Carry Forward Days (Current Year: {new Date().getFullYear()})</Label>
               {leaveTypes.map(leaveType => (
@@ -449,6 +444,18 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
                     value={carryForwardDays[leaveType.leave_type_id] || 0}
                     onChange={(e) => handleCarryForwardChange(leaveType.leave_type_id, e.target.value)}
                     placeholder="Enter carry forward days"
+                  />
+                  <Label for={`entitled-override-${leaveType.leave_type_id}`} style={{ fontSize: '12px', marginTop: '6px' }}>
+                    Override Entitled Days (optional)
+                  </Label>
+                  <Input
+                    type="number"
+                    id={`entitled-override-${leaveType.leave_type_id}`}
+                    step="0.5"
+                    min="0"
+                    value={entitledOverrides[leaveType.leave_type_id] ?? ''}
+                    onChange={(e) => handleEntitledOverrideChange(leaveType.leave_type_id, e.target.value)}
+                    placeholder={`Default: ${leaveType.entitled_days}`}
                   />
                 </FormGroup>
               ))}

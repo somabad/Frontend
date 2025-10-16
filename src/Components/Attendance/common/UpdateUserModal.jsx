@@ -11,7 +11,7 @@ import {
   updateStaffLocations,
   getRoleList,
 } from '../utils';
-import axios from 'axios'; // ADDED: For contract types API call
+import axios from 'axios';
 
 const { Option } = Select;
 
@@ -23,15 +23,14 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     phone: '',
     roleId: '',
     locations: [],
-    department: '',   // ADDED: Department field
-    position: '',     // ADDED: Position field
-    contract_type_id: '' // ADDED: Contract type field
+    department: '',
+    position_id: ''
   });
 
   const [roles, setRoles] = useState([]);
   const [locations, setLocations] = useState([]);
   const [staffLocations, setStaffLocations] = useState([]);
-  const [contractTypes, setContractTypes] = useState([]); // ADDED: Contract types state
+  const [positions, setPositions] = useState([]);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,24 +38,24 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [carryForwardDays, setCarryForwardDays] = useState({});
   const [currentLeaveBalances, setCurrentLeaveBalances] = useState({});
+  const [entitledOverrides, setEntitledOverrides] = useState({});
 
   useEffect(() => {
     if (!modal) return;
 
     const fetchData = async () => {
       try {
-        // ADDED: Fetch contract types along with other data
-        const [roleData, locationRes, staffLocationData, contractRes] = await Promise.all([
+        const [roleData, locationRes, staffLocationData, positionRes] = await Promise.all([
           getRoleList(),
           getLocationList(),
           getStaffLocations(),
-          axios.get('http://127.0.0.1:8000/api/contract-type-list/'), // ADDED: Contract types API
+          axios.get('http://127.0.0.1:8000/api/position-list/'),
         ]);
 
         setRoles(roleData);
         setLocations(locationRes.data);
         setStaffLocations(staffLocationData);
-        setContractTypes(contractRes.data.data || contractRes.data); // ADDED: Set contract types
+        setPositions(positionRes.data || []);
         setHasInitialized(false);
       } catch (err) {
         console.error('Failed to fetch data:', err);
@@ -66,42 +65,39 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     fetchData();
   }, [modal]);
 
-  // ADDED: Fetch leave types when contract type is selected OR when user has existing contract type
+  // ADDED: Fetch leave types for selected position
   useEffect(() => {
     const fetchLeaveTypes = async () => {
-      // CHANGED: Check both form data AND user's existing contract type
-      const contractTypeId = formData.contract_type_id || (user && user.contract_type_id);
-      
-      if (contractTypeId) {
+      const positionId = formData.position_id || (user && user.position && (user.position.id || user.position.position_id));
+      if (positionId) {
         try {
-          const response = await axios.get(`http://127.0.0.1:8000/api/contract-type-leave-entitlements/${contractTypeId}/`);
-          console.log('Leave types response:', response.data);
-          
+          const response = await axios.get(`http://127.0.0.1:8000/api/position-leave-entitlements/${positionId}/`);
           const leaveData = response.data.data || response.data;
           setLeaveTypes(Array.isArray(leaveData) ? leaveData : []);
-          
-          // Initialize carry forward days with current values or 0
+
           const initialCarryForward = {};
-          if (Array.isArray(leaveData)) {
-            leaveData.forEach(leaveType => {
-              // Use current balance if available, otherwise 0
-              initialCarryForward[leaveType.leave_type_id] = currentLeaveBalances[leaveType.leave_type_id] || 0;
-            });
-          }
+          const initialOverride = {};
+          (Array.isArray(leaveData) ? leaveData : []).forEach(leaveType => {
+            initialCarryForward[leaveType.leave_type_id] = currentLeaveBalances[leaveType.leave_type_id] || 0;
+            initialOverride[leaveType.leave_type_id] = '';
+          });
           setCarryForwardDays(initialCarryForward);
+          setEntitledOverrides(initialOverride);
         } catch (err) {
           console.error('Failed to fetch leave types:', err);
           setLeaveTypes([]);
           setCarryForwardDays({});
+          setEntitledOverrides({});
         }
       } else {
         setLeaveTypes([]);
         setCarryForwardDays({});
+        setEntitledOverrides({});
       }
     };
 
     fetchLeaveTypes();
-  }, [formData.contract_type_id, user]); // CHANGED: Added user dependency
+  }, [formData.position_id, user, currentLeaveBalances]);
 
   // ADDED: Fetch current leave balances when user data is loaded
   useEffect(() => {
@@ -153,9 +149,8 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
         phone: user.phone || '',
         roleId: user.roleId?.roleId || '',
         locations: selectedLocationIds,
-        department: user.department || '',       // ADDED: Initialize department
-        position: user.position || '',           // ADDED: Initialize position
-        contract_type_id: user.contract_type_id || '' // ADDED: Initialize contract type
+        department: user.department || '',
+        position_id: (user.position && (user.position.id || user.position.position_id)) || ''
       });
 
       setHasInitialized(true);
@@ -179,6 +174,14 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     }));
   };
 
+  // ADDED: Handle entitled days override input change
+  const handleEntitledOverrideChange = (leaveTypeId, value) => {
+    setEntitledOverrides(prev => ({
+      ...prev,
+      [leaveTypeId]: value
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -190,23 +193,28 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
         email: formData.email,
         phone: formData.phone,
         roleId: formData.roleId,
-        department: formData.department,      // ADDED: Department
-        position: formData.position,          // ADDED: Position
-        contract_type_id: formData.contract_type_id // ADDED: Contract type
+        department: formData.department,
+        position_id: formData.position_id
       });
 
       await updateStaffLocations(user.staffId, formData.locations);
 
-      // ADDED: Update carry forward days if contract type is selected and there are leave types
-      // CHANGED: Check both form data AND user's existing contract type
-      const contractTypeId = formData.contract_type_id || (user && user.contract_type_id);
-      if (contractTypeId && leaveTypes.length > 0) {
+      // ADDED: Update carry forward + optional entitlement overrides when position selected
+      const positionId = formData.position_id || (user && user.position && (user.position.id || user.position.position_id));
+      if (positionId && leaveTypes.length > 0) {
         try {
           const currentYear = new Date().getFullYear();
-          const carryForwardData = Object.keys(carryForwardDays).map(leaveTypeId => ({
-            leave_type_id: leaveTypeId,
-            days: carryForwardDays[leaveTypeId]
-          }));
+          const carryForwardData = Object.keys(carryForwardDays).map(leaveTypeId => {
+            const override = entitledOverrides[leaveTypeId];
+            const payload = {
+              leave_type_id: leaveTypeId,
+              days: carryForwardDays[leaveTypeId]
+            };
+            if (override !== '' && override !== null && override !== undefined) {
+              payload.entitled_days = parseFloat(override);
+            }
+            return payload;
+          });
 
           console.log('Updating carry forward days:', {
             staffId: user.staffId,
@@ -214,7 +222,7 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
             carryForwardData
           });
 
-          await axios.post(`http://127.0.0.1:8000/api/staff/${user.staffId}/set-carry-forward/`, {
+          await axios.post(`http://127.0.0.1:8000/api/set-carry-forward/${user.staffId}/`, {
             year: currentYear,
             carry_forward_days: carryForwardData
           });
@@ -351,39 +359,25 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
 
           {/* ADDED: Position Field */}
           <FormGroup>
-            <Label for="position">Position</Label>
+            <Label for="position_id">Position</Label>
             <Input
-              id="position"
-              type="text"
-              name="position"
-              value={formData.position}
-              onChange={handleChange}
-              placeholder="Enter position"
-            />
-          </FormGroup>
-
-          {/* ADDED: Contract Type Field */}
-          <FormGroup>
-            <Label for="contract_type_id">Contract Type</Label>
-            <Input
-              id="contract_type_id"
+              id="position_id"
               type="select"
-              name="contract_type_id"
-              value={formData.contract_type_id}
+              name="position_id"
+              value={formData.position_id}
               onChange={handleChange}
             >
-              <option value="">Select contract type</option>
-              {contractTypes.map(contract => (
-                <option key={contract.contract_type_id} value={contract.contract_type_id}>
-                  {contract.name}
-                </option>
+              <option value="">Select position</option>
+              {positions.map(pos => (
+                <option key={pos.position_id} value={pos.position_id}>{pos.name}</option>
               ))}
             </Input>
           </FormGroup>
 
-          {/* ADDED: Carry Forward Days Input for Each Leave Type */}
-          {/* CHANGED: Show immediately if user has existing contract type OR new contract type selected */}
-          {(formData.contract_type_id || (user && user.contract_type_id)) && leaveTypes.length > 0 && (
+          {/* Removed Contract Type - using Position-based entitlements */}
+
+          {/* ADDED: Carry Forward + Optional Entitled Override for Each Leave Type */}
+          {formData.position_id && leaveTypes.length > 0 && (
             <FormGroup>
               <Label>Carry Forward Days (Current Year: {new Date().getFullYear()})</Label>
               {leaveTypes.map(leaveType => (
@@ -399,6 +393,18 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
                     value={carryForwardDays[leaveType.leave_type_id] || 0}
                     onChange={(e) => handleCarryForwardChange(leaveType.leave_type_id, e.target.value)}
                     placeholder="Enter carry forward days"
+                  />
+                  <Label for={`entitled-override-${leaveType.leave_type_id}`} style={{ fontSize: '12px', marginTop: '6px' }}>
+                    Override Entitled Days (optional)
+                  </Label>
+                  <Input
+                    type="number"
+                    id={`entitled-override-${leaveType.leave_type_id}`}
+                    step="0.5"
+                    min="0"
+                    value={entitledOverrides[leaveType.leave_type_id] ?? ''}
+                    onChange={(e) => handleEntitledOverrideChange(leaveType.leave_type_id, e.target.value)}
+                    placeholder={`Default: ${leaveType.entitled_days}`}
                   />
                   <small className="text-muted">
                     Current: {currentLeaveBalances[leaveType.leave_type_id] || 0} days

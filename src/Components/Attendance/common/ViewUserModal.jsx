@@ -75,21 +75,14 @@ const ViewUserModal = ({ isOpen, toggle, user }) => {
           </Col>
         </Row>
         
-        {/* ADDED: Position Field */}
+        {/* Position Field */}
         <Row className="mb-2">
           <Col md="6" className="d-flex">
             <Label className="fw-bold me-2">Position:</Label>
-            <div>{user?.position || '-'}</div>
+            <div>{user?.position?.name || user?.position || '-'}</div>
           </Col>
         </Row>
-        
-        {/* ADDED: Contract Type Field */}
-        <Row className="mb-2">
-          <Col md="6" className="d-flex">
-            <Label className="fw-bold me-2">Contract Type:</Label>
-            <div>{user?.contract_type_id?.name || '-'}</div>
-          </Col>
-        </Row>
+
 
         <Row>
           <Col md="12" className="d-flex">
