@@ -35,9 +35,9 @@ const WidgetWraper = ({
     { icon: <FaCalendarCheck size={36} color="#4DB6AC" />, label: "Entitled Days", value: entitledDays, bgColor: "#E0F2F1", iconBg: "#B2DFDB", info: "Total days you are entitled to this year" },
     { icon: <FaChartBar size={36} color="#7986CB" />, label: "Total Entitlement", value: totalEntitlement, bgColor: "#E8EAF6", iconBg: "#C5CAE9", info: "Sum of all leave entitlements" },
     { icon: <FaCalendarMinus size={36} color="#FFB74D" />, label: "Used Days", value: usedDays, bgColor: "#FFF8E1", iconBg: "#FFE0B2", info: "Days you have already used" },
-    { icon: <FaCalendarXmark size={36} color="#F06292" />, label: "Used Unpaid Leave", value: usedUnpaidLeaveData, bgColor: "#FCE4EC", iconBg: "#F8BBD9", info: "Unpaid leave days you have used" },
     { icon: <FaCalendarDay size={36} color="#BA68C8" />, label: "Balance This Year", value: balanceThisYear, bgColor: "#F3E5F5", iconBg: "#E1BEE7", info: "Remaining days for this year" },
     { icon: <FaClipboardList size={36} color="#4FC3F7" />, label: "Total Balance", value: totalBalance, bgColor: "#E1F5FE", iconBg: "#B3E5FC", info: "Total leave balance including carry forward" },
+    { icon: <FaCalendarXmark size={36} color="#F06292" />, label: "Used Unpaid Leave", value: usedUnpaidLeaveData, bgColor: "#FCE4EC", iconBg: "#F8BBD9", info: "Unpaid leave days you have used" },
     { icon: <FaLayerGroup size={36} color="#AED581" />, label: "Balance By Type", value: null, bgColor: "#F1F8E9", iconBg: "#DCEDC8", info: "Remaining days separated by leave type", typeDetails: balanceByType }
   ];
 

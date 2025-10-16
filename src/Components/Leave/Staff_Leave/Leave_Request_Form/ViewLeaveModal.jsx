@@ -2,9 +2,106 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Modal, ModalBody, ModalFooter, Row, Col, FormGroup, Label, Input } from 'reactstrap';
 import { getStaffLeaveDashboard } from '../../../Attendance/utils';
 import { useReactToPrint } from 'react-to-print';
+import { FaLanguage } from 'react-icons/fa';
 
 
 const BACKEND_URL = 'http://127.0.0.1:8000';
+
+// Translation object for multilingual support
+const translations = {
+  en: {
+    title: 'LEAVE APPLICATION FORM (HR-18)',
+    company: 'MY-SUTERA SDN. BHD. (367254-M)',
+    name: 'Name',
+    position: 'Position',
+    section: 'Section',
+    staffId: 'Staff No.',
+    applicationDate: 'Application Date',
+    department: 'Department',
+    leaveType: 'Leave Type:',
+    leaveTypeNote: '(Please mark the relevant box)',
+    reason: 'Reason for leave:',
+    totalDays: 'Number of days taken:',
+    days: 'days',
+    from: 'From',
+    to: 'to',
+    jobTakeover: 'My daily duties will be carried out by',
+    applicantSignature: 'Applicant Signature:',
+    date: 'Date:',
+    supported: 'Supported / Not Supported',
+    approved: 'Approved / Not Approved',
+    sectionHeadSignature: 'Signature of Section Head',
+    divisionHeadSignature: 'Signature of Division Head / Chief Executive Officer',
+    hrConfirmation: 'For human resources & administration department confirmation:',
+    lastYearBalance: 'Last year leave balance:',
+    thisYearBalance: 'This year leave balance:',
+    totalBalance: 'Total balance:',
+    leaveTaken: 'Leave taken:',
+    currentBalance: 'Current balance:',
+    leaveApplied: 'Leave applied:',
+    leaveBalance: 'Leave balance:',
+    reviewedBy: 'Reviewed / Recorded by:',
+    stamp: 'DATE PROCESSED STAMP',
+    notes: 'Notes:',
+    note1: 'Leave applications must be submitted at least 4 days before leave except in emergencies.',
+    note2: 'Emergency leave qualification is only one day unless it involves travel outside the district.',
+    copies: 'Copies:',
+    whiteCopy: 'White for company',
+    blueCopy: 'Blue for applicant',
+    leaveTypes: {
+      annual: 'Annual Leave',
+      unpaid: 'Unpaid Leave',
+      sick: 'Sick Leave',
+      emergency: 'Emergency Leave'
+    }
+  },
+  ms: {
+    title: 'BORANG PERMOHONAN CUTI (HR-18)',
+    company: 'MY-SUTERA SDN. BHD. (367254-M)',
+    name: 'Nama',
+    position: 'Jawatan',
+    section: 'Seksyen',
+    staffId: 'No. Pekerja',
+    applicationDate: 'Tarikh permohonan',
+    department: 'Bahagian',
+    leaveType: 'Jenis cuti:',
+    leaveTypeNote: '(Sila tandakan pada kotak berkenaan)',
+    reason: 'Sebab cuti:',
+    totalDays: 'Bilangan cuti diambil:',
+    days: 'hari',
+    from: 'Dari',
+    to: 'hingga',
+    jobTakeover: 'Tugas harian saya akan dijalankan oleh',
+    applicantSignature: 'T/tangan Pemohon:',
+    date: 'Tarikh:',
+    supported: 'Disokong / Tidak Sokong',
+    approved: 'Diluluskan / Tidak Lulus',
+    sectionHeadSignature: 'T/tangan Ketua Seksyen',
+    divisionHeadSignature: 'T/tangan Ketua Bahagian / Ketua Pegawai Eksekutif',
+    hrConfirmation: 'Untuk pengesahan jabatan sumber manusia & pentadbiran:',
+    lastYearBalance: 'Baki cuti tahun lepas:',
+    thisYearBalance: 'Baki cuti tahun ini:',
+    totalBalance: 'Jumlah baki:',
+    leaveTaken: 'Cuti telah diambil:',
+    currentBalance: 'Baki semasa:',
+    leaveApplied: 'Cuti dipohon:',
+    leaveBalance: 'Baki cuti:',
+    reviewedBy: 'Disemak / Rekod oleh:',
+    stamp: 'COP TARIKH DIPROSES',
+    notes: 'Nota:',
+    note1: 'Permohonan cuti hendaklah dipohon sekurang-kurangnya 4 hari sebelum cuti kecuali ada kecemasan.',
+    note2: 'Kelayakan cuti kecemasan hanya satu hari kecuali yang melibatkan perjalanan keluar daerah.',
+    copies: 'Salinan:',
+    whiteCopy: 'Putih untuk syarikat',
+    blueCopy: 'Biru untuk pemohon',
+    leaveTypes: {
+      annual: 'Cuti tahunan',
+      unpaid: 'Cuti tanpa gaji',
+      sick: 'Cuti sakit',
+      emergency: 'Cuti ehsan'
+    }
+  }
+};
 
 // Function to check if the filename is an image
 const isImage = (filename) => /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(filename || '');
@@ -19,6 +116,15 @@ const getDocumentUrl = (doc) => {
 const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
   const [balanceData, setBalanceData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [language, setLanguage] = useState('ms'); // Default to Malay since it's the original language
+  
+  // Get current translation
+  const t = translations[language];
+
+  // Toggle language function
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'en' ? 'ms' : 'en');
+  };
   
   // Log leave data on component mount to check if data is available
   useEffect(() => {
@@ -43,396 +149,754 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
     };
 
     fetchBalanceData();
-  }, [isOpen, leave?.staffId]);
+    }, [isOpen, leave?.staffId]);
+
+    const LineField = ({ value, multiline = false }) => (
+    <div
+      style={{
+        borderBottom: '1px solid black',
+        minWidth: '100%',
+        display: 'inline-block',
+        height: multiline ? 'auto' : '20px',
+        minHeight: multiline ? '20px' : '20px',
+        fontSize: '14px',
+        lineHeight: '20px',
+        wordWrap: 'break-word',
+        wordBreak: 'break-word',
+        whiteSpace: multiline ? 'normal' : 'nowrap',
+      }}
+    >
+      {value || ''}
+    </div>
+  );
+  
 
   // Print function using react-to-print
   const printRef = useRef();
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: 'Leave Request Form',
-    removeAfterPrint: true,
-  });
-
-  /** PRINT STYLES KHAS UNTUK MODAL (inline style) **/
-    // Print styles to preserve modal layout in print (force columns, compact, hide modal bg)
-    const printStyles = `
+    removeAfterPrint: false,
+    pageStyle: `
+      @page {
+        size: A4;
+        margin: 0.5in;
+      }
       @media print {
-        .modal-print-content, .modal-print-content * {
-          visibility: visible !important;
-          height: 0% !important;
+        * {
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
         }
-        #printable-content h5.text-primary,
-        #printable-content h6.text-primary {
-          font-size: 10px !important;  /* saiz ikut kehendak */
-          line-height: 0 !important;
-        }
-           #printable-content h5.text-center {
-          font-size: 12px !important; /* asal 12px atau default, kecilkan ikut kehendak */
-        }
-
-        #printable-content h6.text-center {
-          font-size: 10px !important; /* asal 12px atau default, kecilkan ikut kehendak */
-        }
-        #printable-content, #printable-content * {
-          visibility: visible !important;
-          height: 0% !important;
-        }
-        body > *:not(.modal-print-content):not(#printable-content) {
-          display: none !important;
-          height: 0% !important;
-        }
-        .modal {
-          position: static !important;
-          overflow: visible !important;
-          box-shadow: none !important;
-          background: none !important;
-          width: 100% !important;
+        body {
           margin: 0 !important;
-          top: 0 !important;
-          left: 0 !important;
-          transform: none !important;
-        }
-        .modal-dialog {
-          max-width: 100% !important;
-          margin: 0 !important;
-        }
-        .modal-content {
-          border: none !important;
-          box-shadow: none !important;
           padding: 0 !important;
+          font-family: Arial, sans-serif !important;
+          font-size: 10px !important;
+          line-height: 1.1 !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          min-height: 100vh !important;
         }
-        .modal-header, .modal-footer {
-          display: none !important;
-        }
-        .modal-print-content, #printable-content {
-          padding: 2px 6px 0px 8px !important;
-          margin: 0 !important;
+        #printable-content {
+          display: block !important;
           width: 100% !important;
-          background: white !important;
-          color: black !important;
-          font-size: 14px !important;
-          line-height: 0.9 !important;
+          max-width: 100% !important;
+          height: auto !important;
+          transform: none !important; 
+          padding: 8px !important;
+          margin: 0 auto !important;
+          border: 2px solid black !important;
+          border-radius: 2px !important;
+          box-sizing: border-box !important;
+          page-break-inside: avoid !important;
+          font-family: Arial, sans-serif !important;
+          font-size: 10px !important;
+        }
+        .modal-body, .modal-content {
+          box-shadow: none !important;
+          border: none !important;
         }
         .row {
           display: flex !important;
           flex-wrap: wrap !important;
-          margin-right: 0 !important;
-          margin-left: 0 !important;
+          margin-right: -8px !important;
+          margin-left: -8px !important;
         }
         [class^="col-"], [class*=" col-"] {
-          box-sizing: border-box !important;
-          padding: 0px 6px !important;
+          position: relative !important;
+          padding-right: 8px !important;
+          padding-left: 8px !important;
         }
-        .col-md-6 {
-          flex: 0 0 50% !important;
-          max-width: 50% !important;
+        .col-md-1 { flex: 0 0 8.333333% !important; max-width: 8.333333% !important; }
+        .col-md-2 { flex: 0 0 16.666667% !important; max-width: 16.666667% !important; }
+        .col-md-3 { flex: 0 0 25% !important; max-width: 25% !important; }
+        .col-md-4 { flex: 0 0 33.333333% !important; max-width: 33.333333% !important; }
+        .col-md-5 { flex: 0 0 41.666667% !important; max-width: 41.666667% !important; }
+        .col-md-6 { flex: 0 0 50% !important; max-width: 50% !important; }
+        .col-md-12 { flex: 0 0 100% !important; max-width: 100% !important; }
+        .btn, .close, .modal-header, .modal-footer {
+          display: none !important;
         }
-        .col-md-4 {
-          flex: 0 0 33.3333% !important;
-          max-width: 33.3333% !important;
+        .form-group {
+          margin-bottom: 0.5rem !important;
         }
-        .col-md-12 {
-          flex: 0 0 100% !important;
-          max-width: 100% !important;
+        .text-center {
+          text-align: center !important;
         }
-        .form-group, .form-label, .form-control, .form-check {
-          margin-bottom: 0px !important;
-          font-size: 10px !important;
+        .mb-2 { margin-bottom: 0.25rem !important; }
+        .mb-3 { margin-bottom: 0.5rem !important; }
+        .mt-2 { margin-top: 0.25rem !important; }
+        .p-3 { padding: 0.5rem !important; }
+        h4, h5, h6 {
+          margin: 0 !important;
+          font-weight: bold !important;
         }
+        h4 { font-size: 14px !important; }
+        h5 { font-size: 11px !important; }
+        h6 { font-size: 10px !important; }
         label {
-          font-weight: 400 !important;
+          font-weight: bold !important;
+          margin-bottom: 0 !important;
           font-size: 10px !important;
         }
-        .modal-backdrop, .modal.fade {
-          display: none !important;
+        ul {
+          margin: 0 !important;
+          padding-left: 15px !important;
         }
-        .btn, .close {
-          display: none !important;
+        li {
+          margin-bottom: 0.1rem !important;
+          font-size: 9px !important;
         }
-        /* Prevent page breaks inside modal content */
-        .modal-print-content, #printable-content, .modal-print-content * {
-          page-break-inside: avoid !important;
+        /* Reduce all margins and padding for A4 fit */
+        div[style*="marginBottom: '20px'"] {
+          margin-bottom: 8px !important;
         }
-        html, body {
-          height: auto !important;
-          /* Remove zoom for natural scaling */
+        div[style*="marginBottom: '15px'"] {
+          margin-bottom: 6px !important;
         }
-        @page {
-          margin: 2mm 8mm 0mm 8mm;
-          size: A4 portrait;
+        div[style*="marginBottom: '12px'"] {
+          margin-bottom: 4px !important;
+        }
+        div[style*="marginBottom: '10px'"] {
+          margin-bottom: 3px !important;
+        }
+        div[style*="marginTop: '20px'"] {
+          margin-top: 8px !important;
+        }
+        div[style*="marginTop: '15px'"] {
+          margin-top: 6px !important;
+        }
+        div[style*="paddingTop: '15px'"] {
+          padding-top: 6px !important;
+        }
+        div[style*="paddingTop: '10px'"] {
+          padding-top: 4px !important;
+        }
+        /* Make sure borders and lines are visible */
+        div[style*="borderBottom"] {
+          border-bottom: 1px solid black !important;
+          min-height: 15px !important;
+        }
+        /* Preserve flexbox layout for applicant details */
+        div[style*="display: flex"] {
+          display: flex !important;
+        }
+        div[style*="flex: 1"] {
+          flex: 1 !important;
+        }
+        span[style*="width: 100px"] {
+          width: 100px !important;
+          flex-shrink: 0 !important;
+        }
+        span[style*="width: 120px"] {
+          width: 120px !important;
+          flex-shrink: 0 !important;
+        }
+        /* Reduce signature section height */
+        div[style*="height: '100px'"] {
+          height: 60px !important;
+        }
+        div[style*="height: '80px'"] {
+          height: 50px !important;
+        }
+        div[style*="height: '40px'"] {
+          height: 25px !important;
+        }
+        /* Reduce font sizes for better fit */
+        span[style*="fontSize: '11px'"] {
+          font-size: 9px !important;
+        }
+        span[style*="fontSize: '12px'"] {
+          font-size: 10px !important;
+        }
+        div[style*="fontSize: '10px'"] {
+          font-size: 8px !important;
         }
       }
-    `;
+    `,
+  });
 
   if (!leave) return <div>Loading...</div>; // Show loading if leave data is not available
 
   return (
     <Modal isOpen={isOpen} toggle={toggle} size="lg" centered>
+        <div className="modal-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <h5 className="modal-title mb-0">View Leave Application</h5>
+          <div className="d-flex align-items-center">
+            <button
+              type="button"
+              className="btn btn-outline-light btn-sm me-2"
+              onClick={toggleLanguage}
+              title={language === 'en' ? 'Switch to Bahasa Malaysia' : 'Switch to English'}
+            >
+              <FaLanguage className="me-1" />
+              {language === 'en' ? 'BM' : 'EN'}
+            </button>
+            <button
+              type="button"
+              className="btn-close btn-close-white"
+              aria-label="Close"
+              onClick={toggle}
+            ></button>
+          </div>
+        </div>
         <ModalBody>
         {/* Inject print styles only when modal is open */}
-        {isOpen && (
-          <style>{printStyles}</style>
-        )}
         {leave && (
-          <div className="p-3" ref={printRef} id="printable-content">
-            {/* Header of Form */}
-            <h5 className="text-center mb-2">BORANG PERMOHONAN CUTI (HR-18)</h5>
-            <h6 className="text-center mb-3">MY-SUTERA SDN. BHD.</h6>
-            <hr />
-            <h5 className="text-primary">Butiran Pemohon</h5>
-
-            {/* Personal and Staff Info Section - 2 columns layout */}
-            <Row>
-              <Col md="6">
-                <FormGroup>
-                  <Label><b>Nama:</b></Label>
-                  <Input value={leave.staff_name || '-'} disabled />
-                </FormGroup>
-                <FormGroup>
-                  <Label><b>Jawatan:</b></Label>
-                  <Input value={leave.staff_position || '-'} disabled />
-                </FormGroup>
-                <FormGroup>
-                  <Label><b>Seksyen:</b></Label>
-                  <Input value={leave.staff_department || '-'} disabled />
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label><b>No. Pekerja:</b></Label>
-                  <Input value={leave.staffId || leave.staff_id || '-'} disabled />
-                </FormGroup>
-                <FormGroup>
-                  <Label><b>Tarikh permohonan:</b></Label>
-                  <Input value={leave.request_date || leave.created_at || '-'} disabled />
-                </FormGroup>
-                <FormGroup>
-                  <Label><b>Bahagian:</b></Label>
-                  <Input value={leave.staff_department || '-'} disabled />
-                </FormGroup>
-              </Col>
-            </Row>
-
-            {/* Jenis Cuti Section */}
-            <Row>
-              <Col md="6">
-                <div>
-                  <Label><b>Jenis cuti:</b> 
-                  <br />
-                  (Sila tandakan pada kotak berkenaan)</Label>
-                  <div className="mt-2" style={{fontSize:'12px'}}>
-                    {(() => {
-                      const selectedType = (leave.leave_type || '').toLowerCase();
-                      const types = [
-                        { key: 'annual', label: 'Cuti tahunan', match: ['annual', 'tahunan'] },
-                        { key: 'unpaid', label: 'Cuti tanpa gaji', match: ['unpaid', 'tanpa gaji'] },
-                        { key: 'emergency', label: 'Cuti sakit', match: ['sick', 'mc', 'sakit'] },
-                        { key: 'compassionate', label: 'Cuti ehsan', match: ['emergency', 'kecemasan', 'compassionate', 'ehsan'] },
-                      ];
-
-                      const isChecked = (matches) => matches.some(m => selectedType.includes(m));
-
-                      return types.map(t => (
-                        <div key={t.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                          <div style={{ width: 16, height: 16, border: '1px solid #333', display: 'inline-block', textAlign: 'center', lineHeight: '14px', fontSize: 12 }}>
-                            {isChecked(t.match) ? '✓' : ''}
-                          </div>
-                          <span>{t.label}</span>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                </div>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label><b>Sebab cuti:</b></Label>
-                  <Input value={leave.reason || '-'} disabled />
-                </FormGroup>
-              </Col>
-            </Row>
-
-            {/* Leave Period Section */}
-            <Row>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>Bilangan cuti diambil:</b></Label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Input 
-                      value={leave.total_days != null ? String(leave.total_days) : (leave.is_half_day ? '0.5' : '-')} 
-                      disabled 
-                      style={{ width: '80px', display: 'inline-block' }}
-                    />
-                    <span>hari</span>
-                  </div>
-                </FormGroup>
-              </Col>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>Dari:</b></Label>
-                  <Input value={leave.start_date || '-'} disabled />
-                </FormGroup>
-              </Col>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>hingga:</b></Label>
-                  <Input value={leave.end_date || '-'} disabled />
-                </FormGroup>
-              </Col>
-            </Row>
-            <Row>
-              <Col md="12">
-                <FormGroup>
-                  <Label><b>Tugas harian saya akan dijalankan oleh:</b></Label>
-                  <Input value={leave.job_taken_over_by || '-'} disabled />
-                </FormGroup>
-              </Col>
-            </Row>
-            {/* Signature Section - 3 columns */}
-            <Row>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>T/tangan Pemohon:</b></Label>
-                  <Input value={''} disabled style={{ height: '40px' }} />
-                  <Label><b>Tarikh:</b></Label>
-                </FormGroup>
-              </Col>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>Disokong / Tidak Sokong</b></Label>
-                  <Input value={''} disabled style={{ height: '40px' }} />
-                  <Label><b>T/tangan Ketua Seksyen</b></Label>
-                  <Label><b>Tarikh:</b></Label>
-                </FormGroup>
-              </Col>
-              <Col md="4">
-                <FormGroup>
-                  <Label><b>Diluluskan / Tidak Lulus</b></Label>
-                  <Input value={''} disabled style={{ height: '40px' }} />
-                  <Label><b>T/tangan Ketua Bahagian / Ketua Pegawai Eksekutif</b></Label>
-                  <Label><b>Tarikh:</b></Label>
-                </FormGroup>
-              </Col>
-            </Row>
-
-            <hr/>
-
-            {/* Leave Balance Section (HR panel) */}
-            <h5 className="text-primary">Untuk pengesahan jabatan sumber manusia & pentadbiran</h5>
-            {loading ? (
-              <div className="text-center py-3">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <p className="mt-2">Loading balance data...</p>
+          <div style={{
+            border: '2px solid black',
+            borderRadius: '4px',
+            padding: '10px',
+            marginBottom: '15px'
+          }}>
+            <div className="p-3" ref={printRef} id="printable-content" style={{
+              padding: '15px',
+              backgroundColor: 'white',
+              fontFamily: 'Arial, sans-serif'
+            }}>
+              {/* Header of Form */}
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <h4 style={{ 
+                  margin: '0 0 5px 0', 
+                  fontSize: '18px', 
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px'
+                }}>
+                  {t.title}
+                </h4>
+                <h5 style={{ 
+                  margin: '0', 
+                  fontSize: '14px', 
+                  fontWeight: 'bold',
+                  letterSpacing: '0.3px'
+                }}>
+                  {t.company}
+                </h5>
               </div>
-            ) : (
-              <>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Baki cuti tahun lepas:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.carry_forward_days || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Kelayakan cuti tahun semasa:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.leave_entitled || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Jumlah kelayakan:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.total_entitlement || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Cuti telah diambil:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.used_days || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Baki semasa:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.current_balance || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Cuti dipohon:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={leave.total_days != null ? String(leave.total_days) : '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label><b>Baki cuti:</b></Label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Input value={balanceData?.total_balance || '-'} disabled style={{ width: '80px' }} />
-                        <span>hari</span>
-                      </div>
-                    </FormGroup>
-                  </Col>
-                </Row>
-              </>
-            )}
-            <Row>
-              <Col md="6">
-                <FormGroup>
-                  <Label><b>Disemak / Rekod oleh:</b></Label>
-                  <Input value={''} disabled />
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label><b>COP TARIKH DIPROSES</b></Label>
-                  <Input value={''} disabled style={{ height: '60px', textAlign: 'center' }} />
-                </FormGroup>
-              </Col>
-            </Row>
 
-            {/* Notes and Copies Section */}
-            <hr style={{ marginTop: '20px' }} />
-              <Col md="12">
-                <div>
-                  <Label><b>Nota:</b></Label>
-                  <ul style={{ fontSize: '10px', marginTop: '5px', padding: '0 15px' }}>
-                    <li>Permohonan cuti hendaklah dipohon sekurang-kurangnya 4 hari sebelum cuti kecuali ada kecemasan.</li>
-                    <li>Kelayakan cuti kecemasan hanya satu hari kecuali yang melibatkan perjalanan keluar daerah.</li>
-                  </ul>
+
+              {/* Applicant Details Section */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                  {/* Left Column */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.name}</span>
+                      <span style={{ margin: '0 5px' }}>:</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        flex: 1, 
+                        minHeight: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {leave.staff_name || ''}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.position}</span>
+                      <span style={{ margin: '0 5px' }}>:</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        flex: 1, 
+                        minHeight: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {leave.staff_position || ''}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.section}</span>
+                      <span style={{ margin: '0 5px' }}>:</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        flex: 1, 
+                        minHeight: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {''}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Right Column - Adjusted for better fit */}
+                  <div style={{ flex: 1, marginLeft: '-20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.staffId}</span>
+                      <span style={{ margin: '0 5px' }}>:</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        flex: 1, 
+                        minHeight: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {leave.staffId || leave.staff_id || ''}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.applicationDate}</span>
+                      <span style={{ margin: '0 5px' }}>:</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        flex: 1, 
+                        minHeight: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {leave.request_date || leave.created_at || ''}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.department}</span>
+                      <span style={{ margin: '0 5px' }}>:</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        flex: 1, 
+                        minHeight: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {leave.staff_department || ''}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </Col>
+              </div>
+
+              {/* Leave Type and Reason Section */}
+              <div style={{ marginBottom: '20px' }}>
+              <Row>
+                <Col md="6">
+                    <div style={{ marginBottom: '15px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                        {t.leaveType}
+                      </div>
+                      <div style={{ fontSize: '11px', marginBottom: '8px' }}>
+                        {t.leaveTypeNote}
+                      </div>
+                      <div style={{ fontSize: '12px' }}>
+                      {(() => {
+                        const selectedType = (leave.leave_type || '').toLowerCase();
+                        const types = [
+                            { key: 'annual', label: t.leaveTypes.annual, match: ['annual', 'tahunan'] },
+                          { key: 'unpaid', label: t.leaveTypes.unpaid, match: ['unpaid', 'tanpa gaji'] },
+                          { key: 'emergency', label: t.leaveTypes.sick, match: ['sick', 'mc', 'sakit'] },
+                          { key: 'compassionate', label: t.leaveTypes.emergency, match: ['emergency', 'kecemasan', 'compassionate', 'ehsan'] },
+                        ];
+
+                        const isChecked = (matches) => matches.some(m => selectedType.includes(m));
+
+                        return types.map(type => (
+                            <div key={type.key} style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              marginBottom: '6px',
+                              gap: '8px'
+                            }}>
+                              <div style={{ 
+                                width: '14px', 
+                                height: '14px', 
+                                border: '2px solid #333', 
+                                display: 'inline-block', 
+                                textAlign: 'center', 
+                                lineHeight: '10px', 
+                                fontSize: '10px',
+                                flexShrink: 0
+                              }}>
+                              {isChecked(type.match) ? '✓' : ''}
+                            </div>
+                              <span style={{ fontSize: '12px' }}>{type.label}</span>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                </Col>
+                <Col md="6">
+                  <FormGroup>
+                      <Label><b>{t.reason}</b></Label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                      {(() => {
+                        const reason = leave.reason || '-';
+                        const maxCharsPerLine = 40; // Characters per line
+                        const lines = [];
+                        
+                        if (reason === '-') {
+                          lines.push('-');
+                        } else {
+                          // Split reason into words
+                          const words = reason.split(' ');
+                          let currentLine = '';
+                          
+                          words.forEach((word, index) => {
+                            const testLine = currentLine ? `${currentLine} ${word}` : word;
+                            
+                            if (testLine.length <= maxCharsPerLine) {
+                              currentLine = testLine;
+                            } else {
+                              if (currentLine) {
+                                lines.push(currentLine);
+                              }
+                              currentLine = word;
+                            }
+                            
+                            // Push the last line
+                            if (index === words.length - 1 && currentLine) {
+                              lines.push(currentLine);
+                            }
+                          });
+                        }
+                        
+                        // Ensure we always have 4 lines for consistent form appearance
+                        while (lines.length < 4) {
+                          lines.push('');
+                        }
+                        
+                        return lines.slice(0, 4).map((line, idx) => (
+                          <LineField key={idx} value={line} />
+                        ));
+                      })()}
+                    </div>
+                  </FormGroup>
+                </Col>
+              </Row>
+              </div>
+
+              {/* Leave Duration Section */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', gap: '10px' }}>
+                  <span style={{ fontWeight: 'bold', minWidth: '150px' }}>{t.totalDays}</span>
+                  <div style={{ 
+                    borderBottom: '1px solid black', 
+                    width: '40px',
+                    minHeight: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: '5px'
+                  }}>
+                    {leave.total_days != null ? String(leave.total_days) : (leave.is_half_day ? '0.5' : '')}
+                  </div>
+                      <span>{t.days}</span>
+                    </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', gap: '10px' }}>
+                  <span style={{ fontWeight: 'bold', minWidth: '40px' }}>{t.from}:</span>
+                  <div style={{ 
+                    borderBottom: '1px solid black', 
+                    width: '120px',
+                    minHeight: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: '5px'
+                  }}>
+                    {leave.start_date || ''}
+                  </div>
+                  <span style={{ fontWeight: 'bold', marginLeft: '20px' }}>{t.to}</span>
+                  <div style={{ 
+                    borderBottom: '1px solid black', 
+                    width: '120px',
+                    minHeight: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: '5px'
+                  }}>
+                    {leave.end_date || ''}
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.jobTakeover}:</span>
+                  <div style={{ 
+                    borderBottom: '1px solid black', 
+                    flex: 1,
+                    minHeight: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: '5px'
+                  }}>
+                    {leave.job_taken_over_by || ''}
+                  </div>
+                </div>
+              </div>
+              {/* Signature Section */}
+              <div style={{ marginBottom: '20px' }}>
+              <Row>
+                <Col md="4">
+                    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>
+                        {t.applicantSignature}
+                      </div>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        height: '40px',
+                        marginBottom: '10px'
+                      }}></div>
+                      <div style={{ fontWeight: 'bold' }}>{t.date}</div>
+                    </div>
+                </Col>
+                <Col md="4">
+                    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>
+                        {t.supported}
+                      </div>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        height: '40px',
+                        marginBottom: '10px'
+                      }}></div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                        {t.sectionHeadSignature}
+                      </div>
+                      <div style={{ fontWeight: 'bold' }}>{t.date}</div>
+                    </div>
+                </Col>
+                <Col md="4">
+                    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>
+                        {t.approved}
+                      </div>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        height: '40px',
+                        marginBottom: '10px'
+                      }}></div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                        {t.divisionHeadSignature}
+                      </div>
+                      <div style={{ fontWeight: 'bold' }}>{t.date}</div>
+                    </div>
+                </Col>
+              </Row>
+              </div>
+
+              {/* HR Confirmation Section */}
+              <div style={{ 
+                borderTop: '2px solid black', 
+                paddingTop: '15px', 
+                marginTop: '20px',
+                marginBottom: '20px'
+              }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '15px' }}>
+                  {t.hrConfirmation}
+                </div>
+              {loading ? (
+                <div className="text-center py-3">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="sr-only">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading balance data...</p>
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.lastYearBalance}</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        width: '60px',
+                        minHeight: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {balanceData?.carry_forward_days || ''}
+                      </div>
+                      <span style={{ marginLeft: '5px' }}>{t.days}</span>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.thisYearBalance}</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        width: '60px',
+                        minHeight: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {balanceData?.leave_entitled || ''}
+                      </div>
+                      <span style={{ marginLeft: '5px' }}>{t.days}</span>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.totalBalance}</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        width: '60px',
+                        minHeight: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {balanceData?.total_entitlement || ''}
+                      </div>
+                      <span style={{ marginLeft: '5px' }}>{t.days}</span>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.leaveTaken}</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        width: '60px',
+                        minHeight: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {balanceData?.used_days || ''}
+                      </div>
+                      <span style={{ marginLeft: '5px' }}>{t.days}</span>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.currentBalance}</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        width: '60px',
+                        minHeight: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {balanceData?.current_balance || ''}
+                          </div>
+                      <span style={{ marginLeft: '5px' }}>{t.days}</span>
+                          </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.leaveApplied}</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        width: '60px',
+                        minHeight: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {leave.total_days != null ? String(leave.total_days) : ''}
+                          </div>
+                      <span style={{ marginLeft: '5px' }}>{t.days}</span>
+                          </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.leaveBalance}</span>
+                      <div style={{ 
+                        borderBottom: '1px solid black', 
+                        width: '60px',
+                        minHeight: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        paddingLeft: '5px'
+                      }}>
+                        {balanceData?.total_balance || ''}
+                          </div>
+                      <span style={{ marginLeft: '5px' }}>{t.days}</span>
+                          </div>
+                          </div>
+                </>
+              )}
+              </div>
+
+              <Row className="align-items-end" style={{ marginBottom: '10px' }}>
+                <Col
+                  md="3"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'flex-end',
+                    paddingRight: '0px', // remove right padding to close the gap
+                  }}
+                >
+                  <FormGroup style={{ marginBottom: '0' }}>
+                    <Label style={{ marginTop: '10px', marginBottom: '0' }}>
+                      <b>{t.reviewedBy}</b>
+                    </Label>
+                  </FormGroup>
+                </Col>
+                <Col
+                  md="5"
+                  style={{
+                    paddingLeft: '0px', // remove left padding to connect with label
+                    marginLeft: '5px', // fine tune closeness
+                  }}
+                >
+                  <FormGroup style={{ marginBottom: '0' }}>
+                    <LineField value={''} disabled />
+                  </FormGroup>
+                </Col>
+
+                <Col md="3">
+                  <div
+                    style={{
+                      borderTop: '2px solid black',
+                      borderLeft: '2px solid black',
+                      height: '100px',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'flex-start',
+                      textAlign: 'center',
+                      marginRight: '-85px', 
+                      marginTop: '20px',
+                      marginBottom: '-10px',
+                    }}
+                  >
+                    <FormGroup style={{ marginTop: '5px', marginBottom: 0 }}>
+                      <Label>
+                        <b>{t.stamp}</b>
+                      </Label>
+                    </FormGroup>
+                  </div>
+                </Col>
+              </Row>
+
+              <div
+                style={{ 
+                  borderTop: '2px solid black',
+                  paddingTop: '10px', 
+                  marginLeft: '-28px',
+                  marginRight: '-28px'
+                }} ></div>
+                  <Col md="12">
+                    <div>
+                      <Label><b>{t.notes}</b></Label>
+                      <ul style={{ fontSize: '12px', marginTop: '5px', padding: '0 15px' }}>
+                        <li>{t.note1}</li>
+                        <li>{t.note2}</li>
+                      </ul>
+                    </div>
+                  </Col>
+            </div>
           </div>
         )}
       </ModalBody>
