@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, Fragment, useRef } from "react";
 import { Card, CardHeader, Col, CardBody, Badge, Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import ApplyLeaveModal from "../Leave_Request_Form/ApplyLeaveModal";
 import ViewLeaveModal from "../Leave_Request_Form/ViewLeaveModal";
@@ -30,6 +30,69 @@ function PieCenterLabel({ children }) {
     <StyledText x={left + width / 2} y={top + height / 2}>
       {children}
     </StyledText>
+  );
+}
+
+// Component to draw connecting lines from pie segments to labels
+function PieConnectingLines({ data, outerRadius, innerRadius }) {
+  const { width, height, left, top } = useDrawingArea();
+  const centerX = left + width / 2;
+  const centerY = top + height / 2;
+
+  // Calculate total value for percentages
+  const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+
+  // Generate lines for each segment
+  let currentAngle = -Math.PI / 2; // Start from top
+
+  return (
+    <g>
+      {data.map((item, index) => {
+        const percentage = item.value / totalValue;
+        const segmentAngle = percentage * 2 * Math.PI;
+        const midAngle = currentAngle + segmentAngle / 2;
+
+        // Calculate positions - increased distances for better spacing
+        const lineStartRadius = outerRadius + 10; // Start just outside the arc
+        const lineEndRadius = outerRadius + 60; // End before the label (increased from 30 to 60)
+        const labelRadius = outerRadius + 80; // Label position (increased from 50 to 80)
+
+        const x1 = centerX + Math.cos(midAngle) * lineStartRadius;
+        const y1 = centerY + Math.sin(midAngle) * lineStartRadius;
+        const x2 = centerX + Math.cos(midAngle) * lineEndRadius;
+        const y2 = centerY + Math.sin(midAngle) * lineEndRadius;
+
+        // Horizontal line extension - increased for better spacing
+        const isRightSide = Math.cos(midAngle) > 0;
+        const x3 = x2 + (isRightSide ? 35 : -35);
+        const y3 = y2;
+
+        currentAngle += segmentAngle;
+
+        return (
+          <g key={`line-${item.id}`}>
+            {/* First segment: from arc edge to bend point */}
+            <line
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke={item.color || '#666'}
+              strokeWidth="1.5"
+            />
+            {/* Second segment: horizontal line to label */}
+            <line
+              x1={x2}
+              y1={y2}
+              x2={x3}
+              y2={y3}
+              stroke={item.color || '#666'}
+              strokeWidth="1.5"
+            />
+          </g>
+        );
+      })}
+    </g>
   );
 }
 
@@ -273,7 +336,7 @@ const LeaveRequest = () => {
         label: `${type} Used`,
         value: Number(data.used),
         percentage: (Number(data.used) / total) * 100,
-        color: hexToRgba(baseColor, 0.6),
+        color: hexToRgba(baseColor, 0.4),
       },
       {
         id: `${type}-Remaining`,
@@ -431,7 +494,7 @@ const LeaveRequest = () => {
                   <ToggleButton value="usage">Used vs Remaining</ToggleButton>
                 </ToggleButtonGroup>
 
-                <Box sx={{ display: "flex", justifyContent: "center", height: 500 }}>
+                <Box sx={{ display: "flex", justifyContent: "center", height: 550 }}>
                   {view === "type" ? (
                     <PieChart
                       series={[
@@ -439,7 +502,7 @@ const LeaveRequest = () => {
                           innerRadius: 60,
                           outerRadius: 130,
                           data: leaveTypeData,
-                          arcLabelRadius: 180,
+                          arcLabelRadius: 220,
                           arcLabel: (item) => `${item.label} (${item.percentage.toFixed(0)}%)`,
                           valueFormatter: ({ value }) =>
                             `${value} days (${((value / totalLeave) * 100).toFixed(0)}%)`,
@@ -449,19 +512,23 @@ const LeaveRequest = () => {
                         },
                       ]}
                       sx={{
-                        [`& .${pieArcLabelClasses.root}`]: { fontSize: '12px' },
+                        [`& .${pieArcLabelClasses.root}`]: { 
+                          fontSize: '11px',
+                          fontWeight: '500',
+                        },
                       }}
                       slotProps={{
                         legend: {
                           position: {horizontal: 'right'},
                           direction: 'row',
                           padding: 0,
-                          itemSpacing: 18,
+                          itemSpacing: 20,
                           markup: 'circle',
                           margin: { right: '50px', left: '50px' },
                         }
                       }}
                     >
+                      <PieConnectingLines data={leaveTypeData} outerRadius={130} innerRadius={60} />
                       <PieCenterLabel>Leave Type</PieCenterLabel>
                     </PieChart>
                   ) : (
@@ -471,7 +538,7 @@ const LeaveRequest = () => {
                           innerRadius: 60,
                           outerRadius: 130,
                           data: usageData,
-                          arcLabelRadius: 180,
+                          arcLabelRadius: 220,
                           arcLabel: (item) => `${item.label} (${item.percentage.toFixed(0)}%)`,
                           valueFormatter: ({ value }) => `${value} days`,
                           highlightScope: { fade: 'global', highlight: 'item' },
@@ -480,19 +547,23 @@ const LeaveRequest = () => {
                         },
                       ]}
                       sx={{
-                        [`& .${pieArcLabelClasses.root}`]: { fontSize: '12px' },
+                        [`& .${pieArcLabelClasses.root}`]: { 
+                          fontSize: '11px',
+                          fontWeight: '500',
+                        },
                       }}
                       slotProps={{
                         legend: {
                           position: {vertical: 'middle', horizontal: 'right'},
                           direction: 'column',
                           padding: 0,
-                          itemSpacing: 18,
+                          itemSpacing: 20,
                           markup: 'circle',
                           margin: { right: '50px', left: '50px' },
                         }
                       }}
                     >
+                      <PieConnectingLines data={usageData} outerRadius={130} innerRadius={60} />
                       <PieCenterLabel>Usage</PieCenterLabel>
                     </PieChart>
                   )}
