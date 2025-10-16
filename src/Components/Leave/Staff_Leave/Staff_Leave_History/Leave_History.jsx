@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import DataTable from 'react-data-table-component';
-import { Card, CardHeader, Col, CardBody, Button, FormGroup, Label, Input, Form, Row, Container } from 'reactstrap';
+import { Card, CardHeader, Col, CardBody, Button, FormGroup, Label, Input, Form, Row, Container, Tooltip } from 'reactstrap';
 import Swal from 'sweetalert2';
 import DeleteConfirmationModal from '../../common/deleteUserModal';
 import ViewLeaveModal from '../Leave_Request_Form/ViewLeaveModal';
@@ -8,6 +8,7 @@ import EditLeaveModal from '../Leave_Request_Form/EditLeaveModal';
 import { getLeaveHistory, updateLeaveApplication, deleteLeaveApplication } from '../../../Attendance/utils';
 import Loader from '../../../Attendance/Loader';
 import dayjs from 'dayjs';
+import { AiOutlineInfoCircle } from 'react-icons/ai';
 
 const LeaveHistory = ({staffLeave}) => {
   const [leaveApplications, setLeaveApplications] = useState([]);
@@ -19,6 +20,7 @@ const LeaveHistory = ({staffLeave}) => {
   const [viewModal, setViewModal] = useState({ open: false, leave: null });
   const [editModal, setEditModal] = useState({ open: false, leave: null });
   const [deleteModal, setDeleteModal] = useState({ open: false, leave: null });
+  const [tooltipOpen, setTooltipOpen] = useState(false);
 
   const FilteredData = filteredData
     ?.sort((a, b) => {
@@ -88,7 +90,7 @@ const LeaveHistory = ({staffLeave}) => {
       name: 'Status',
       selector: row => row.status || '-',
       sortable: true,
-      width: '140px',
+      width: '160px',
       cell: row => {
         const getStatusColor = (status) => {
           switch(status) {
@@ -97,12 +99,49 @@ const LeaveHistory = ({staffLeave}) => {
             default: return '';
           }
         };
+
+        const isRejected = row.status === 'Rejected';
+        const remarks = row.remarks && row.remarks.trim() !== '' ? row.remarks : 'No remarks provided.';
+        const rejectedByName = row.approved_by_name || '';
+        const tooltipId = `tooltip-${row.request_id}`;
+
         return (
-          <div style={{ display: 'flex', justifyContent: 'left', alignItems: 'left', width: '70%', fontWeight: 'bold' }} className={getStatusColor(row.status)}>
-            {row.status || '-'}
+          <div style={{textAlign: 'center', padding: '4px 2px'}}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'}}>
+              <div className={`${getStatusColor(row.status)} fw-bold`} style={{
+                fontSize: '0.85em'
+              }}>
+                {row.status || '-'}
+              </div>
+              {isRejected && (
+                <>
+                  <span
+                    id={tooltipId}
+                    style={{ cursor: 'pointer', color:'#888'}}
+                    onMouseEnter={() => setTooltipOpen(tooltipId)}
+                    onMouseLeave={() => setTooltipOpen(null)}
+                  >
+                    <AiOutlineInfoCircle size={14} />
+                  </span>
+                  <Tooltip
+                    placement="top"
+                    isOpen={tooltipOpen === tooltipId}
+                    target={tooltipId}
+                    toggle={() => setTooltipOpen(tooltipOpen === tooltipId ? null : tooltipId)}
+                  >
+                    {remarks}
+                  </Tooltip>
+                </>
+              )}
           </div>
+          {isRejected && rejectedByName && (
+            <div style={{ fontSize: '0.65em', color: '#666', lineHeight: '1.1', wordWrap: 'break-word', whiteSpace: 'normal', marginTop: '2px'
+             }}>Rejected by {rejectedByName}</div>
+        )}
+      </div>
         );
-      }
+      },
+      width: '100px'
     },
     {
       name: 'Submitted At',

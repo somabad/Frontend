@@ -403,7 +403,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
                       <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.name}</span>
-                      <span style={{ margin: '0 5px' }}>:</span>
+                      <span>:</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
                         flex: 1, 
@@ -417,7 +417,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
                       <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.position}</span>
-                      <span style={{ margin: '0 5px' }}>:</span>
+                      <span>:</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
                         flex: 1, 
@@ -431,7 +431,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
                       <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.section}</span>
-                      <span style={{ margin: '0 5px' }}>:</span>
+                      <span>:</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
                         flex: 1, 
@@ -445,8 +445,8 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                     </div>
                   </div>
                   
-                  {/* Right Column - Adjusted for better fit */}
-                  <div style={{ flex: 1, marginLeft: '-20px' }}>
+                  {/* Right Column - Aligned with left column */}
+                  <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
                       <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.staffId}</span>
                       <span style={{ margin: '0 5px' }}>:</span>
@@ -462,7 +462,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.applicationDate}</span>
+                      <span style={{ fontWeight: 'bold', width: '120px', flexShrink: 0, whiteSpace: 'nowrap' }}>{t.applicationDate}</span>
                       <span style={{ margin: '0 5px' }}>:</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
@@ -594,8 +594,8 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
 
               {/* Leave Duration Section */}
               <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', gap: '10px' }}>
-                  <span style={{ fontWeight: 'bold', minWidth: '150px' }}>{t.totalDays}</span>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', gap: '10px', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 'bold', marginLeft: '20px', minWidth: '80px' }}>{t.totalDays}</span>
                   <div style={{ 
                     borderBottom: '1px solid black', 
                     width: '40px',
@@ -606,10 +606,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                   }}>
                     {leave.total_days != null ? String(leave.total_days) : (leave.is_half_day ? '0.5' : '')}
                   </div>
-                      <span>{t.days}</span>
-                    </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', gap: '10px' }}>
+                  <span style={{ marginLeft: '5px' }}>{t.days}</span>
                   <span style={{ fontWeight: 'bold', minWidth: '40px' }}>{t.from}:</span>
                   <div style={{ 
                     borderBottom: '1px solid black', 
@@ -621,7 +618,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                   }}>
                     {leave.start_date || ''}
                   </div>
-                  <span style={{ fontWeight: 'bold', marginLeft: '20px' }}>{t.to}</span>
+                  <span style={{ fontWeight: 'bold', marginLeft: '10px' }}>{t.to}</span>
                   <div style={{ 
                     borderBottom: '1px solid black', 
                     width: '120px',
