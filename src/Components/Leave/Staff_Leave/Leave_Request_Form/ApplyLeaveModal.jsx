@@ -438,7 +438,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                 <button
                   type="button"
                   className="btn btn-outline-light btn-sm me-2"
-                  style={{marginLeft:'20px'}}
+                  style={{marginLeft:'200px'}}
                   onClick={toggleLanguage}
                   title={language === 'en' ? 'Switch to Bahasa Malaysia' : 'Switch to English'}
                 >

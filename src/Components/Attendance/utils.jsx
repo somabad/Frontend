@@ -57,16 +57,15 @@ export const createNewUser = async (userData) => {
   return response.data;
 };
 
-//Leave Module - Contract Type List ###
-
-export const getContractTypeList = async () => {
-  const response = await axios.get(`${BASE_URL}/contract-type-list/`);
+// Position List
+export const getPositionList = async () => {
+  const response = await axios.get(`${BASE_URL}/position-list/`);
   return response.data;
 };
 
-// Get contract type leave entitlements
-export const getContractTypeLeaveEntitlements = async (contractTypeId) => {
-  const response = await axios.get(`${BASE_URL}/contract-type-leave-entitlements/${contractTypeId}/`);
+// Get position leave entitlements
+export const getPositionLeaveEntitlements = async (positionId) => {
+  const response = await axios.get(`${BASE_URL}/position-leave-entitlements/${positionId}/`);
   return response.data;
 };
 
@@ -149,6 +148,13 @@ export const applyLeave = async (formData) => {
   });
   return response.data;
 };
+
+export const getAttachment = async (requestId) => {
+  const response = await fetch(`/api/get-attachment/${requestId}/`);
+  if (!response.ok) throw new Error("Failed to fetch attachment");
+  return await response.json();
+};
+
 
 // Update Leave Request Status (Admin)
 export const updateLeaveStatus = async (requestId, data) => {
