@@ -54,17 +54,17 @@ function PieConnectingLines({ data, outerRadius, innerRadius }) {
 
         // Calculate positions
         const lineStartRadius = outerRadius + 5; // Start just outside the arc
-        const lineEndRadius = outerRadius + 30; // End before the label
-        const labelRadius = outerRadius + 50; // Label position
+        const lineEndRadius = outerRadius + 60; // End before the label (increased from 30)
+        const labelRadius = outerRadius + 80; // Label position (increased from 50)
 
         const x1 = centerX + Math.cos(midAngle) * lineStartRadius;
         const y1 = centerY + Math.sin(midAngle) * lineStartRadius;
         const x2 = centerX + Math.cos(midAngle) * lineEndRadius;
         const y2 = centerY + Math.sin(midAngle) * lineEndRadius;
 
-        // Horizontal line extension
+        // Horizontal line extension (increased from 20 to 40)
         const isRightSide = Math.cos(midAngle) > 0;
-        const x3 = x2 + (isRightSide ? 20 : -20);
+        const x3 = x2 + (isRightSide ? 40 : -40);
         const y3 = y2;
 
         currentAngle += segmentAngle;
@@ -502,7 +502,7 @@ const LeaveRequest = () => {
                           innerRadius: 60,
                           outerRadius: 130,
                           data: leaveTypeData,
-                          arcLabelRadius: 180,
+                          arcLabelRadius: 210,
                           arcLabel: (item) => `${item.label} (${item.percentage.toFixed(0)}%)`,
                           valueFormatter: ({ value }) =>
                             `${value} days (${((value / totalLeave) * 100).toFixed(0)}%)`,
@@ -535,7 +535,7 @@ const LeaveRequest = () => {
                           innerRadius: 60,
                           outerRadius: 130,
                           data: usageData,
-                          arcLabelRadius: 180,
+                          arcLabelRadius: 210,
                           arcLabel: (item) => `${item.label} (${item.percentage.toFixed(0)}%)`,
                           valueFormatter: ({ value }) => `${value} days`,
                           highlightScope: { fade: 'global', highlight: 'item' },

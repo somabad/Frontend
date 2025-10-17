@@ -17,7 +17,7 @@ const translations = {
   en: {
     title: 'Apply for Leave',
     name: 'Name',
-    staffId: 'Staff Id',
+    staffId: 'Request ID',
     position: 'Position',
     createdAt: 'Created At',
     department: 'Department',
@@ -59,7 +59,7 @@ const translations = {
   ms: {
     title: 'Borang Permohonan Cuti',
     name: 'Nama',
-    staffId: 'No. Pekerja',
+    staffId: 'ID Permohonan',
     position: 'Jawatan',
     createdAt: 'Tarikh Permohonan',
     section: 'Seksyen',
@@ -114,6 +114,13 @@ const clean = (val) =>
   typeof val === 'string' && val.startsWith("['") && val.endsWith("']")
     ? val.slice(2, -2)
     : val;
+
+// Helper function to generate unique request ID
+const generateRequestId = () => {
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `LR${timestamp}${random}`;
+};
 
 const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   // ...existing useState declarations...
@@ -289,6 +296,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       setError('');
       setAvailableLeaveTypes(leaveTypes); // Reset to all leave types initially
       setLeaveBalances({}); // Clear previous balance data
+      setRequestId(generateRequestId()); // Auto-generate request ID
     }
     fetchData();
   }, [isOpen]);
@@ -392,8 +400,9 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
 
       const response = await applyLeave(formData);
 
-     if (response && response.data && response.data.leave_request) {
-        setRequestId(response.data.leave_request.request_id);
+     if (response && response.data && response.data.latestRequest.length>0) {
+        const latest= response.data.latestRequest[0];
+        setRequestId(latest.request_id);
       }
 
       Swal.fire({
