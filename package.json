@@ -13,6 +13,7 @@
         "@fullcalendar/react": "^6.1.4",
         "@fullcalendar/timegrid": "^6.1.4",
         "@mobiscroll/react-lite": "^4.10.9",
+        "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@mui/x-charts": "^8.14.0",
         "@react-google-maps/api": "^2.18.1",

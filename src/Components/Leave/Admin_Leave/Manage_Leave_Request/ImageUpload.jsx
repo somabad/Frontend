@@ -5,12 +5,18 @@ const ImageUpload = ({ onImageUpload, existingImages = [] }) => {
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        onImageUpload(file, e.target.result);
-      };
-      reader.readAsDataURL(file);
+    if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
+      if (file.type === 'application/pdf') {
+        // For PDFs, pass the file directly without creating a preview
+        onImageUpload(file, 'pdf-file');
+      } else {
+        // For images, create a preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          onImageUpload(file, e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
     }
     // Reset the file input to allow selecting the same file again
     event.target.value = '';
@@ -47,7 +53,7 @@ const ImageUpload = ({ onImageUpload, existingImages = [] }) => {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,.pdf"
         onChange={handleFileSelect}
         style={{ display: 'none' }}
       />
@@ -56,7 +62,7 @@ const ImageUpload = ({ onImageUpload, existingImages = [] }) => {
         color: '#666',
         fontSize: '14px'
       }}>
-        Supported formats: JPG, PNG, GIF
+        Supported formats: JPG, PNG, GIF, PDF
       </p>
       {existingImages.length > 0 && (
         <p style={{

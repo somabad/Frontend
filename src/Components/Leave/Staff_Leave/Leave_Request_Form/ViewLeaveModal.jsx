@@ -275,26 +275,34 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         div[style*="borderRight"] {
           border-color: black !important;
         }
-        /* Fix negative margins for print - keep borders inside */
-        .print-no-negative-margin {
-          margin-left: 0.5 !important;
-          margin-right: 0.5 !important;
-          padding-left: 30px !important;
+        /* PRINT VIEW ONLY - Lines reach exactly to border */
+        .hr-confirmation-section {
+          margin-left: -15px !important;
+          margin-right: -15px !important;
+          padding-left: 15px !important;
           padding-right: 15px !important;
         }
-        .print-no-negative-margin > .row {
-          margin-left: 0 !important;
-          margin-right: 0 !important;
+        
+        .hr-data-content {
+          padding-left: 0 !important;
         }
-        .print-no-negative-margin > .row > [class*="col-"] {
+        
+        .stamp-box {
+          margin-right: -30px !important;
+        }
+        
+        .notes-section {
+          margin-left: -15px !important;
+          margin-right: -15px !important;
+          padding-left: 15px !important;
+          padding-right: 15px !important;
+        }
+        
+        .notes-section div[style*="paddingLeft"] {
           padding-left: 0 !important;
           padding-right: 0 !important;
         }
-        .print-no-negative-margin div[style*="paddingLeft: '28px'"],
-        .print-no-negative-margin div[style*="paddingRight: '28px'"] {
-          padding-left: 0 !important;
-          padding-right: 0 !important;
-        }
+        
         /* Prevent page breaks inside important sections */
         .row, [class*="col-"] {
           page-break-inside: avoid !important;
@@ -672,7 +680,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
               </div>
 
               {/* HR Confirmation Section */}
-              <div className="print-no-negative-margin" style={{ 
+              <div className="hr-confirmation-section" style={{ 
                 borderTop: '2px solid black', 
                 paddingTop: '15px', 
                 marginTop: '0px',
@@ -694,7 +702,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                 </div>
               ) : (
                 <>
-                  <div style={{ marginBottom: '10px', paddingLeft: '30px' }}>
+                  <div className="hr-data-content" style={{ marginBottom: '10px', paddingLeft: '30px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                       <span style={{ fontWeight: 'bold', minWidth: '320px' }}>{t.lastYearBalance}</span>
                       <div style={{ 
@@ -834,6 +842,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
 
                 <Col md="3">
                   <div
+                    className="stamp-box"
                     style={{
                       borderTop: '2px solid black',
                       borderLeft: '2px solid black',
@@ -857,7 +866,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
               </Row>
 
               <div
-                className="print-no-negative-margin"
+                className="notes-section"
                 style={{ 
                   borderTop: '2px solid black',
                   paddingTop: '10px', 

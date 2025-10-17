@@ -80,7 +80,7 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory, existingS
     }
 
     if (uploadedImages.length === 0) {
-      Swal.fire("Warning", "Please upload an image first", "warning");
+      Swal.fire("Warning", "Please upload a file first", "warning");
       return;
     }
 
@@ -91,6 +91,10 @@ const UploadImageModal = ({ isOpen, onClose, leave, fetchLeaveHistory, existingS
       // For new uploads, we have the file object
       if (image.file) {
         await uploadScannedForm(leave.request_id, image.file);
+      } else if (image.preview === 'pdf-file') {
+        // For PDFs, we should have the file object
+        Swal.fire("Error", "PDF file object not found", "error");
+        return;
       } else {
         // For existing images that were edited, we need to convert dataURL to file
         const response = await fetch(image.preview);

@@ -34,7 +34,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
-  // ADDED: State for leave types and carry forward days
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [carryForwardDays, setCarryForwardDays] = useState({});
   const [currentLeaveBalances, setCurrentLeaveBalances] = useState({});
@@ -65,7 +64,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     fetchData();
   }, [modal]);
 
-  // ADDED: Fetch leave types for selected position
   useEffect(() => {
     const fetchLeaveTypes = async () => {
       const positionId = formData.position_id || (user && user.position && (user.position.id || user.position.position_id));
@@ -99,15 +97,12 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     fetchLeaveTypes();
   }, [formData.position_id, user, currentLeaveBalances]);
 
-  // ADDED: Fetch current leave balances when user data is loaded
   useEffect(() => {
     const fetchCurrentLeaveBalances = async () => {
       if (user && user.staffId) {
         try {
           const currentYear = new Date().getFullYear();
           const response = await axios.get(`http://127.0.0.1:8000/api/staff/${user.staffId}/leave-balance/?year=${currentYear}`);
-          console.log('Current leave balances:', response.data);
-          
           const balances = {};
           if (Array.isArray(response.data)) {
             response.data.forEach(balance => {
@@ -166,7 +161,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     setFormData((prev) => ({ ...prev, locations: value }));
   };
 
-  // ADDED: Handle carry forward days input change
   const handleCarryForwardChange = (leaveTypeId, value) => {
     setCarryForwardDays(prev => ({
       ...prev,
@@ -174,7 +168,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     }));
   };
 
-  // ADDED: Handle entitled days override input change
   const handleEntitledOverrideChange = (leaveTypeId, value) => {
     setEntitledOverrides(prev => ({
       ...prev,
@@ -186,7 +179,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      // ADDED: Include new fields in the update data
       await updateStaff(user.staffId, {
         userId: formData.userId,
         name: formData.name,
@@ -199,7 +191,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
 
       await updateStaffLocations(user.staffId, formData.locations);
 
-      // ADDED: Update carry forward + optional entitlement overrides when position selected
       const positionId = formData.position_id || (user && user.position && (user.position.id || user.position.position_id));
       if (positionId && leaveTypes.length > 0) {
         try {
@@ -216,21 +207,11 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
             return payload;
           });
 
-          console.log('Updating carry forward days:', {
-            staffId: user.staffId,
-            year: currentYear,
-            carryForwardData
-          });
-
           await axios.post(`http://127.0.0.1:8000/api/set-carry-forward/${user.staffId}/`, {
             year: currentYear,
             carry_forward_days: carryForwardData
           });
-
-          console.log('Carry forward days updated successfully');
         } catch (carryForwardError) {
-          console.error('Error updating carry forward days:', carryForwardError);
-          // Don't fail the entire operation if carry forward update fails
           Swal.fire({
             icon: 'warning',
             title: 'User Updated with Warning',
@@ -240,7 +221,7 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
         }
       }
 
-      toggle(); // close the modal
+      toggle();
 
       Swal.fire({
         icon: 'success',
@@ -248,7 +229,7 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
         confirmButtonText: 'OK',
       }).then(() => {
         if (typeof onUpdateSuccess === 'function') {
-          onUpdateSuccess(); // ✅ call refresh logic from parent
+          onUpdateSuccess();
         }
       });
     } catch (err) {
@@ -344,7 +325,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
             </Input>
           </FormGroup>
 
-          {/* ADDED: Department Field */}
           <FormGroup>
             <Label for="department">Department</Label>
             <Input
@@ -357,7 +337,6 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
             />
           </FormGroup>
 
-          {/* ADDED: Position Field */}
           <FormGroup>
             <Label for="position_id">Position</Label>
             <Input
@@ -374,44 +353,57 @@ const UpdateUserModal = ({ modal, toggle, user, onUpdateSuccess }) => {
             </Input>
           </FormGroup>
 
-          {/* Removed Contract Type - using Position-based entitlements */}
-
-          {/* ADDED: Carry Forward + Optional Entitled Override for Each Leave Type */}
+          {/* Updated Carry Forward + Entitled Override Section */}
           {formData.position_id && leaveTypes.length > 0 && (
-            <FormGroup>
-              <Label>Carry Forward Days (Current Year: {new Date().getFullYear()})</Label>
-              {leaveTypes.map(leaveType => (
-                <FormGroup key={leaveType.leave_type_id} style={{ marginBottom: '15px' }}>
-                  <Label for={`carry-forward-${leaveType.leave_type_id}`} style={{ fontSize: '14px', marginBottom: '5px' }}>
-                    {leaveType.leave_name} (Entitled: {leaveType.entitled_days} days)
-                  </Label>
-                  <Input
-                    type="number"
-                    id={`carry-forward-${leaveType.leave_type_id}`}
-                    step="0.5"
-                    min="0"
-                    value={carryForwardDays[leaveType.leave_type_id] || 0}
-                    onChange={(e) => handleCarryForwardChange(leaveType.leave_type_id, e.target.value)}
-                    placeholder="Enter carry forward days"
-                  />
-                  <Label for={`entitled-override-${leaveType.leave_type_id}`} style={{ fontSize: '12px', marginTop: '6px' }}>
-                    Override Entitled Days (optional)
-                  </Label>
-                  <Input
-                    type="number"
-                    id={`entitled-override-${leaveType.leave_type_id}`}
-                    step="0.5"
-                    min="0"
-                    value={entitledOverrides[leaveType.leave_type_id] ?? ''}
-                    onChange={(e) => handleEntitledOverrideChange(leaveType.leave_type_id, e.target.value)}
-                    placeholder={`Default: ${leaveType.entitled_days}`}
-                  />
-                  <small className="text-muted">
-                    Current: {currentLeaveBalances[leaveType.leave_type_id] || 0} days
-                  </small>
-                </FormGroup>
-              ))}
-            </FormGroup>
+            <div>
+              <h5>Leave Entitlements (Current Year: {new Date().getFullYear()})</h5>
+              <div style={{ display: 'grid', gap: '12px', marginTop: '8px' }}>
+                {leaveTypes.map(leaveType => (
+                  <div
+                    key={leaveType.leave_type_id}
+                    style={{
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      background: '#f9f9f9'
+                    }}
+                  >
+                    <div style={{ marginBottom: '6px', fontWeight: '600' }}>
+                      {leaveType.leave_name} (Entitled: {leaveType.entitled_days} days)
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      <div style={{ flex: '1 1 150px' }}>
+                        <Label>Carry Forward</Label>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          value={carryForwardDays[leaveType.leave_type_id] || 0}
+                          onChange={(e) => handleCarryForwardChange(leaveType.leave_type_id, e.target.value)}
+                          placeholder="Enter carry forward"
+                        />
+                        <small className="text-muted">
+                          Current: {currentLeaveBalances[leaveType.leave_type_id] || 0} days
+                        </small>
+                      </div>
+
+                      <div style={{ flex: '1 1 150px' }}>
+                        <Label>Override Entitled Days</Label>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          value={entitledOverrides[leaveType.leave_type_id] ?? ''}
+                          onChange={(e) => handleEntitledOverrideChange(leaveType.leave_type_id, e.target.value)}
+                          placeholder={`Default: ${leaveType.entitled_days}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           <FormGroup>

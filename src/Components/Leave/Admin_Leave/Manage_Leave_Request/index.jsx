@@ -54,6 +54,12 @@
         const data = await getManageLeaveRequest(); // Use the correct API for manage leave request
         const allRequests = data.leaveRequests || [];
         
+        // Debug: Check if attachments are in the data
+        console.log('Leave Requests Data:', allRequests);
+        console.log('Attachments found:', allRequests.filter(req => req.attachment).map(req => ({ 
+          id: req.request_id, 
+          attachment: req.attachment 
+        })));
         
         // Filter to show only pending leave requests
         const pendingRequests = allRequests.filter(item => 
@@ -114,12 +120,17 @@
       );
     };
 
-    // View scanned form (robust: uses getScannedForm util)
+    // View scanned form - Downloads and opens in PDF app
     const handleViewScannedForm = async (leave) => {
       const requestId = leave?.request_id || leave;
-      if (!requestId) return;
-
-      setImagePreview({ open: true, imageUrl: null, loading: true });
+      if (!requestId) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'No Request',
+          text: 'No leave request selected.'
+        });
+        return;
+      }
 
       try {
         // getScannedForm should return something like: { success: true, file_url: '/media/...' }
@@ -133,7 +144,14 @@
         // If backend returned a blob or direct data, handle fallback (rare)
         if (!fileUrl && result instanceof Blob) {
           const blobUrl = URL.createObjectURL(result);
-          setImagePreview({ open: true, imageUrl: blobUrl, loading: false });
+          // Download the blob
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = `scanned_form_${requestId}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
           return;
         }
 
@@ -151,14 +169,38 @@
           fileUrl = `${baseUrl}${fileUrl}`;
         }
 
-        setImagePreview({ open: true, imageUrl: fileUrl, loading: false });
+        // Extract filename from URL
+        const filename = fileUrl.split('/').pop() || `scanned_form_${requestId}.pdf`;
+
+        // Fetch the file and trigger download to open in PDF app
+        const response = await fetch(fileUrl);
+        const blob = await response.blob();
+        
+        // Create a temporary URL for the blob
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        // Create a temporary link element
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename; // This forces download instead of browser view
+        link.style.display = 'none';
+        
+        // Append to body, click, and remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the blob URL after a short delay
+        setTimeout(() => {
+          window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+
       } catch (err) {
-        console.error('Error loading scanned form:', err);
-        setImagePreview({ open: false, imageUrl: null, loading: false });
+        console.error('Error downloading scanned form:', err);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: err.response?.data?.error || err.message || 'Failed to load scanned form'
+          text: err.response?.data?.error || err.message || 'Failed to download scanned form'
         });
       }
     };
@@ -220,12 +262,17 @@
       updateLeaveRecord(requestId, false);
     };
 
-    // View attachment file (uploaded in form)
+    // View attachment file (uploaded in form) - Downloads and opens in PDF app
     const handleViewAttachment = async (leave) => {
       const attachment = leave?.attachment;
-      if (!attachment) return;
-
-      setImagePreview({ open: true, imageUrl: null, loading: true });
+      if (!attachment) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'No Attachment',
+          text: 'This leave request has no attachment file.'
+        });
+        return;
+      }
 
       try {
         // Build the file URL for attachment
@@ -241,14 +288,38 @@
           fileUrl = `${baseUrl}${fileUrl}`;
         }
 
-        setImagePreview({ open: true, imageUrl: fileUrl, loading: false });
+        // Extract filename from URL
+        const filename = fileUrl.split('/').pop() || 'attachment.pdf';
+
+        // Fetch the file and trigger download to open in PDF app
+        const response = await fetch(fileUrl);
+        const blob = await response.blob();
+        
+        // Create a temporary URL for the blob
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        // Create a temporary link element
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename; // This forces download instead of browser view
+        link.style.display = 'none';
+        
+        // Append to body, click, and remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the blob URL after a short delay
+        setTimeout(() => {
+          window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+
       } catch (err) {
-        console.error('Error loading attachment file:', err);
-        setImagePreview({ open: false, imageUrl: null, loading: false });
+        console.error('Error downloading attachment file:', err);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'Failed to load attachment file'
+          text: 'Failed to download attachment file'
         });
       }
     };
@@ -389,8 +460,9 @@
               size="sm"
               onClick={() => handleViewAttachment(row)}
               style={{ minWidth: '80px', padding: '6px 12px' }}
+              title="Download and open in PDF app"
             >
-              <i className="fa fa-eye me-1" /> View
+              <i className="fa fa-download me-1" /> View
             </Button>
           ) : (
             <span className="text-muted">No file</span>
@@ -406,8 +478,9 @@
               size="sm"
               onClick={() => handleViewScannedForm(row)}
               style={{ minWidth: '80px', padding: '6px 12px' }}
+              title="Download and open in PDF app"
             >
-              <i className="fa fa-eye me-1" /> View
+              <i className="fa fa-download me-1" /> View
             </Button>
           ) : (
             <span className="text-muted">No file</span>
