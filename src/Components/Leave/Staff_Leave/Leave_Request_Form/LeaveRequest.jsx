@@ -180,12 +180,17 @@ const LeaveRequest = () => {
     );
   };
 
-  // View scanned form (robust: uses getScannedForm util)
+  // View scanned form - Downloads and opens in PDF app
   const handleViewScannedForm = async (leave) => {
     const requestId = leave?.request_id || leave;
-    if (!requestId) return;
-
-    setImagePreview({ open: true, imageUrl: null, loading: true });
+    if (!requestId) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'No Request',
+        text: 'No leave request selected.'
+      });
+      return;
+    }
 
     try {
       // getScannedForm should return something like: { success: true, file_url: '/media/...' }
@@ -199,7 +204,14 @@ const LeaveRequest = () => {
       // If backend returned a blob or direct data, handle fallback (rare)
       if (!fileUrl && result instanceof Blob) {
         const blobUrl = URL.createObjectURL(result);
-        setImagePreview({ open: true, imageUrl: blobUrl, loading: false });
+        // Download the blob
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `scanned_form_${requestId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
         return;
       }
 
@@ -217,14 +229,38 @@ const LeaveRequest = () => {
         fileUrl = `${baseUrl}${fileUrl}`;
       }
 
-      setImagePreview({ open: true, imageUrl: fileUrl, loading: false });
+      // Extract filename from URL
+      const filename = fileUrl.split('/').pop() || `scanned_form_${requestId}.pdf`;
+
+      // Fetch the file and trigger download to open in PDF app
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      
+      // Create a temporary URL for the blob
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename; // This forces download instead of browser view
+      link.style.display = 'none';
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL after a short delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(blobUrl);
+      }, 100);
+
     } catch (err) {
-      console.error('Error loading scanned form:', err);
-      setImagePreview({ open: false, imageUrl: null, loading: false });
+      console.error('Error downloading scanned form:', err);
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: err.response?.data?.error || err.message || 'Failed to load scanned form'
+        text: err.response?.data?.error || err.message || 'Failed to download scanned form'
       });
     }
   };
@@ -382,7 +418,7 @@ const LeaveRequest = () => {
                         </button>
                         {leave.scanned_form && (
                           <button
-                            title="View Form"
+                            title="Download and open in PDF app"
                             onClick={() => handleViewScannedForm(leave)}
                             style={{ 
                               border: 'none', 

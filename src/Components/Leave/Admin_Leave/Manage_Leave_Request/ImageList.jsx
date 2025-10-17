@@ -182,18 +182,36 @@ const ImageList = ({ images, setImages, onEditImage, onRemoveImage }) => {
               ×
             </button>
 
-            <img
-              src={image.preview}
-              alt={image.name}
-              style={{
+            {image.preview === 'pdf-file' || image.name?.toLowerCase().endsWith('.pdf') ? (
+              <div style={{
                 width: '100%',
                 height: '150px',
-                objectFit: 'cover',
                 borderRadius: '4px',
                 marginBottom: '10px',
                 border: '1px solid #dee2e6',
-              }}
-            />
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#f8f9fa'
+              }}>
+                <i className="fa fa-file-pdf-o" style={{ fontSize: '60px', color: '#dc3545' }}></i>
+                <p style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>PDF Document</p>
+              </div>
+            ) : (
+              <img
+                src={image.preview}
+                alt={image.name}
+                style={{
+                  width: '100%',
+                  height: '150px',
+                  objectFit: 'cover',
+                  borderRadius: '4px',
+                  marginBottom: '10px',
+                  border: '1px solid #dee2e6',
+                }}
+              />
+            )}
             <div style={{ marginBottom: '10px' }}>
               <p
                 style={{
@@ -221,22 +239,24 @@ const ImageList = ({ images, setImages, onEditImage, onRemoveImage }) => {
                 </p>
               )}
             </div>
-            <button
-              onClick={() => onEditImage(image)}
-              style={{
-                padding: '8px 16px',
-                background: '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                width: '100%',
-              }}
-            >
-              Edit
-            </button>
+            {!(image.preview === 'pdf-file' || image.name?.toLowerCase().endsWith('.pdf')) && (
+              <button
+                onClick={() => onEditImage(image)}
+                style={{
+                  padding: '8px 16px',
+                  background: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  width: '100%',
+                }}
+              >
+                Edit
+              </button>
+            )}
           </div>
         ))}
       </div>

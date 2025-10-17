@@ -630,6 +630,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   <input
                     type="file"
                     className="form-control"
+                    accept=".pdf,.jpg,.jpeg,.png"
                     onChange={handleFileChange}
                   />
                   <div className="form-text text-danger">{t.fileSizeNote}</div>

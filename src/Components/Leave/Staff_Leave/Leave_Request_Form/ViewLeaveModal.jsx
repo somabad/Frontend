@@ -180,38 +180,35 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
     pageStyle: `
       @page {
         size: A4;
-        margin: 0.5in;
+        margin: 10mm;
       }
       @media print {
         * {
           -webkit-print-color-adjust: exact !important;
           color-adjust: exact !important;
+          box-sizing: border-box !important;
         }
-        body {
+        html, body {
+          width: 210mm !important;
+          height: 297mm !important;
           margin: 0 !important;
           padding: 0 !important;
           font-family: Arial, sans-serif !important;
-          font-size: 10px !important;
-          line-height: 1.1 !important;
-          display: flex !important;
-          justify-content: center !important;
-          align-items: center !important;
-          min-height: 100vh !important;
+          overflow: hidden !important;
         }
         #printable-content {
           display: block !important;
           width: 100% !important;
           max-width: 100% !important;
           height: auto !important;
-          transform: none !important; 
-          padding: 8px !important;
+          padding: 12px !important;
           margin: 0 auto !important;
           border: 2px solid black !important;
-          border-radius: 2px !important;
           box-sizing: border-box !important;
-          page-break-inside: avoid !important;
           font-family: Arial, sans-serif !important;
-          font-size: 10px !important;
+          font-size: 11px !important;
+          transform: scale(0.95) !important;
+          transform-origin: top center !important;
         }
         .modal-body, .modal-content {
           box-shadow: none !important;
@@ -220,16 +217,15 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         .row {
           display: flex !important;
           flex-wrap: wrap !important;
-          margin-right: -8px !important;
-          margin-left: -8px !important;
+          margin-right: -15px !important;
+          margin-left: -15px !important;
         }
         [class^="col-"], [class*=" col-"] {
           position: relative !important;
-          padding-right: 8px !important;
-          padding-left: 8px !important;
+          padding-right: 15px !important;
+          padding-left: 15px !important;
+          box-sizing: border-box !important;
         }
-        .col-md-1 { flex: 0 0 8.333333% !important; max-width: 8.333333% !important; }
-        .col-md-2 { flex: 0 0 16.666667% !important; max-width: 16.666667% !important; }
         .col-md-3 { flex: 0 0 25% !important; max-width: 25% !important; }
         .col-md-4 { flex: 0 0 33.333333% !important; max-width: 33.333333% !important; }
         .col-md-5 { flex: 0 0 41.666667% !important; max-width: 41.666667% !important; }
@@ -239,99 +235,69 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
           display: none !important;
         }
         .form-group {
-          margin-bottom: 0.5rem !important;
-        }
-        .text-center {
-          text-align: center !important;
-        }
-        .mb-2 { margin-bottom: 0.25rem !important; }
-        .mb-3 { margin-bottom: 0.5rem !important; }
-        .mt-2 { margin-top: 0.25rem !important; }
-        .p-3 { padding: 0.5rem !important; }
-        h4, h5, h6 {
-          margin: 0 !important;
-          font-weight: bold !important;
-        }
-        h4 { font-size: 14px !important; }
-        h5 { font-size: 11px !important; }
-        h6 { font-size: 10px !important; }
-        label {
-          font-weight: bold !important;
           margin-bottom: 0 !important;
-          font-size: 10px !important;
         }
-        ul {
+        h4 {
+          font-size: 16px !important;
           margin: 0 !important;
-          padding-left: 15px !important;
+          font-weight: bold !important;
         }
-        li {
-          margin-bottom: 0.1rem !important;
-          font-size: 9px !important;
+        h5 {
+          font-size: 13px !important;
+          margin: 0 !important;
+          font-weight: bold !important;
         }
-        /* Reduce all margins and padding for A4 fit */
+        /* Slightly reduce spacing for print */
+        div[style*="marginBottom: '40px'"] {
+          margin-bottom: 30px !important;
+        }
+        div[style*="marginBottom: '30px'"] {
+          margin-bottom: 25px !important;
+        }
+        div[style*="marginBottom: '25px'"] {
+          margin-bottom: 20px !important;
+        }
         div[style*="marginBottom: '20px'"] {
-          margin-bottom: 8px !important;
+          margin-bottom: 15px !important;
         }
         div[style*="marginBottom: '15px'"] {
-          margin-bottom: 6px !important;
+          margin-bottom: 12px !important;
         }
-        div[style*="marginBottom: '12px'"] {
-          margin-bottom: 4px !important;
-        }
-        div[style*="marginBottom: '10px'"] {
-          margin-bottom: 3px !important;
-        }
-        div[style*="marginTop: '20px'"] {
-          margin-top: 8px !important;
-        }
-        div[style*="marginTop: '15px'"] {
-          margin-top: 6px !important;
-        }
-        div[style*="paddingTop: '15px'"] {
-          padding-top: 6px !important;
-        }
-        div[style*="paddingTop: '10px'"] {
-          padding-top: 4px !important;
-        }
-        /* Make sure borders and lines are visible */
-        div[style*="borderBottom"] {
-          border-bottom: 1px solid black !important;
-          min-height: 15px !important;
-        }
-        /* Preserve flexbox layout for applicant details */
+        /* Preserve flex layouts */
         div[style*="display: flex"] {
           display: flex !important;
         }
-        div[style*="flex: 1"] {
-          flex: 1 !important;
+        /* Preserve borders */
+        div[style*="border"],
+        div[style*="borderTop"],
+        div[style*="borderBottom"],
+        div[style*="borderLeft"],
+        div[style*="borderRight"] {
+          border-color: black !important;
         }
-        span[style*="width: 100px"] {
-          width: 100px !important;
-          flex-shrink: 0 !important;
+        /* Fix negative margins for print - keep borders inside */
+        .print-no-negative-margin {
+          margin-left: 0.5 !important;
+          margin-right: 0.5 !important;
+          padding-left: 30px !important;
+          padding-right: 15px !important;
         }
-        span[style*="width: 120px"] {
-          width: 120px !important;
-          flex-shrink: 0 !important;
+        .print-no-negative-margin > .row {
+          margin-left: 0 !important;
+          margin-right: 0 !important;
         }
-        /* Reduce signature section height */
-        div[style*="height: '100px'"] {
-          height: 60px !important;
+        .print-no-negative-margin > .row > [class*="col-"] {
+          padding-left: 0 !important;
+          padding-right: 0 !important;
         }
-        div[style*="height: '80px'"] {
-          height: 50px !important;
+        .print-no-negative-margin div[style*="paddingLeft: '28px'"],
+        .print-no-negative-margin div[style*="paddingRight: '28px'"] {
+          padding-left: 0 !important;
+          padding-right: 0 !important;
         }
-        div[style*="height: '40px'"] {
-          height: 25px !important;
-        }
-        /* Reduce font sizes for better fit */
-        span[style*="fontSize: '11px'"] {
-          font-size: 9px !important;
-        }
-        span[style*="fontSize: '12px'"] {
-          font-size: 10px !important;
-        }
-        div[style*="fontSize: '10px'"] {
-          font-size: 8px !important;
+        /* Prevent page breaks inside important sections */
+        .row, [class*="col-"] {
+          page-break-inside: avoid !important;
         }
       }
     `,
@@ -376,7 +342,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
               fontFamily: 'Arial, sans-serif'
             }}>
               {/* Header of Form */}
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                 <h4 style={{ 
                   margin: '0 0 5px 0', 
                   fontSize: '18px', 
@@ -397,94 +363,100 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
 
 
               {/* Applicant Details Section */}
-              <div style={{ marginBottom: '20px' }}>
+              <div style={{ marginBottom: '15px' }}>
                 <div style={{ display: 'flex', gap: '20px' }}>
                   {/* Left Column */}
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.name}</span>
-                      <span>:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', width: '70px', flexShrink: 0, fontSize: '14px' }}>{t.name}</span>
+                      <span style={{ margin: '0 3px' }}>:</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
-                        flex: 1, 
-                        minHeight: '20px',
+                        width: '180px',
+                        minHeight: '22px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        paddingLeft: '5px',
+                        fontSize: '14px'
                       }}>
                         {leave.staff_name || ''}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.position}</span>
-                      <span>:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', width: '70px', flexShrink: 0, fontSize: '14px' }}>{t.position}</span>
+                      <span style={{ margin: '0 3px' }}>:</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
-                        flex: 1, 
-                        minHeight: '20px',
+                        width: '180px',
+                        minHeight: '22px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        paddingLeft: '5px',
+                        fontSize: '14px'
                       }}>
                         {leave.staff_position || ''}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.section}</span>
-                      <span>:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', width: '70px', flexShrink: 0, fontSize: '14px' }}>{t.section}</span>
+                      <span style={{ margin: '0 3px' }}>:</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
-                        flex: 1, 
-                        minHeight: '20px',
+                        width: '180px',
+                        minHeight: '22px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        paddingLeft: '5px',
+                        fontSize: '14px'
                       }}>
                         {''}
                       </div>
                     </div>
                   </div>
                   
-                  {/* Right Column - Aligned with left column */}
+                  {/* Right Column */}
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.staffId}</span>
-                      <span style={{ margin: '0 5px' }}>:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', width: '140px', flexShrink: 0, fontSize: '14px', whiteSpace: 'nowrap' }}>{t.staffId}</span>
+                      <span style={{ margin: '0 3px' }}>:</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
-                        flex: 1, 
-                        minHeight: '20px',
+                        width: '200px',
+                        minHeight: '22px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        paddingLeft: '5px',
+                        fontSize: '14px'
                       }}>
                         {leave.staffId || leave.staff_id || ''}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontWeight: 'bold', width: '120px', flexShrink: 0, whiteSpace: 'nowrap' }}>{t.applicationDate}</span>
-                      <span style={{ margin: '0 5px' }}>:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', width: '140px', flexShrink: 0, fontSize: '14px', whiteSpace: 'nowrap' }}>{t.applicationDate}</span>
+                      <span style={{ margin: '0 3px' }}>:</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
-                        flex: 1, 
-                        minHeight: '20px',
+                        width: '200px',
+                        minHeight: '22px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        paddingLeft: '5px',
+                        fontSize: '14px'
                       }}>
                         {leave.request_date || leave.created_at || ''}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontWeight: 'bold', width: '100px', flexShrink: 0 }}>{t.department}</span>
-                      <span style={{ margin: '0 5px' }}>:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', width: '140px', flexShrink: 0, fontSize: '14px' }}>{t.department}</span>
+                      <span style={{ margin: '0 3px' }}>:</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
-                        flex: 1, 
-                        minHeight: '20px',
+                        width: '200px',
+                        minHeight: '22px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        paddingLeft: '5px',
+                        fontSize: '14px'
                       }}>
                         {leave.staff_department || ''}
                       </div>
@@ -495,10 +467,11 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
 
               {/* Leave Type and Reason Section */}
               <div style={{ marginBottom: '20px' }}>
-              <Row>
-                <Col md="6">
+                <div style={{ display: 'flex', gap: '20px' }}>
+                  {/* Left Column - Leave Type */}
+                  <div style={{ flex: 1, maxWidth: '50%' }}>
                     <div style={{ marginBottom: '15px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>
                         {t.leaveType}
                       </div>
                       <div style={{ fontSize: '11px', marginBottom: '8px' }}>
@@ -540,65 +513,67 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                         ));
                       })()}
                     </div>
+                    </div>
                   </div>
-                </Col>
-                <Col md="6">
-                  <FormGroup>
-                      <Label><b>{t.reason}</b></Label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-                      {(() => {
-                        const reason = leave.reason || '-';
-                        const maxCharsPerLine = 40; // Characters per line
-                        const lines = [];
-                        
-                        if (reason === '-') {
-                          lines.push('-');
-                        } else {
-                          // Split reason into words
-                          const words = reason.split(' ');
-                          let currentLine = '';
+                  
+                  {/* Right Column - Reason */}
+                  <div style={{ flex: 1, maxWidth: '50%' }}>
+                    <div style={{ marginBottom: 0 }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>{t.reason}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                        {(() => {
+                          const reason = leave.reason || '-';
+                          const maxCharsPerLine = 40; // Characters per line
+                          const lines = [];
                           
-                          words.forEach((word, index) => {
-                            const testLine = currentLine ? `${currentLine} ${word}` : word;
+                          if (reason === '-') {
+                            lines.push('-');
+                          } else {
+                            // Split reason into words
+                            const words = reason.split(' ');
+                            let currentLine = '';
                             
-                            if (testLine.length <= maxCharsPerLine) {
-                              currentLine = testLine;
-                            } else {
-                              if (currentLine) {
+                            words.forEach((word, index) => {
+                              const testLine = currentLine ? `${currentLine} ${word}` : word;
+                              
+                              if (testLine.length <= maxCharsPerLine) {
+                                currentLine = testLine;
+                              } else {
+                                if (currentLine) {
+                                  lines.push(currentLine);
+                                }
+                                currentLine = word;
+                              }
+                              
+                              // Push the last line
+                              if (index === words.length - 1 && currentLine) {
                                 lines.push(currentLine);
                               }
-                              currentLine = word;
-                            }
-                            
-                            // Push the last line
-                            if (index === words.length - 1 && currentLine) {
-                              lines.push(currentLine);
-                            }
-                          });
-                        }
-                        
-                        // Ensure we always have 4 lines for consistent form appearance
-                        while (lines.length < 4) {
-                          lines.push('');
-                        }
-                        
-                        return lines.slice(0, 4).map((line, idx) => (
-                          <LineField key={idx} value={line} />
-                        ));
-                      })()}
+                            });
+                          }
+                          
+                          // Ensure we always have 4 lines for consistent form appearance
+                          while (lines.length < 4) {
+                            lines.push('');
+                          }
+                          
+                          return lines.slice(0, 4).map((line, idx) => (
+                            <LineField key={idx} value={line} />
+                          ));
+                        })()}
+                      </div>
                     </div>
-                  </FormGroup>
-                </Col>
-              </Row>
+                  </div>
+                </div>
               </div>
 
               {/* Leave Duration Section */}
               <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', gap: '10px', flexWrap: 'wrap' }}>
-                  <span style={{ fontWeight: 'bold', marginLeft: '20px', minWidth: '80px' }}>{t.totalDays}</span>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '25px', gap: '5px' }}>
+                  <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>{t.totalDays}</span>
                   <div style={{ 
                     borderBottom: '1px solid black', 
-                    width: '40px',
+                    width: '35px',
                     minHeight: '20px',
                     display: 'flex',
                     alignItems: 'center',
@@ -606,11 +581,11 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                   }}>
                     {leave.total_days != null ? String(leave.total_days) : (leave.is_half_day ? '0.5' : '')}
                   </div>
-                  <span style={{ marginLeft: '5px' }}>{t.days}</span>
-                  <span style={{ fontWeight: 'bold', minWidth: '40px' }}>{t.from}:</span>
+                  <span style={{ marginLeft: '3px', whiteSpace: 'nowrap' }}>{t.days}</span>
+                  <span style={{ fontWeight: 'bold', marginLeft: '15px', whiteSpace: 'nowrap' }}>{t.from}:</span>
                   <div style={{ 
                     borderBottom: '1px solid black', 
-                    width: '120px',
+                    width: '110px',
                     minHeight: '20px',
                     display: 'flex',
                     alignItems: 'center',
@@ -618,10 +593,10 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                   }}>
                     {leave.start_date || ''}
                   </div>
-                  <span style={{ fontWeight: 'bold', marginLeft: '10px' }}>{t.to}</span>
+                  <span style={{ fontWeight: 'bold', marginLeft: '15px', whiteSpace: 'nowrap' }}>{t.to}</span>
                   <div style={{ 
                     borderBottom: '1px solid black', 
-                    width: '120px',
+                    width: '110px',
                     minHeight: '20px',
                     display: 'flex',
                     alignItems: 'center',
@@ -632,7 +607,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                 </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.jobTakeover}:</span>
+                  <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap', marginRight: '5px' }}>{t.jobTakeover}:</span>
                   <div style={{ 
                     borderBottom: '1px solid black', 
                     flex: 1,
@@ -646,62 +621,66 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                 </div>
               </div>
               {/* Signature Section */}
-              <div style={{ marginBottom: '20px' }}>
+              <div style={{ marginBottom: '15px' }}>
               <Row>
                 <Col md="4">
-                    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>
+                    <div style={{ marginBottom: '15px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '30px', textAlign: 'center' }}>
                         {t.applicantSignature}
                       </div>
                       <div style={{ 
                         borderBottom: '1px solid black', 
-                        height: '40px',
-                        marginBottom: '10px'
+                        height: '35px',
+                        marginBottom: '8px'
                       }}></div>
-                      <div style={{ fontWeight: 'bold' }}>{t.date}</div>
+                      <div style={{ fontWeight: 'bold', textAlign: 'left' }}>{t.date}</div>
                     </div>
                 </Col>
                 <Col md="4">
-                    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>
+                    <div style={{ marginBottom: '15px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '30px', textAlign: 'center' }}>
                         {t.supported}
                       </div>
                       <div style={{ 
                         borderBottom: '1px solid black', 
-                        height: '40px',
-                        marginBottom: '10px'
+                        height: '35px',
+                        marginBottom: '8px'
                       }}></div>
-                      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '3px', textAlign: 'left' }}>
                         {t.sectionHeadSignature}
                       </div>
-                      <div style={{ fontWeight: 'bold' }}>{t.date}</div>
+                      <div style={{ fontWeight: 'bold', textAlign: 'left' }}>{t.date}</div>
                     </div>
                 </Col>
                 <Col md="4">
-                    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>
+                    <div style={{ marginBottom: '15px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '30px', textAlign: 'center' }}>
                         {t.approved}
                       </div>
                       <div style={{ 
                         borderBottom: '1px solid black', 
-                        height: '40px',
-                        marginBottom: '10px'
+                        height: '35px',
+                        marginBottom: '8px'
                       }}></div>
-                      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '3px', textAlign: 'left' }}>
                         {t.divisionHeadSignature}
                       </div>
-                      <div style={{ fontWeight: 'bold' }}>{t.date}</div>
+                      <div style={{ fontWeight: 'bold', textAlign: 'left' }}>{t.date}</div>
                     </div>
                 </Col>
               </Row>
               </div>
 
               {/* HR Confirmation Section */}
-              <div style={{ 
+              <div className="print-no-negative-margin" style={{ 
                 borderTop: '2px solid black', 
                 paddingTop: '15px', 
-                marginTop: '20px',
-                marginBottom: '20px'
+                marginTop: '0px',
+                marginBottom: '20px',
+                marginLeft: '-25px',
+                marginRight: '-25px',
+                paddingLeft: '25px',
+                paddingRight: '25px'
               }}>
                 <div style={{ fontWeight: 'bold', marginBottom: '15px' }}>
                   {t.hrConfirmation}
@@ -715,9 +694,9 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                 </div>
               ) : (
                 <>
-                  <div style={{ marginBottom: '10px' }}>
+                  <div style={{ marginBottom: '10px', paddingLeft: '30px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.lastYearBalance}</span>
+                      <span style={{ fontWeight: 'bold', minWidth: '320px' }}>{t.lastYearBalance}</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
                         width: '60px',
@@ -732,7 +711,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                     </div>
                     
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.thisYearBalance}</span>
+                      <span style={{ fontWeight: 'bold', minWidth: '320px' }}>{t.thisYearBalance}</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
                         width: '60px',
@@ -747,7 +726,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                     </div>
                     
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.totalBalance}</span>
+                      <span style={{ fontWeight: 'bold', minWidth: '320px' }}>{t.totalBalance}</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
                         width: '60px',
@@ -762,7 +741,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                     </div>
                     
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.leaveTaken}</span>
+                      <span style={{ fontWeight: 'bold', minWidth: '320px' }}>{t.leaveTaken}</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
                         width: '60px',
@@ -777,7 +756,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                     </div>
                     
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.currentBalance}</span>
+                      <span style={{ fontWeight: 'bold', minWidth: '320px' }}>{t.currentBalance}</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
                         width: '60px',
@@ -792,7 +771,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                           </div>
                     
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.leaveApplied}</span>
+                      <span style={{ fontWeight: 'bold', minWidth: '320px' }}>{t.leaveApplied}</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
                         width: '60px',
@@ -807,7 +786,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                           </div>
                     
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 'bold', minWidth: '200px' }}>{t.leaveBalance}</span>
+                      <span style={{ fontWeight: 'bold', minWidth: '320px' }}>{t.leaveBalance}</span>
                       <div style={{ 
                         borderBottom: '1px solid black', 
                         width: '60px',
@@ -832,7 +811,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                     display: 'flex',
                     alignItems: 'flex-end',
                     justifyContent: 'flex-end',
-                    paddingRight: '0px', // remove right padding to close the gap
+                    paddingRight: '0px',
                   }}
                 >
                   <FormGroup style={{ marginBottom: '0' }}>
@@ -844,8 +823,8 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                 <Col
                   md="5"
                   style={{
-                    paddingLeft: '0px', // remove left padding to connect with label
-                    marginLeft: '5px', // fine tune closeness
+                    paddingLeft: '0px',
+                    marginLeft: '5px',
                   }}
                 >
                   <FormGroup style={{ marginBottom: '0' }}>
@@ -878,14 +857,16 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
               </Row>
 
               <div
+                className="print-no-negative-margin"
                 style={{ 
                   borderTop: '2px solid black',
                   paddingTop: '10px', 
                   marginLeft: '-28px',
                   marginRight: '-28px'
-                }} ></div>
+                }} >
+                <Row>
                   <Col md="12">
-                    <div>
+                    <div style={{ paddingLeft: '28px', paddingRight: '28px' }}>
                       <Label><b>{t.notes}</b></Label>
                       <ul style={{ fontSize: '12px', marginTop: '5px', padding: '0 15px' }}>
                         <li>{t.note1}</li>
@@ -893,6 +874,8 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                       </ul>
                     </div>
                   </Col>
+                </Row>
+              </div>
             </div>
           </div>
         )}
