@@ -62,7 +62,7 @@ function PieConnectingLines({ data, outerRadius, innerRadius }) {
         const x2 = centerX + Math.cos(midAngle) * lineEndRadius;
         const y2 = centerY + Math.sin(midAngle) * lineEndRadius;
 
-        // Horizontal line extension (increased from 20 to 40)
+        // Horizontal line extension
         const isRightSide = Math.cos(midAngle) > 0;
         const x3 = x2 + (isRightSide ? 40 : -40);
         const y3 = y2;
@@ -104,6 +104,37 @@ const hexToRgba = (hex, alpha) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+// Translation object
+const translations = {
+  en: {
+    processTitle: 'Leave Application Process',
+    step1: 'Apply Leave',
+    step2: 'Print Form',
+    step3: 'Upload Proof',
+    step4: 'Wait Approval',
+    step5: 'Check Status',
+    reminder: 'After applying, print your form from the View button, sign it, upload the scanned copy, and wait for admin approval.',
+    actionRequired: 'Action Required: Upload Form',
+    applied: 'Applied',
+    print: 'Print',
+    upload: 'Upload',
+    status: 'Status'
+  },
+  ms: {
+    processTitle: 'Proses Permohonan Cuti',
+    step1: 'Mohon Cuti',
+    step2: 'Cetak Borang',
+    step3: 'Muat Naik Bukti',
+    step4: 'Tunggu Kelulusan',
+    step5: 'Semak Status',
+    reminder: 'Selepas memohon, cetak borang dari butang View, tandatangan, muat naik salinan imbasan, dan tunggu kelulusan admin.',
+    actionRequired: 'Tindakan Diperlukan: Muat Naik Borang',
+    applied: 'Dimohon',
+    print: 'Cetak',
+    upload: 'Muat Naik',
+    status: 'Status'
+  }
+};
 
 const LeaveRequest = () => {
   const staffId = sessionStorage.getItem("staffId");
@@ -116,6 +147,10 @@ const LeaveRequest = () => {
   const [deleteModal, setDeleteModal] = useState({ open: false, leave: null });
   const [loading, setLoading] = useState(true);
   const [showReminderModal, setShowReminderModal] = useState(false);
+  const [language, setLanguage] = useState('en'); // Language toggle
+  
+  // Get translations
+  const t = translations[language];
   
   // Upload modal states
   const [uploadModal, setUploadModal] = useState({ 
@@ -357,35 +392,276 @@ const LeaveRequest = () => {
         <Card className="mb-4">
           <CardHeader className="d-flex justify-content-between align-items-center">
             <span style={{ fontSize: "1.5rem", fontWeight: "bold" }}>Leave Request</span>
-            <button
-              style={{
-                backgroundColor: "#6f42c1",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                padding: "8px 16px",
-                fontWeight: "500",
-                cursor: "pointer"
-              }}
-              onClick={() => setShowApplyModal(true)}
-            >
-              Apply Leave
-            </button>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <button
+                style={{
+                  backgroundColor: "#17a2b8",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "6px 12px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  fontSize: '14px'
+                }}
+                onClick={() => setLanguage(prev => prev === 'en' ? 'ms' : 'en')}
+                title={language === 'en' ? 'Switch to Bahasa Malaysia' : 'Switch to English'}
+              >
+                <i className="fa fa-language me-1"></i>
+                {language === 'en' ? 'BM' : 'EN'}
+              </button>
+              <button
+                style={{
+                  backgroundColor: "#6f42c1",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "8px 16px",
+                  fontWeight: "500",
+                  cursor: "pointer"
+                }}
+                onClick={() => setShowApplyModal(true)}
+              >
+                Apply Leave
+              </button>
+            </div>
           </CardHeader>
+          
+          {/* Process Flow Indicator */}
+          <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderBottom: '1px solid #dee2e6' }}>
+            <h6 style={{ marginBottom: '15px', color: '#495057' }}>
+              <i className="fa fa-info-circle me-2"></i>
+              {t.processTitle}
+            </h6>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+              {/* Progress Line */}
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                left: '0',
+                width: '100%',
+                height: '3px',
+                backgroundColor: '#e0e0e0',
+                zIndex: 0
+              }}>
+                <div style={{
+                  width: '0%',
+                  height: '100%',
+                  backgroundColor: '#28a745',
+                  transition: 'width 0.3s ease'
+                }} />
+              </div>
+              
+              {/* Step 1: Apply */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1, flex: 1 }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  marginBottom: '8px'
+                }}>
+                  1
+                </div>
+                <small style={{ fontWeight: 'bold', color: '#28a745', textAlign: 'center', fontSize: '11px' }}>
+                  Apply Leave
+                </small>
+              </div>
+              
+              {/* Step 2: Print */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1, flex: 1 }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  marginBottom: '8px'
+                }}>
+                  <i className="fa fa-print"></i>
+                </div>
+                <small style={{ fontWeight: '500', color: '#007bff', textAlign: 'center', fontSize: '11px' }}>
+                  Print Form
+                </small>
+              </div>
+              
+              {/* Step 3: Upload */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1, flex: 1 }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  backgroundColor: '#ffc107',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  marginBottom: '8px'
+                }}>
+                  <i className="fa fa-upload"></i>
+                </div>
+                <small style={{ fontWeight: '500', color: '#ffc107', textAlign: 'center', fontSize: '11px' }}>
+                  Upload Proof
+                </small>
+              </div>
+              
+              {/* Step 4: Wait */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1, flex: 1 }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  marginBottom: '8px'
+                }}>
+                  <i className="fa fa-clock-o"></i>
+                </div>
+                <small style={{ fontWeight: '500', color: '#6c757d', textAlign: 'center', fontSize: '11px' }}>
+                  Wait Approval
+                </small>
+              </div>
+              
+              {/* Step 5: Status */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1, flex: 1 }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  backgroundColor: '#17a2b8',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  marginBottom: '8px'
+                }}>
+                  <i className="fa fa-check-circle"></i>
+                </div>
+                <small style={{ fontWeight: '500', color: '#17a2b8', textAlign: 'center', fontSize: '11px' }}>
+                  Check Status
+                </small>
+              </div>
+            </div>
+            
+            {/* Helpful Tips */}
+            <div style={{ 
+              marginTop: '15px', 
+              padding: '10px', 
+              backgroundColor: '#e7f3ff', 
+              borderLeft: '4px solid #007bff',
+              borderRadius: '4px'
+            }}>
+              <p style={{ margin: 0, fontSize: '13px', color: '#004085' }}>
+                <i className="fa fa-lightbulb-o me-2"></i>
+                <strong>Reminder:</strong> After applying, print your form from the View button, sign it, upload the scanned copy, and wait for admin approval.
+              </p>
+            </div>
+          </div>
+          
           <CardBody>
             {/* Pending Leave Requests */}
             {latestRequests.length > 0 ? (
               <div>
                 <h5>Pending Requests</h5>
-                {latestRequests.map((leave) => (
-                  <Card key={leave.request_id} className="mb-2 p-2 shadow-sm">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-                      <div style={{ flex: "1", minWidth: "200px" }}>
-                        <strong>{leave.leave_type}</strong> ({leave.start_date} to {leave.end_date}) - Status:{" "}
-                        <span style={{ fontWeight: "bold", color: leave.status === "Approved" ? "green" : leave.status === "Rejected" ? "red" : "orange" }}>
-                          {leave.status}
-                        </span>
+                {latestRequests.map((leave) => {
+                  // Determine current step based on leave status
+                  const getCurrentStep = () => {
+                    if (leave.status === 'Approved' || leave.status === 'Rejected') {
+                      return 5; // Final step - status updated
+                    } else if (leave.scanned_form) {
+                      return 4; // Uploaded, waiting for approval
+                    } else {
+                      return 2; // Need to print and upload
+                    }
+                  };
+                  
+                  const currentStep = getCurrentStep();
+                  
+                  return (
+                  <Card key={leave.request_id} className="mb-3 shadow-sm">
+                    <div className="p-2">
+                      {/* Mini Progress Indicator */}
+                      <div style={{ 
+                        display: 'flex', 
+                        gap: '8px', 
+                        marginBottom: '10px', 
+                        padding: '8px', 
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '4px'
+                      }}>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          fontSize: '11px',
+                          gap: '4px'
+                        }}>
+                          <i className="fa fa-check-circle" style={{ color: '#28a745' }}></i>
+                          <span>Applied</span>
+                        </div>
+                        <span style={{ color: '#dee2e6' }}>→</span>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          fontSize: '11px',
+                          gap: '4px',
+                          color: currentStep >= 2 ? '#007bff' : '#6c757d'
+                        }}>
+                          <i className={`fa ${currentStep >= 2 ? 'fa-check-circle' : 'fa-circle-o'}`}></i>
+                          <span>Print</span>
+                        </div>
+                        <span style={{ color: '#dee2e6' }}>→</span>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          fontSize: '11px',
+                          gap: '4px',
+                          color: currentStep >= 4 ? '#ffc107' : '#6c757d'
+                        }}>
+                          <i className={`fa ${currentStep >= 4 ? 'fa-check-circle' : 'fa-circle-o'}`}></i>
+                          <span>Upload</span>
+                        </div>
+                        <span style={{ color: '#dee2e6' }}>→</span>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          fontSize: '11px',
+                          gap: '4px',
+                          color: currentStep >= 5 ? '#17a2b8' : '#6c757d'
+                        }}>
+                          <i className={`fa ${currentStep >= 5 ? 'fa-check-circle' : 'fa-circle-o'}`}></i>
+                          <span>Status</span>
+                        </div>
                       </div>
+                      
+                      {/* Leave Details */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+                        <div style={{ flex: "1", minWidth: "200px" }}>
+                          <strong>{leave.leave_type}</strong> ({leave.start_date} to {leave.end_date}) - Status:{" "}
+                          <span style={{ fontWeight: "bold", color: leave.status === "Approved" ? "green" : leave.status === "Rejected" ? "red" : "orange" }}>
+                            {leave.status}
+                          </span>
+                          {!leave.scanned_form && (
+                            <Badge color="warning" className="ms-2" style={{ fontSize: '10px' }}>
+                              <i className="fa fa-exclamation-circle me-1"></i>
+                              Action Required: Upload Form
+                            </Badge>
+                          )}
+                        </div>
                       <div style={{ 
                         display: "flex", 
                         gap: "8px", 
@@ -462,9 +738,11 @@ const LeaveRequest = () => {
                           </button>
                         )}
                       </div>
+                      </div>
                     </div>
                   </Card>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p>No recent leave requests.</p>

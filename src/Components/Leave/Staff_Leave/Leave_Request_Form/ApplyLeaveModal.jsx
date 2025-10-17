@@ -17,7 +17,7 @@ const translations = {
   en: {
     title: 'Apply for Leave',
     name: 'Name',
-    staffId: 'Request ID',
+    staffId: 'Staff Id',
     position: 'Position',
     createdAt: 'Created At',
     department: 'Department',
@@ -38,6 +38,12 @@ const translations = {
     noLeaveAvailable: 'No Leave Available',
     successTitle: 'Leave application submitted!',
     successText: 'Your leave application has been created successfully.',
+    steps: {
+      step1: 'Personal Info',
+      step2: 'Leave Details',
+      step3: 'Additional Info',
+      step4: 'Review'
+    },
     errors: {
       noLeaveTypes: 'No leave types available. You have used all your allocated leave days.',
       chooseLeave: 'Please choose leave',
@@ -59,7 +65,7 @@ const translations = {
   ms: {
     title: 'Borang Permohonan Cuti',
     name: 'Nama',
-    staffId: 'ID Permohonan',
+    staffId: 'No. Pekerja',
     position: 'Jawatan',
     createdAt: 'Tarikh Permohonan',
     section: 'Seksyen',
@@ -80,6 +86,12 @@ const translations = {
     noLeaveAvailable: 'Tiada Cuti Tersedia',
     successTitle: 'Permohonan cuti dihantar!',
     successText: 'Permohonan cuti anda telah berjaya dibuat.',
+    steps: {
+      step1: 'Maklumat Peribadi',
+      step2: 'Butiran Cuti',
+      step3: 'Maklumat Tambahan',
+      step4: 'Semak'
+    },
     errors: {
       noLeaveTypes: 'Tiada jenis cuti tersedia. Anda telah menggunakan semua hari cuti yang diperuntukkan.',
       chooseLeave: 'Sila pilih cuti',
@@ -115,13 +127,6 @@ const clean = (val) =>
     ? val.slice(2, -2)
     : val;
 
-// Helper function to generate unique request ID
-const generateRequestId = () => {
-  const timestamp = Date.now();
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  return `LR${timestamp}${random}`;
-};
-
 const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   // ...existing useState declarations...
   const [staffName, setStaffName] = useState('');
@@ -144,6 +149,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
   const [leaveBalances, setLeaveBalances] = useState({});
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [language, setLanguage] = useState('en'); // Add language state
+  const [currentStep, setCurrentStep] = useState(1); // Add step tracking
 
   // Get current translation
   const t = translations[language];
@@ -283,7 +289,20 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
     }
   };
 
-      // Reset form fields when modal opens and fetch staff data
+  // Auto-update step based on filled fields
+  useEffect(() => {
+    if (leaveType && reason && startDate && endDate && jobTakenOverBy) {
+      setCurrentStep(4); // Move to Review step - all required fields filled
+    } else if (leaveType && reason && startDate && endDate) {
+      setCurrentStep(3); // Move to Additional Info step
+    } else if (leaveType) {
+      setCurrentStep(2); // Move to Leave Details step
+    } else if (staffName) {
+      setCurrentStep(1); // Stay on Personal Info step
+    }
+  }, [leaveType, reason, startDate, endDate, jobTakenOverBy, staffName]);
+
+  // Reset form fields when modal opens and fetch staff data
   useEffect(() => {
     if (isOpen) {
       setLeaveType('');
@@ -296,7 +315,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       setError('');
       setAvailableLeaveTypes(leaveTypes); // Reset to all leave types initially
       setLeaveBalances({}); // Clear previous balance data
-      setRequestId(generateRequestId()); // Auto-generate request ID
+      setCurrentStep(1); // Reset to step 1
     }
     fetchData();
   }, [isOpen]);
@@ -462,9 +481,118 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                 ></button>
               </div>
             </div>
+            
+            {/* Step Indicator */}
+            <div className="px-4 py-3 bg-light border-bottom">
+              <div className="d-flex justify-content-between align-items-center position-relative">
+                {/* Progress Line */}
+                <div 
+                  className="position-absolute top-50 start-0 translate-middle-y" 
+                  style={{
+                    width: '100%',
+                    height: '2px',
+                    backgroundColor: '#e0e0e0',
+                    zIndex: 0
+                  }}
+                >
+                  <div 
+                    style={{
+                      width: `${((currentStep - 1) / 3) * 100}%`,
+                      height: '100%',
+                      backgroundColor: '#0d6efd',
+                      transition: 'width 0.3s ease'
+                    }}
+                  />
+                </div>
+                
+                {/* Step 1 */}
+                <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 1 }}>
+                  <div 
+                    className={`rounded-circle d-flex align-items-center justify-content-center fw-bold mb-2`}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      backgroundColor: currentStep >= 1 ? '#0d6efd' : '#e0e0e0',
+                      color: currentStep >= 1 ? 'white' : '#6c757d',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    1
+                  </div>
+                  <small className={`text-center ${currentStep >= 1 ? 'fw-bold text-primary' : 'text-muted'}`} style={{ fontSize: '11px' }}>
+                    {t.steps.step1}
+                  </small>
+                </div>
+                
+                {/* Step 2 */}
+                <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 1 }}>
+                  <div 
+                    className={`rounded-circle d-flex align-items-center justify-content-center fw-bold mb-2`}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      backgroundColor: currentStep >= 2 ? '#0d6efd' : '#e0e0e0',
+                      color: currentStep >= 2 ? 'white' : '#6c757d',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    2
+                  </div>
+                  <small className={`text-center ${currentStep >= 2 ? 'fw-bold text-primary' : 'text-muted'}`} style={{ fontSize: '11px' }}>
+                    {t.steps.step2}
+                  </small>
+                </div>
+                
+                {/* Step 3 */}
+                <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 1 }}>
+                  <div 
+                    className={`rounded-circle d-flex align-items-center justify-content-center fw-bold mb-2`}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      backgroundColor: currentStep >= 3 ? '#0d6efd' : '#e0e0e0',
+                      color: currentStep >= 3 ? 'white' : '#6c757d',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    3
+                  </div>
+                  <small className={`text-center ${currentStep >= 3 ? 'fw-bold text-primary' : 'text-muted'}`} style={{ fontSize: '11px' }}>
+                    {t.steps.step3}
+                  </small>
+                </div>
+                
+                {/* Step 4 */}
+                <div className="d-flex flex-column align-items-center position-relative" style={{ zIndex: 1 }}>
+                  <div 
+                    className={`rounded-circle d-flex align-items-center justify-content-center fw-bold mb-2`}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      backgroundColor: currentStep >= 4 ? '#0d6efd' : '#e0e0e0',
+                      color: currentStep >= 4 ? 'white' : '#6c757d',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    4
+                  </div>
+                  <small className={`text-center ${currentStep >= 4 ? 'fw-bold text-primary' : 'text-muted'}`} style={{ fontSize: '11px' }}>
+                    {t.steps.step4}
+                  </small>
+                </div>
+              </div>
+            </div>
+            
             {/* Modal Body */}
             <div className="modal-body">
               <form>
+                {/* Step 1: Personal Info Section */}
+                <div className={`mb-3 pb-3 ${currentStep > 1 ? 'border-bottom' : ''}`}>
+                  <h6 className="text-primary mb-3">
+                    <span className="badge bg-primary me-2">1</span>
+                    {t.steps.step1}
+                  </h6>
+                  
                 <div className="mb-3">
                   <label className="form-label">{t.name}</label>
                   <input
@@ -515,6 +643,15 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   >
                   </input>
                 </div>
+                </div>
+                
+                {/* Step 2: Leave Details Section */}
+                <div className={`mb-3 pb-3 ${currentStep > 2 ? 'border-bottom' : ''}`}>
+                  <h6 className="text-primary mb-3">
+                    <span className="badge bg-primary me-2">2</span>
+                    {t.steps.step2}
+                  </h6>
+                  
                 <div className="mb-3">
                   <label className="form-label">{t.leaveType}</label>
                   <select
@@ -625,6 +762,15 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                     <label className='form-check-label' htmlFor='half-day-checkbox'>{t.isHalfDay}</label>
                   </div>
                 </div>
+                </div>
+                
+                {/* Step 3: Additional Info Section */}
+                <div className={`mb-3 pb-3 ${currentStep > 3 ? 'border-bottom' : ''}`}>
+                  <h6 className="text-primary mb-3">
+                    <span className="badge bg-primary me-2">3</span>
+                    {t.steps.step3}
+                  </h6>
+                  
                 <div className='mb-3'>
                   <label className='form-label'>{t.jobTakenOverBy}</label>
                   <input
@@ -643,6 +789,24 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   />
                   <div className="form-text text-danger">{t.fileSizeNote}</div>
                 </div>
+                </div>
+                
+                {/* Step 4: Review Section */}
+                {currentStep >= 4 && (
+                  <div className="alert alert-success mb-3">
+                    <h6 className="mb-2">
+                      <span className="badge bg-success me-2">4</span>
+                      {t.steps.step4}
+                    </h6>
+                    <p className="mb-0 small">
+                      <i className="fa fa-check-circle me-1"></i>
+                      {language === 'en' 
+                        ? 'All required fields are filled. Please review your information and click Submit when ready.'
+                        : 'Semua medan diperlukan telah diisi. Sila semak maklumat anda dan klik Submit apabila bersedia.'}
+                    </p>
+                  </div>
+                )}
+                
                 {error && <div className="text-danger mb-2">{error}</div>}
               </form>
             </div>
