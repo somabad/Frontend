@@ -480,22 +480,15 @@ const LeaveRequest = () => {
                           {leave.scanned_form ? 'Re-upload' : 'Upload'}
                         </button>
                         {leave.scanned_form && (
-                          <button
-                            title="Download and open in PDF app"
+                          <Button
+                            color="success"
+                            size="sm"
                             onClick={() => handleViewScannedForm(leave)}
-                            style={{ 
-                              border: 'none', 
-                              background: '#28a745', 
-                              color: 'white',
-                              borderRadius: '4px',
-                              padding: '4px 8px',
-                              cursor: 'pointer',
-                              fontSize: '12px',
-                              minWidth: '60px'
-                            }}
+                            style={{ minWidth: '80px', padding: '6px 12px' }}
+                            title="Download and open in PDF app"
                           >
-                            View Form
-                          </button>
+                            <i className="fa fa-download me-1" /> View
+                          </Button>
                         )}
                       </div>
                     </div>
