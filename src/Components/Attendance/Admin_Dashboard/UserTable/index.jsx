@@ -1,29 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, CardBody, CardHeader } from 'reactstrap';
-import { Input } from 'antd';
-import UserTableComponent from './UserTableComponent';
-import AddNewUser from '../../common/AddNewUser';
-import Loader from '../../Loader';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Container, Row, Col, Card, CardBody, CardHeader } from "reactstrap";
+import { Input } from "antd";
+import UserTableComponent from "./UserTableComponent";
+import AddNewUser from "../../common/AddNewUser";
+import AddPosition from "../../common/AddPosition";
+import Loader from "../../Loader";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const { Search } = Input;
 
 const UserTable = () => {
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [allUsers, setAllUsers] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const navigate = useNavigate();  // Use navigate hook
+  const navigate = useNavigate(); // Use navigate hook
 
   const fetchUsers = async (showLoader = false) => {
     if (showLoader) setLoading(true);
     const startTime = Date.now();
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/staff-list/');
+      const response = await axios.get("http://127.0.0.1:8000/api/staff-list/");
       setAllUsers(response.data);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     } finally {
       const elapsed = Date.now() - startTime;
       const delay = 3000 - elapsed;
@@ -39,26 +40,27 @@ const UserTable = () => {
 
   useEffect(() => {
     // Check sessionStorage for staffid and userType
-    const staffId = sessionStorage.getItem('staffId');
-    const userType = sessionStorage.getItem('userType');
+    const staffId = sessionStorage.getItem("staffId");
+    const userType = sessionStorage.getItem("userType");
 
-    if (!staffId || userType === 'Staff') {
+    if (!staffId || userType === "Staff") {
       // Redirect to login if conditions are met using navigate
-      navigate('/login');
+      navigate("/login");
     } else {
       fetchUsers(true);
     }
   }, [navigate]);
 
   useEffect(() => {
-    if (searchText.trim() === '') {
+    if (searchText.trim() === "") {
       setFilteredData(allUsers);
     } else {
       const lowerSearch = searchText.toLowerCase();
-      const filtered = allUsers.filter(user =>
-        (user.name || '').toLowerCase().includes(lowerSearch) ||
-        (user.email || '').toLowerCase().includes(lowerSearch) ||
-        ((user.roleId?.name) || '').toLowerCase().includes(lowerSearch)
+      const filtered = allUsers.filter(
+        (user) =>
+          (user.name || "").toLowerCase().includes(lowerSearch) ||
+          (user.email || "").toLowerCase().includes(lowerSearch) ||
+          (user.roleId?.name || "").toLowerCase().includes(lowerSearch)
       );
       setFilteredData(filtered);
     }
@@ -67,14 +69,16 @@ const UserTable = () => {
   const onSearch = (value) => setSearchText(value);
 
   return (
-    <div style={{ paddingTop: '30px' }}>
+    <div style={{ paddingTop: "30px" }}>
       <Loader show={loading} />
       <Container fluid>
         <Row>
           <Col sm="12">
             <Card>
               <CardHeader className="d-flex justify-content-between align-items-center">
-                <h5 className="mb-0" style={{ color: '#555555' }}>Staff Table</h5>
+                <h5 className="mb-0" style={{ color: "#555555" }}>
+                  Staff Table
+                </h5>
                 <div className="d-flex align-items-center gap-2">
                   <Search
                     placeholder="Search user..."
@@ -82,16 +86,26 @@ const UserTable = () => {
                     onSearch={onSearch}
                     onChange={(e) => setSearchText(e.target.value)}
                     value={searchText}
-                    style={{ width: 200, marginRight: '10px' }}
+                    style={{ width: 200, marginRight: "10px" }}
                   />
-                  <div className="d-none d-sm-block">
-                    <AddNewUser buttonLabel="Add New User" onUserAdded={() => fetchUsers(false)} />
+                  <div className="d-none d-sm-block d-flex gap-2">
+                    <AddNewUser
+                      buttonLabel="Add New User"
+                      onUserAdded={() => fetchUsers(false)}
+                    />
+                    <AddPosition
+                      buttonLabel="Add Position"
+                      onPositionAdded={() => fetchUsers(false)}
+                    />
                   </div>
                 </div>
               </CardHeader>
               <CardBody>
                 {!loading && (
-                  <UserTableComponent filteredData={filteredData} onRefresh={() => fetchUsers(false)} />
+                  <UserTableComponent
+                    filteredData={filteredData}
+                    onRefresh={() => fetchUsers(false)}
+                  />
                 )}
               </CardBody>
             </Card>

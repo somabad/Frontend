@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Form, FormGroup, Input, Label, Button, InputGroup, InputGroupText } from 'reactstrap';
 import CommonModal from './modal';
 import Swal from 'sweetalert2';
-// UPDATE IMPORTS: Add the new utility functions
 import { getRoleList, createNewUser, getLocationList, updateStaffLocations } from '../utils';
 import { Eye, EyeOff } from 'react-feather';
 import { Select } from 'antd';
@@ -31,7 +30,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
   const [locations, setLocations] = useState([]);
   const [positions, setPositions] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
-  // ADDED: State for leave types and carry forward days
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [carryForwardDays, setCarryForwardDays] = useState({});
   const [entitledOverrides, setEntitledOverrides] = useState({});
@@ -40,7 +38,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     if (modal) {
       setFormData(defaultFormData);
       setShowPassword(false);
-      // ADDED: Reset carry forward days when modal closes
       setCarryForwardDays({});
       setEntitledOverrides({});
     }
@@ -67,7 +64,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     fetchData();
   }, []);
 
-  // ADDED: Fetch leave types when position is selected
   useEffect(() => {
     const fetchLeaveTypes = async () => {
       if (formData.position_id) {
@@ -76,7 +72,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
           const leaveData = response.data.data || response.data;
           setLeaveTypes(Array.isArray(leaveData) ? leaveData : []);
 
-          // Initialize carry forward and entitled overrides
           const initialCarry = {};
           const initialOverride = {};
           (Array.isArray(leaveData) ? leaveData : []).forEach(lt => {
@@ -112,7 +107,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     setFormData((prev) => ({ ...prev, locations: value }));
   };
 
-  // ADDED: Handle carry forward days input change
   const handleCarryForwardChange = (leaveTypeId, value) => {
     setCarryForwardDays(prev => ({
       ...prev,
@@ -120,7 +114,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     }));
   };
 
-  // ADDED: Handle entitled days override input change
   const handleEntitledOverrideChange = (leaveTypeId, value) => {
     setEntitledOverrides(prev => ({
       ...prev,
@@ -140,7 +133,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     const seconds = now.toLocaleString('en-US', { ...options, second: '2-digit' }).padStart(2, '0');
     const milliseconds = now.getMilliseconds().toString().padStart(6, '0');
 
-    // FIXED: Proper template literal syntax
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
   };
 
@@ -163,7 +155,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
     const malaysiaTime = getMalaysiaTime();
 
     try {
-      // Create user first (without locations)
       const userData = {
         userId: formData.userId,
         name: formData.name,
@@ -180,7 +171,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
       const res = await createNewUser(userData);
       console.log('User creation response:', res);
 
-      // ADDED: Set carry forward + optional entitled overrides if position is selected
       if (res && formData.position_id && leaveTypes.length > 0) {
         try {
           let staffId = res.staffId || res.id || res.staff_id || res.userId;
@@ -232,7 +222,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
           }
         } catch (carryForwardError) {
           console.error('Error setting carry forward days:', carryForwardError);
-          // Don't fail the entire operation if carry forward setting fails
           Swal.fire({
             icon: 'warning',
             title: 'User Created with Warning',
@@ -242,7 +231,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
         }
       }
 
-      // If user creation is successful and locations are selected, assign locations
       if (res && formData.locations.length > 0) {
         try {
           let staffId = res.staffId || res.id || res.staff_id || res.userId;
@@ -276,7 +264,6 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
           }
         } catch (locationError) {
           console.error('Error assigning locations:', locationError);
-          // Don't fail the entire operation if location assignment fails
           Swal.fire({
             icon: 'warning',
             title: 'User Created with Warning',
@@ -297,7 +284,7 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
         confirmButtonText: 'OK'
       }).then(() => {
         if (onUserAdded) {
-          onUserAdded(); // 🔁 Triggers silent data reload
+          onUserAdded();
         }
       });
 
@@ -425,41 +412,53 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
             </Input>
           </FormGroup>
 
-          {/* Removed Contract Type - using Position-based entitlements */}
-
-          {/* ADDED: Carry Forward + Optional Entitled Override for Each Leave Type */}
           {formData.position_id && leaveTypes.length > 0 && (
-            <FormGroup>
-              <Label>Carry Forward Days (Current Year: {new Date().getFullYear()})</Label>
-              {leaveTypes.map(leaveType => (
-                <FormGroup key={leaveType.leave_type_id} style={{ marginBottom: '15px' }}>
-                  <Label for={`carry-forward-${leaveType.leave_type_id}`} style={{ fontSize: '14px', marginBottom: '5px' }}>
-                    {leaveType.leave_name} (Entitled: {leaveType.entitled_days} days)
-                  </Label>
-                  <Input
-                    type="number"
-                    id={`carry-forward-${leaveType.leave_type_id}`}
-                    step="0.5"
-                    min="0"
-                    value={carryForwardDays[leaveType.leave_type_id] || 0}
-                    onChange={(e) => handleCarryForwardChange(leaveType.leave_type_id, e.target.value)}
-                    placeholder="Enter carry forward days"
-                  />
-                  <Label for={`entitled-override-${leaveType.leave_type_id}`} style={{ fontSize: '12px', marginTop: '6px' }}>
-                    Override Entitled Days (optional)
-                  </Label>
-                  <Input
-                    type="number"
-                    id={`entitled-override-${leaveType.leave_type_id}`}
-                    step="0.5"
-                    min="0"
-                    value={entitledOverrides[leaveType.leave_type_id] ?? ''}
-                    onChange={(e) => handleEntitledOverrideChange(leaveType.leave_type_id, e.target.value)}
-                    placeholder={`Default: ${leaveType.entitled_days}`}
-                  />
-                </FormGroup>
-              ))}
-            </FormGroup>
+            <div>
+              <h5>Leave Entitlements (Current Year: {new Date().getFullYear()})</h5>
+              <div style={{ display: 'grid', gap: '12px', marginTop: '8px' }}>
+                {leaveTypes.map(leaveType => (
+                  <div
+                    key={leaveType.leave_type_id}
+                    style={{
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      background: '#f9f9f9'
+                    }}
+                  >
+                    <div style={{ marginBottom: '6px', fontWeight: '600' }}>
+                      {leaveType.leave_name} (Entitled: {leaveType.entitled_days} days)
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      <div style={{ flex: '1 1 150px' }}>
+                        <Label>Carry Forward</Label>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          value={carryForwardDays[leaveType.leave_type_id] || 0}
+                          onChange={(e) => handleCarryForwardChange(leaveType.leave_type_id, e.target.value)}
+                          placeholder="Enter carry forward"
+                        />
+                      </div>
+
+                      <div style={{ flex: '1 1 150px' }}>
+                        <Label>Override Entitled Days</Label>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          value={entitledOverrides[leaveType.leave_type_id] ?? ''}
+                          onChange={(e) => handleEntitledOverrideChange(leaveType.leave_type_id, e.target.value)}
+                          placeholder={`Default: ${leaveType.entitled_days}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           <FormGroup>
