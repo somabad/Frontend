@@ -196,7 +196,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
       @page {
         size: A4;
         margin: 10mm;
-        height: 262mm;
+        height: 261mm;
       }
       @media print {
         * {
@@ -305,7 +305,8 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         
         /* Adjust stamp box positioning for print */
         .stamp-box {
-          margin-right: -75px !important;
+          margin-right: -70px !important;
+          margin-top: 10px !important;
         }
         
         /* Make reason field lines shorter to fit in form */
@@ -313,6 +314,17 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
           min-width: auto !important;
           max-width: 350px !important;
           width: 100% !important;
+        }
+        
+        /* Shorten job takeover field for print */
+        .job-takeover-field {
+          max-width: 510px !important;
+          flex: 0 1 510px !important;
+        }
+
+        /* from date to date fields */
+        .date {
+          max-width: -100 px !important;
         }
         
         /* Prevent page breaks inside important sections */
@@ -640,7 +652,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
               </div>
 
               {/* Leave Duration Section */}
-              <div style={{ marginBottom: '20px' }}>
+              <div className="leave-duration-section" style={{ marginBottom: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '25px', gap: '5px' }}>
                   <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>{t.totalDays}</span>
                   <div style={{ 

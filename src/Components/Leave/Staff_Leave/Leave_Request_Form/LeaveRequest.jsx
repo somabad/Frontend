@@ -426,36 +426,15 @@ const LeaveRequest = () => {
                 backgroundColor: '#e0e0e0',
                 zIndex: 0
               }}>
-                <div style={{
+                <div style={{ 
                   width: '0%',
                   height: '100%',
-                  backgroundColor: '#28a745',
+                  background: 'linear-gradient(90deg, #007bff 0%, #7366ff 50%, #fc4438 100%)',
                   transition: 'width 0.3s ease'
                 }} />
               </div>
               
               {/* Step 1: Apply */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1, flex: 1 }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  backgroundColor: '#28a745',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 'bold',
-                  marginBottom: '8px'
-                }}>
-                  1
-                </div>
-                <small style={{ fontWeight: 'bold', color: '#28a745', textAlign: 'center', fontSize: '11px' }}>
-                  Apply Leave
-                </small>
-              </div>
-              
-              {/* Step 2: Print */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1, flex: 1 }}>
                 <div style={{
                   width: '40px',
@@ -469,9 +448,30 @@ const LeaveRequest = () => {
                   fontWeight: 'bold',
                   marginBottom: '8px'
                 }}>
+                  1
+                </div>
+                <small style={{ fontWeight: 'bold', color: '#007bff', textAlign: 'center', fontSize: '11px' }}>
+                  Apply Leave
+                </small>
+              </div>
+              
+              {/* Step 2: Print */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1, flex: 1 }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  backgroundColor: '#5a67d8',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  marginBottom: '8px'
+                }}>
                   2
                 </div>
-                <small style={{ fontWeight: '500', color: '#007bff', textAlign: 'center', fontSize: '11px' }}>
+                <small style={{ fontWeight: '500', color: '#5a67d8', textAlign: 'center', fontSize: '11px' }}>
                   Print Form
                 </small>
               </div>
@@ -482,7 +482,7 @@ const LeaveRequest = () => {
                   width: '40px',
                   height: '40px',
                   borderRadius: '50%',
-                  backgroundColor: '#ffc107',
+                  backgroundColor: '#7366ff',
                   color: 'white',
                   display: 'flex',
                   alignItems: 'center',
@@ -492,7 +492,7 @@ const LeaveRequest = () => {
                 }}>
                   3
                 </div>
-                <small style={{ fontWeight: '500', color: '#ffc107', textAlign: 'center', fontSize: '11px' }}>
+                <small style={{ fontWeight: '500', color: '#7366ff', textAlign: 'center', fontSize: '11px' }}>
                   Upload Proof
                 </small>
               </div>
@@ -503,7 +503,7 @@ const LeaveRequest = () => {
                   width: '40px',
                   height: '40px',
                   borderRadius: '50%',
-                  backgroundColor: '#6c757d',
+                  backgroundColor: '#a26cf8',
                   color: 'white',
                   display: 'flex',
                   alignItems: 'center',
@@ -513,7 +513,7 @@ const LeaveRequest = () => {
                 }}>
                   4
                 </div>
-                <small style={{ fontWeight: '500', color: '#6c757d', textAlign: 'center', fontSize: '11px' }}>
+                <small style={{ fontWeight: '500', color: '#a26cf8', textAlign: 'center', fontSize: '11px' }}>
                   Wait Approval
                 </small>
               </div>
@@ -524,7 +524,7 @@ const LeaveRequest = () => {
                   width: '40px',
                   height: '40px',
                   borderRadius: '50%',
-                  backgroundColor: '#17a2b8',
+                  backgroundColor: '#fc4438',
                   color: 'white',
                   display: 'flex',
                   alignItems: 'center',
@@ -534,7 +534,7 @@ const LeaveRequest = () => {
                 }}>
                   5
                 </div>
-                <small style={{ fontWeight: '500', color: '#17a2b8', textAlign: 'center', fontSize: '11px' }}>
+                <small style={{ fontWeight: '500', color: '#fc4438', textAlign: 'center', fontSize: '11px' }}>
                   Check Status
                 </small>
               </div>
@@ -600,7 +600,7 @@ const LeaveRequest = () => {
                           fontSize: '11px',
                           gap: '4px'
                         }}>
-                          <i className="fa fa-check-circle" style={{ color: '#28a745' }}></i>
+                          <i className="fa fa-check-circle" style={{ color: '#007bff' }}></i>
                           <span>Applied</span>
                         </div>
                         <span style={{ color: '#dee2e6' }}>→</span>
@@ -609,7 +609,7 @@ const LeaveRequest = () => {
                           alignItems: 'center', 
                           fontSize: '11px',
                           gap: '4px',
-                          color: currentStep >= 3 ? '#007bff' : '#6c757d'
+                          color: currentStep >= 3 ? '#5a67d8' : '#6c757d'
                         }}>
                           <i className={`fa ${currentStep >= 3 ? 'fa-check-circle' : 'fa-circle-o'}`}></i>
                           <span>Print</span>
@@ -620,7 +620,7 @@ const LeaveRequest = () => {
                           alignItems: 'center', 
                           fontSize: '11px',
                           gap: '4px',
-                          color: currentStep >= 4 ? '#ffc107' : '#6c757d'
+                          color: currentStep >= 4 ? '#7366ff' : '#6c757d'
                         }}>
                           <i className={`fa ${currentStep >= 4 ? 'fa-check-circle' : 'fa-circle-o'}`}></i>
                           <span>Upload</span>
@@ -631,7 +631,7 @@ const LeaveRequest = () => {
                           alignItems: 'center', 
                           fontSize: '11px',
                           gap: '4px',
-                          color: currentStep >= 5 ? '#17a2b8' : '#6c757d'
+                          color: currentStep >= 5 ? '#fc4438' : '#6c757d'
                         }}>
                           <i className={`fa ${currentStep >= 5 ? 'fa-check-circle' : 'fa-circle-o'}`}></i>
                           <span>Status</span>
@@ -646,16 +646,32 @@ const LeaveRequest = () => {
                             {leave.status}
                           </span>
                           {currentStep === 2 && (
-                            <Badge color="info" className="ms-2" style={{ fontSize: '10px' }}>
+                            <span className="ms-2" style={{ 
+                              fontSize: '10px', 
+                              backgroundColor: '#5a67d8', 
+                              color: 'white', 
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              display: 'inline-block',
+                              fontWeight: '500'
+                            }}>
                               <i className="fa fa-exclamation-circle me-1"></i>
                               Action Required: Print Form
-                            </Badge>
+                            </span>
                           )}
                           {currentStep === 3 && (
-                            <Badge color="warning" className="ms-2" style={{ fontSize: '10px' }}>
+                            <span className="ms-2" style={{ 
+                              fontSize: '10px', 
+                              backgroundColor: '#7366ff', 
+                              color: 'white', 
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              display: 'inline-block',
+                              fontWeight: '500'
+                            }}>
                               <i className="fa fa-exclamation-circle me-1"></i>
                               Action Required: Upload Scanned Form
-                            </Badge>
+                            </span>
                           )}
                         </div>
                       <div style={{ 
