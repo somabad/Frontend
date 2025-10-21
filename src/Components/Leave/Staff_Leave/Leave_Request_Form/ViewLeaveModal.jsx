@@ -15,7 +15,7 @@ const translations = {
     name: 'Name',
     position: 'Position',
     section: 'Section',
-    staffId: 'Staff No.',
+    staffId: 'Staff No',
     applicationDate: 'Application Date',
     department: 'Department',
     leaveType: 'Leave Type:',
@@ -43,7 +43,7 @@ const translations = {
     reviewedBy: 'Reviewed / Recorded by:',
     stamp: 'DATE PROCESSED STAMP',
     notes: 'Notes:',
-    note1: 'Leave applications must be submitted at least 4 days before leave except in emergencies.',
+    note1: 'Leave applications must be submitted at least 2 days before leave except in emergencies.',
     note2: 'Emergency leave qualification is only one day unless it involves travel outside the district.',
     copies: 'Copies:',
     whiteCopy: 'White for company',
@@ -59,9 +59,9 @@ const translations = {
     title: 'BORANG PERMOHONAN CUTI (HR-18)',
     company: 'MY-SUTERA SDN. BHD. (367254-M)',
     name: 'Nama',
+    staffId: 'No. Pekerja',
     position: 'Jawatan',
     section: 'Seksyen',
-    staffId: 'No. Pekerja',
     applicationDate: 'Tarikh permohonan',
     department: 'Bahagian',
     leaveType: 'Jenis cuti:',
@@ -89,7 +89,7 @@ const translations = {
     reviewedBy: 'Disemak / Rekod oleh:',
     stamp: 'COP TARIKH DIPROSES',
     notes: 'Nota:',
-    note1: 'Permohonan cuti hendaklah dipohon sekurang-kurangnya 4 hari sebelum cuti kecuali ada kecemasan.',
+    note1: 'Permohonan cuti hendaklah dipohon sekurang-kurangnya 2 hari sebelum cuti kecuali ada kecemasan.',
     note2: 'Kelayakan cuti kecemasan hanya satu hari kecuali yang melibatkan perjalanan keluar daerah.',
     copies: 'Salinan:',
     whiteCopy: 'Putih untuk syarikat',
@@ -157,7 +157,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         borderBottom: '1px solid black',
         minWidth: '100%',
         display: 'inline-block',
-        height: multiline ? 'auto' : '20px',
+        height: multiline ? 'auto' : '30px',
         minHeight: multiline ? '20px' : '20px',
         fontSize: '14px',
         lineHeight: '20px',
@@ -173,14 +173,30 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
 
   // Print function using react-to-print
   const printRef = useRef();
+  
+  // Function to mark leave as printed
+  const markAsPrinted = () => {
+    if (leave?.request_id) {
+      // Store in localStorage that this leave has been printed
+      const printedLeaves = JSON.parse(localStorage.getItem('printedLeaves') || '{}');
+      printedLeaves[leave.request_id] = true;
+      localStorage.setItem('printedLeaves', JSON.stringify(printedLeaves));
+    }
+  };
+  
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: 'Leave Request Form',
     removeAfterPrint: false,
+    onAfterPrint: () => {
+      // Mark as printed after print dialog is opened
+      markAsPrinted();
+    },
     pageStyle: `
       @page {
         size: A4;
         margin: 10mm;
+        height: 262mm;
       }
       @media print {
         * {
@@ -201,8 +217,8 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
           width: 100% !important;
           max-width: 100% !important;
           height: auto !important;
-          padding: 12px !important;
-          margin: 0 auto !important;
+          padding: 8px !important;
+          margin: 1mm auto 0 auto !important;
           border: 2px solid black !important;
           box-sizing: border-box !important;
           font-family: Arial, sans-serif !important;
@@ -247,21 +263,17 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
           margin: 0 !important;
           font-weight: bold !important;
         }
-        /* Slightly reduce spacing for print */
-        div[style*="marginBottom: '40px'"] {
-          margin-bottom: 30px !important;
+        /* Standardize all label/text sizes - override ALL inline styles */
+        span, label, div, p {
+          font-size: 12px !important;
         }
-        div[style*="marginBottom: '30px'"] {
-          margin-bottom: 25px !important;
+        /* Keep input/data text consistent */
+        input, textarea {
+          font-size: 12px !important;
         }
-        div[style*="marginBottom: '25px'"] {
-          margin-bottom: 20px !important;
-        }
-        div[style*="marginBottom: '20px'"] {
-          margin-bottom: 15px !important;
-        }
-        div[style*="marginBottom: '15px'"] {
-          margin-bottom: 12px !important;
+        /* Override specific inline fontSize styles */
+        [style*="fontSize"] {
+          font-size: 12px !important;
         }
         /* Preserve flex layouts */
         div[style*="display: flex"] {
@@ -275,8 +287,10 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         div[style*="borderRight"] {
           border-color: black !important;
         }
-        /* PRINT VIEW ONLY - Lines reach exactly to border */
+        
+        /* Make lines reach to border edges */
         .hr-confirmation-section {
+<<<<<<< HEAD
           margin-left: -15px !important;
           margin-right: -15px !important;
           padding-left: 15px !important;
@@ -285,18 +299,31 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         
         .hr-data-content {
           padding-left: 0 !important;
+=======
+          margin-left: -8px !important;
+          margin-right: -8px !important;
+          padding-left: 8px !important;
+          padding-right: 8px !important;
+>>>>>>> b96f2ddc8974e6766953774a118b75952a8a3db5
         }
         
         .notes-section {
-          margin-left: -15px !important;
-          margin-right: -15px !important;
-          padding-left: 15px !important;
-          padding-right: 15px !important;
+          margin-left: -8px !important;
+          margin-right: -8px !important;
+          padding-left: 8px !important;
+          padding-right: 8px !important;
         }
         
-        .notes-section div[style*="paddingLeft"] {
-          padding-left: 0 !important;
-          padding-right: 0 !important;
+        /* Adjust stamp box positioning for print */
+        .stamp-box {
+          margin-right: -75px !important;
+        }
+        
+        /* Make reason field lines shorter to fit in form */
+        .reason-line-field {
+          min-width: auto !important;
+          max-width: 350px !important;
+          width: 100% !important;
         }
         
         /* Fix stamp box to reach exactly to border in print view */
@@ -320,7 +347,38 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
   if (!leave) return <div>Loading...</div>; // Show loading if leave data is not available
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle} size="lg" centered>
+    <>
+      {/* Responsive styles */}
+      <style>
+        {`
+          @media (max-width: 768px) {
+            #printable-content {
+              font-size: 11px !important;
+            }
+            #printable-content h4 {
+              font-size: 14px !important;
+            }
+            #printable-content h5 {
+              font-size: 12px !important;
+            }
+            #printable-content .p-3 {
+              padding: 10px !important;
+            }
+          }
+          @media print {
+            #printable-content {
+              font-size: 11px !important;
+            }
+          }
+        `}
+      </style>
+      <Modal isOpen={isOpen} toggle={toggle} size="lg" centered className="leave-view-modal">
+        <style>{`
+          .leave-view-modal .modal-dialog {
+            max-width: 90vw !important;
+            width: 90vw !important;
+          }
+        `}</style>
         <div className="modal-header bg-primary text-white d-flex justify-content-between align-items-center">
           <h5 className="modal-title mb-0">View Leave Application</h5>
           <div className="d-flex align-items-center">
@@ -341,19 +399,27 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
             ></button>
           </div>
         </div>
-        <ModalBody>
+        <ModalBody style={{ 
+          maxHeight: '80vh', 
+          overflowY: 'auto',
+          overflowX: 'hidden'
+        }}>
         {/* Inject print styles only when modal is open */}
         {leave && (
           <div style={{
             border: '2px solid black',
             borderRadius: '4px',
             padding: '10px',
-            marginBottom: '15px'
+            marginBottom: '15px',
+            maxWidth: '100%',
+            overflow: 'hidden'
           }}>
             <div className="p-3" ref={printRef} id="printable-content" style={{
               padding: '15px',
               backgroundColor: 'white',
-              fontFamily: 'Arial, sans-serif'
+              fontFamily: 'Arial, sans-serif',
+              maxWidth: '100%',
+              boxSizing: 'border-box'
             }}>
               {/* Header of Form */}
               <div style={{ textAlign: 'center', marginBottom: '40px' }}>
@@ -442,7 +508,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                         paddingLeft: '5px',
                         fontSize: '14px'
                       }}>
-                        {leave.staffId || leave.staff_id || ''}
+                        {leave.request_id || ''}
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
@@ -537,7 +603,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                         {(() => {
                           const reason = leave.reason || '-';
-                          const maxCharsPerLine = 40; // Characters per line
+                          const maxCharsPerLine = 65; // Characters per line
                           const lines = [];
                           
                           if (reason === '-') {
@@ -572,7 +638,20 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                           }
                           
                           return lines.slice(0, 4).map((line, idx) => (
-                            <LineField key={idx} value={line} />
+                            <div key={idx} className="reason-line-field" style={{
+                              borderBottom: '1px solid black',
+                              minWidth: '100%',
+                              display: 'inline-block',
+                              height: '20px',
+                              minHeight: '20px',
+                              fontSize: '14px',
+                              lineHeight: '20px',
+                              wordWrap: 'break-word',
+                              wordBreak: 'break-word',
+                              whiteSpace: 'nowrap',
+                            }}>
+                              {line || ''}
+                            </div>
                           ));
                         })()}
                       </div>
@@ -622,7 +701,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                 
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
                   <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap', marginRight: '5px' }}>{t.jobTakeover}:</span>
-                  <div style={{ 
+                  <div className="job-takeover-field" style={{ 
                     borderBottom: '1px solid black', 
                     flex: 1,
                     minHeight: '20px',
@@ -717,9 +796,9 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                         minHeight: '18px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        justifyContent: 'center'
                       }}>
-                        {balanceData?.carry_forward_days || ''}
+                        {balanceData?.carry_forward_days !== undefined && balanceData?.carry_forward_days !== null ? balanceData.carry_forward_days : ''}
                       </div>
                       <span style={{ marginLeft: '5px' }}>{t.days}</span>
                     </div>
@@ -732,9 +811,9 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                         minHeight: '18px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        justifyContent: 'center'
                       }}>
-                        {balanceData?.leave_entitled || ''}
+                        {balanceData?.leave_entitled !== undefined && balanceData?.leave_entitled !== null ? balanceData.leave_entitled : ''}
                       </div>
                       <span style={{ marginLeft: '5px' }}>{t.days}</span>
                     </div>
@@ -747,9 +826,9 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                         minHeight: '18px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        justifyContent: 'center'
                       }}>
-                        {balanceData?.total_entitlement || ''}
+                        {balanceData?.total_entitlement !== undefined && balanceData?.total_entitlement !== null ? balanceData.total_entitlement : ''}
                       </div>
                       <span style={{ marginLeft: '5px' }}>{t.days}</span>
                     </div>
@@ -762,9 +841,9 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                         minHeight: '18px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        justifyContent: 'center'
                       }}>
-                        {balanceData?.used_days || ''}
+                        {balanceData?.used_days !== undefined && balanceData?.used_days !== null ? balanceData.used_days : ''}
                       </div>
                       <span style={{ marginLeft: '5px' }}>{t.days}</span>
                     </div>
@@ -777,9 +856,9 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                         minHeight: '18px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        justifyContent: 'center'
                       }}>
-                        {balanceData?.current_balance || ''}
+                        {balanceData?.current_balance !== undefined && balanceData?.current_balance !== null ? balanceData.current_balance : ''}
                           </div>
                       <span style={{ marginLeft: '5px' }}>{t.days}</span>
                           </div>
@@ -792,9 +871,9 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                         minHeight: '18px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        justifyContent: 'center'
                       }}>
-                        {leave.total_days != null ? String(leave.total_days) : ''}
+                        {leave.total_days !== undefined && leave.total_days !== null ? String(leave.total_days) : ''}
                           </div>
                       <span style={{ marginLeft: '5px' }}>{t.days}</span>
                           </div>
@@ -807,9 +886,9 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
                         minHeight: '18px',
                         display: 'flex',
                         alignItems: 'center',
-                        paddingLeft: '5px'
+                        justifyContent: 'center'
                       }}>
-                        {balanceData?.total_balance || ''}
+                        {balanceData?.total_balance !== undefined && balanceData?.total_balance !== null ? balanceData.total_balance : ''}
                           </div>
                       <span style={{ marginLeft: '5px' }}>{t.days}</span>
                           </div>
@@ -900,6 +979,7 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         <button className="btn btn-primary" onClick={handlePrint}>Print</button>
       </ModalFooter>
     </Modal>
+    </>
   );
 };
 

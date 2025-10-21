@@ -8,7 +8,7 @@ const translations = {
   en: {
     title: 'Edit Leave',
     name: 'Name',
-    staffId: 'Staff ID',
+    staffId: 'Staff No',
     position: 'Position',
     department: 'Department',
     leaveType: 'Leave Type',
@@ -40,7 +40,7 @@ const translations = {
   ms: {
     title: 'Edit Cuti',
     name: 'Nama',
-    staffId: 'ID Pekerja',
+    staffId: 'No. Pekerja',
     position: 'Jawatan',
     department: 'Bahagian',
     leaveType: 'Jenis Cuti',
@@ -226,7 +226,7 @@ useEffect(() => {
                   <input
                     type="text"
                     className="form-control"
-                    value={leave.staffId || leave.staff_id || ''}
+                    value={leave.request_id || ''}
                     readOnly
                   />
                 </div>

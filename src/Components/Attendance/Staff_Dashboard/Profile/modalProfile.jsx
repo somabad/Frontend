@@ -6,6 +6,9 @@ const ModalProfile = ({ show, onClose, user, onResetPassword, onProfileUpdated }
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
+  const [position, setPosition] = useState(user?.position || ''); //leave
+  const [department, setDepartment] = useState(user?.department || ''); //leave
+
 
   const staffId = sessionStorage.getItem('staffId');
 
@@ -14,12 +17,14 @@ const ModalProfile = ({ show, onClose, user, onResetPassword, onProfileUpdated }
     setName(user?.name || '');
     setEmail(user?.email || '');
     setPhone(user?.phone || '');
+    setPosition(user?.position || ''); 
+    setDepartment(user?.department || '');
   }, [user, show]);
 
   if (!show) return null;
 
   const handleSave = async () => {
-    const updatedData = { name, email, phone };
+    const updatedData = { name, email, phone, position, department };
 
     try {
       await updateProfile(staffId, updatedData);
@@ -88,6 +93,24 @@ const ModalProfile = ({ show, onClose, user, onResetPassword, onProfileUpdated }
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    className="form-control"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Position</label>
+                  <input
+                    type="text"
+                    value={position}
+                    onChange={(e) => setPosition(e.target.value)}
+                    className="form-control"
+                  />
+                </div>
+                <div className='mb-3'>
+                  <label className="form-label">Department</label>
+                  <input
+                    type="text"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
                     className="form-control"
                   />
                 </div>
