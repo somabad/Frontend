@@ -912,8 +912,6 @@ const AdminLeaveHistory = () => {
               </div>
             </div>
           </FormGroup>
-<<<<<<< HEAD
-
           <hr className="my-3" />
 
           {/* Month Selection */}
@@ -980,7 +978,6 @@ const AdminLeaveHistory = () => {
               </div>
             </>
           )}
-=======
           <div className="text-muted small">
             <i className="fa fa-info-circle me-1"></i>
             This will export all leave records (pending, approved, rejected, and deleted) for the selected month.
@@ -988,7 +985,6 @@ const AdminLeaveHistory = () => {
             <i className="fa fa-exclamation-triangle me-1" style={{ color: '#dc3545' }}></i>
             <strong>Audit Trail:</strong> Deleted records will be marked as "(Deleted)" in the Status column.
           </div>
->>>>>>> b96f2ddc8974e6766953774a118b75952a8a3db5
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={() => {

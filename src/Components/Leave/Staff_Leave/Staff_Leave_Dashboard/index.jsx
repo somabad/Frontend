@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Button } from "reactstrap";
+import { Container, Row, Col, Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import WidgetsWraper from "../Staff_Leave_Dashboard/WidgetsWraper";
 import LatestLeave from "../Staff_Leave_Dashboard/LatestLeave";
 import { getStaffLeaveDashboard } from "../../../Attendance/utils"
@@ -18,6 +18,7 @@ const StaffLeaveDashboard = () => {
   const [totalBalance, setTotalBalance] = useState(null);
   const [balanceByType, setBalanceByType] = useState(null);
   const [latestRequests, setLatestRequests] = useState(null);
+  const [showReminderModal, setShowReminderModal] = useState(false);
 
   const navigate = useNavigate();  // Correctly initialize navigate hook
 
@@ -74,6 +75,11 @@ const StaffLeaveDashboard = () => {
     }
   }, [staffId]);
 
+  // Show reminder notification on every page load
+  useEffect(() => {
+    setShowReminderModal(true);
+  }, []);
+
   return (
     <>
       {loading && <Loader />}
@@ -107,6 +113,44 @@ const StaffLeaveDashboard = () => {
           </Container>
         </div>
       )}
+
+      {/* Carry Forward Days Reminder Modal */}
+      <Modal isOpen={showReminderModal} toggle={() => setShowReminderModal(false)} centered>
+        <ModalHeader toggle={() => setShowReminderModal(false)}>
+          <i className="fa fa-exclamation-circle" style={{ marginRight: '8px', color: '#ff9800', fontSize: '20px' }}></i>
+          Important Reminder
+        </ModalHeader>
+        <ModalBody>
+          <div style={{ padding: '10px' }}>
+            <p style={{ fontSize: '16px', marginBottom: '15px' }}>
+              <strong>Carry Forward Days Policy:</strong>
+            </p>
+            <ul style={{ lineHeight: '1.8', fontSize: '15px' }}>
+              <li>You have <strong>{carryForwardDays || 0} carry forward days</strong> from the previous year.</li>
+              <li>All carry forward days must be <strong>utilized within 4 months</strong> from the start of the calendar year.</li>
+              <li>Any unused carry forward days after the 4-month period will be <strong>forfeited</strong>.</li>
+              <li>Please plan your leave accordingly to ensure you use your carry forward days before they expire.</li>
+            </ul>
+            <div style={{ 
+              marginTop: '20px', 
+              padding: '12px', 
+              backgroundColor: '#fff3e0', 
+              borderLeft: '4px solid #ff9800',
+              borderRadius: '4px'
+            }}>
+              <p style={{ margin: 0, fontSize: '14px', color: '#e65100' }}>
+                <i className="fa fa-calendar-check-o" style={{ marginRight: '6px' }}></i>
+                <strong>Tip:</strong> Submit your leave requests early to make full use of your carry forward days.
+              </p>
+            </div>
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="warning" onClick={() => setShowReminderModal(false)}>
+            I Understand
+          </Button>
+        </ModalFooter>
+      </Modal>
     </>
   );
 };

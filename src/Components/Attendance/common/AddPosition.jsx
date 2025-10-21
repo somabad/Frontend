@@ -196,17 +196,20 @@ const AddPosition = ({ buttonLabel = "Add Position", onPositionAdded }) => {
                 </CardHeader>
                 <CardBody style={{ maxHeight: "300px", overflowY: "auto" }}>
                   {leaveTypes.map((leaveType) => (
-                    <FormGroup key={leaveType.leave_type_id}>
-                      <Label for={`entitlement_${leaveType.leave_type_id}`}>
-                        {leaveType.leave_name} (Days)
+                    <FormGroup key={leaveType.value}>
+                      <Label for={`entitlement_${leaveType.value}`}>
+                        <div style={{ fontWeight: '500', marginBottom: '2px' }}>
+                          {leaveType.label || 'Leave Type'}
+                        </div>
+                        <small className="text-muted">(Days)</small>
                       </Label>
                       <Input
                         type="number"
-                        id={`entitlement_${leaveType.leave_type_id}`}
-                        value={getEntitlementValue(leaveType.leave_type_id)}
+                        id={`entitlement_${leaveType.value}`}
+                        value={getEntitlementValue(leaveType.value)}
                         onChange={(e) =>
                           handleEntitlementChange(
-                            leaveType.leave_type_id,
+                            leaveType.value,
                             e.target.value
                           )
                         }
