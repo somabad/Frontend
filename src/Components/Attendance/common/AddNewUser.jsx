@@ -300,7 +300,7 @@ const AddNewUser = ({ buttonLabel = "Add New User", onUserAdded }) => {
 
   return (
     <>
-      <Button color="primary" onClick={toggle}>
+      <Button color="primary" onClick={toggle} style={{ width: "100%", whiteSpace: "nowrap" }}>
         {buttonLabel}
       </Button>
 

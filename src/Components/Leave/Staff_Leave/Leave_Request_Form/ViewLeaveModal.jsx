@@ -287,10 +287,6 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
           padding-left: 0 !important;
         }
         
-        .stamp-box {
-          margin-right: -30px !important;
-        }
-        
         .notes-section {
           margin-left: -15px !important;
           margin-right: -15px !important;
@@ -301,6 +297,16 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         .notes-section div[style*="paddingLeft"] {
           padding-left: 0 !important;
           padding-right: 0 !important;
+        }
+        
+        /* Fix stamp box to reach exactly to border in print view */
+        .stamp-box {
+          border: 2px solid black !important;
+          border-top: 2px solid black !important;
+          border-left: 2px solid black !important;
+          border-right: 0px !important;
+          border-bottom: 2px solid black !important;
+          margin-right: -14px !important;
         }
         
         /* Prevent page breaks inside important sections */

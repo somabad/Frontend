@@ -8,6 +8,7 @@ import ViewLeaveModal from '../../Staff_Leave/Leave_Request_Form/ViewLeaveModal'
 import { AiOutlineInfoCircle } from 'react-icons/ai';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import axios from 'axios';
 
 
 const AdminLeaveHistory = () => {
@@ -19,6 +20,10 @@ const AdminLeaveHistory = () => {
   const [tooltipOpen, setTooltipOpen] = useState(null); // For managing tooltip state
   const [exportModal, setExportModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [exportType, setExportType] = useState('month'); // 'month' or 'staff'
+  const [selectedStaff, setSelectedStaff] = useState('');
+  const [staffList, setStaffList] = useState([]);
+  const [staffLeaveBalance, setStaffLeaveBalance] = useState([]);
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -327,8 +332,8 @@ const AdminLeaveHistory = () => {
     return months;
   };
 
-  // Export to PDF function
-  const exportToPDF = () => {
+  // Export to PDF function (by month)
+  const exportToPDFByMonth = () => {
     if (!selectedMonth) {
       alert('Please select a month to export');
       return;
@@ -395,7 +400,7 @@ const AdminLeaveHistory = () => {
     ]);
 
     // Add table
-    const tableResult = autoTable(doc, {
+    autoTable(doc, {
       head: [tableColumns],
       body: tableRows,
       startY: 35,
@@ -444,6 +449,214 @@ const AdminLeaveHistory = () => {
     setExportModal(false);
     setSelectedMonth('');
   };
+
+  // Export to PDF function (by staff)
+  const exportToPDFByStaff = () => {
+    if (!selectedStaff) {
+      alert('Please select a staff member to export');
+      return;
+    }
+
+    const currentYear = new Date().getFullYear();
+    const staff = staffList.find(s => s.staffId === parseInt(selectedStaff));
+    
+    if (!staff) {
+      alert('Staff member not found');
+      return;
+    }
+
+    // Filter data by selected staff
+    const staffLeaveData = leaveHistory.filter(item => item.staffId === parseInt(selectedStaff));
+
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Leave Report - ${staff.name}`, 148, 15, { align: 'center' });
+    
+    // Add staff info
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Department: ${staff.department || 'N/A'} | Position: ${staff.position?.name || 'N/A'}`, 148, 22, { align: 'center' });
+    doc.text(`Year: ${currentYear} | Generated on: ${new Date().toLocaleDateString()}`, 148, 28, { align: 'center' });
+
+    let currentY = 35;
+
+    // Add Leave Balance Section
+    if (staffLeaveBalance.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Leave Balance Summary', 10, currentY);
+      
+      currentY += 8;
+
+      const balanceColumns = ['Leave Type', 'Entitled', 'Carry Forward', 'Total Entitlement', 'Used', 'Remaining'];
+      const balanceRows = staffLeaveBalance.map(balance => {
+        // Get leave type name
+        const leaveTypeName = balance.leave_type_name || 'N/A';
+        return [
+          leaveTypeName,
+          balance.entitled_days?.toString() || '0',
+          balance.carry_forward_days?.toString() || '0',
+          balance.total_entitlement?.toString() || '0',
+          balance.used_days?.toString() || '0',
+          balance.total_balance?.toString() || '0'
+        ];
+      });
+
+      autoTable(doc, {
+        head: [balanceColumns],
+        body: balanceRows,
+        startY: currentY,
+        styles: {
+          fontSize: 10,
+          cellPadding: 3,
+        },
+        headStyles: {
+          fillColor: [40, 167, 69],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        margin: { left: 10, right: 10 }
+      });
+
+      currentY = doc.lastAutoTable.finalY + 12;
+    } else {
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'italic');
+      doc.text('No leave balance information available', 10, currentY);
+      currentY += 12;
+    }
+
+    // Add Leave History Section
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Leave History', 10, currentY);
+    
+    currentY += 8;
+
+    if (staffLeaveData.length > 0) {
+      const tableColumns = [
+        'Request ID',
+        'Applied Date',
+        'From',
+        'To',
+        'Days',
+        'Leave Type',
+        'Reason',
+        'Status'
+      ];
+
+      const tableRows = staffLeaveData.map(item => [
+        item.request_id || '-',
+        new Date(item.created_at).toLocaleDateString(),
+        new Date(item.start_date).toLocaleDateString(),
+        new Date(item.end_date).toLocaleDateString(),
+        item.total_days || '-',
+        item.leave_type || '-',
+        item.reason ? (item.reason.length > 30 ? item.reason.substring(0, 30) + '...' : item.reason) : '-',
+        item.status || '-'
+      ]);
+
+      autoTable(doc, {
+        head: [tableColumns],
+        body: tableRows,
+        startY: currentY,
+        styles: {
+          fontSize: 9,
+          cellPadding: 2,
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          0: { cellWidth: 20 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 15 },
+          5: { cellWidth: 30 },
+          6: { cellWidth: 50 },
+          7: { cellWidth: 20 }
+        },
+        margin: { left: 10, right: 10 }
+      });
+
+      // Add summary
+      const approvedCount = staffLeaveData.filter(item => item.status?.toLowerCase() === 'approved').length;
+      const rejectedCount = staffLeaveData.filter(item => item.status?.toLowerCase() === 'rejected').length;
+      const totalDaysUsed = staffLeaveData
+        .filter(item => item.status?.toLowerCase() === 'approved')
+        .reduce((sum, item) => sum + parseFloat(item.total_days || 0), 0);
+
+      const finalY = doc.lastAutoTable.finalY + 10;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Summary:', 10, finalY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Total Requests: ${staffLeaveData.length}`, 10, finalY + 8);
+      doc.text(`Approved: ${approvedCount}`, 10, finalY + 16);
+      doc.text(`Rejected: ${rejectedCount}`, 10, finalY + 24);
+      doc.text(`Total Days Used: ${totalDaysUsed.toFixed(1)}`, 10, finalY + 32);
+    } else {
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'italic');
+      doc.text('No leave history available for this staff member', 10, currentY);
+    }
+
+    // Save the PDF
+    doc.save(`Leave_Report_${staff.name.replace(/\s+/g, '_')}_${currentYear}.pdf`);
+    setExportModal(false);
+    setSelectedStaff('');
+  };
+
+  // Main export handler
+  const handleExport = () => {
+    if (exportType === 'month') {
+      exportToPDFByMonth();
+    } else {
+      exportToPDFByStaff();
+    }
+  };
+
+  // Fetch staff list for export dropdown
+  useEffect(() => {
+    const fetchStaffList = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/staff-list/');
+        setStaffList(response.data);
+      } catch (error) {
+        console.error('Error fetching staff list:', error);
+      }
+    };
+
+    if (exportModal) {
+      fetchStaffList();
+    }
+  }, [exportModal]);
+
+  // Fetch staff leave balance when staff is selected
+  useEffect(() => {
+    const fetchStaffLeaveBalance = async () => {
+      if (selectedStaff) {
+        try {
+          const currentYear = new Date().getFullYear();
+          const response = await axios.get(
+            `http://127.0.0.1:8000/api/staff/${selectedStaff}/leave-balance/?year=${currentYear}`
+          );
+          setStaffLeaveBalance(response.data);
+        } catch (error) {
+          console.error('Error fetching staff leave balance:', error);
+          setStaffLeaveBalance([]);
+        }
+      }
+    };
+
+    fetchStaffLeaveBalance();
+  }, [selectedStaff]);
 
   useEffect(() => {
     // Check sessionStorage for staffId and userType
@@ -625,43 +838,143 @@ const AdminLeaveHistory = () => {
       )}
 
       {/* Export PDF Modal */}
-      <Modal isOpen={exportModal} toggle={() => setExportModal(false)} centered>
-        <ModalHeader toggle={() => setExportModal(false)}>
+      <Modal isOpen={exportModal} toggle={() => {
+        setExportModal(false);
+        setExportType('month');
+        setSelectedMonth('');
+        setSelectedStaff('');
+      }} centered size="lg">
+        <ModalHeader toggle={() => {
+          setExportModal(false);
+          setExportType('month');
+          setSelectedMonth('');
+          setSelectedStaff('');
+        }}>
           Export Leave History to PDF
         </ModalHeader>
         <ModalBody>
+          {/* Export Type Selection */}
           <FormGroup>
-            <Label for="monthSelect">Select Month to Export</Label>
-            <Input
-              type="select"
-              id="monthSelect"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-            >
-              <option value="">Choose a month...</option>
-              {getAvailableMonths().map((month) => {
-                const [year, monthNum] = month.split('-');
-                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                  'July', 'August', 'September', 'October', 'November', 'December'];
-                const monthName = monthNames[parseInt(monthNum) - 1];
-                return (
-                  <option key={month} value={month}>
-                    {monthName} {year}
-                  </option>
-                );
-              })}
-            </Input>
+            <Label className="fw-bold">Export Type</Label>
+            <div className="d-flex gap-3 mt-2">
+              <div className="form-check">
+                <Input
+                  type="radio"
+                  id="exportByMonth"
+                  name="exportType"
+                  value="month"
+                  checked={exportType === 'month'}
+                  onChange={(e) => {
+                    setExportType(e.target.value);
+                    setSelectedStaff('');
+                  }}
+                  className="form-check-input"
+                />
+                <Label for="exportByMonth" className="form-check-label">
+                  Export by Month
+                </Label>
+              </div>
+              <div className="form-check">
+                <Input
+                  type="radio"
+                  id="exportByStaff"
+                  name="exportType"
+                  value="staff"
+                  checked={exportType === 'staff'}
+                  onChange={(e) => {
+                    setExportType(e.target.value);
+                    setSelectedMonth('');
+                  }}
+                  className="form-check-input"
+                />
+                <Label for="exportByStaff" className="form-check-label">
+                  Export by Staff Member
+                </Label>
+              </div>
+            </div>
           </FormGroup>
-          <div className="text-muted small">
-            <i className="fa fa-info-circle me-1"></i>
-            This will export all leave records (approved and rejected) for the selected month.
-          </div>
+
+          <hr className="my-3" />
+
+          {/* Month Selection */}
+          {exportType === 'month' && (
+            <>
+              <FormGroup>
+                <Label for="monthSelect">Select Month to Export</Label>
+                <Input
+                  type="select"
+                  id="monthSelect"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                >
+                  <option value="">Choose a month...</option>
+                  {getAvailableMonths().map((month) => {
+                    const [year, monthNum] = month.split('-');
+                    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+                    const monthName = monthNames[parseInt(monthNum) - 1];
+                    return (
+                      <option key={month} value={month}>
+                        {monthName} {year}
+                      </option>
+                    );
+                  })}
+                </Input>
+              </FormGroup>
+              <div className="text-muted small">
+                <i className="fa fa-info-circle me-1"></i>
+                This will export all leave records (approved and rejected) for the selected month.
+              </div>
+            </>
+          )}
+
+          {/* Staff Selection */}
+          {exportType === 'staff' && (
+            <>
+              <FormGroup>
+                <Label for="staffSelect">Select Staff Member</Label>
+                <Input
+                  type="select"
+                  id="staffSelect"
+                  value={selectedStaff}
+                  onChange={(e) => setSelectedStaff(e.target.value)}
+                >
+                  <option value="">Choose a staff member...</option>
+                  {staffList
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((staff) => (
+                      <option key={staff.staffId} value={staff.staffId}>
+                        {staff.name} - {staff.department || 'No Department'}
+                      </option>
+                    ))}
+                </Input>
+              </FormGroup>
+              <div className="text-muted small">
+                <i className="fa fa-info-circle me-1"></i>
+                This will export a detailed leave report for the selected staff member, including:
+                <ul className="mt-2 mb-0" style={{ fontSize: '12px' }}>
+                  <li>Leave balance summary (entitled, used, and remaining)</li>
+                  <li>Complete leave history (all approved and rejected requests)</li>
+                  <li>Statistical summary</li>
+                </ul>
+              </div>
+            </>
+          )}
         </ModalBody>
         <ModalFooter>
-          <Button color="secondary" onClick={() => setExportModal(false)}>
+          <Button color="secondary" onClick={() => {
+            setExportModal(false);
+            setExportType('month');
+            setSelectedMonth('');
+            setSelectedStaff('');
+          }}>
             Cancel
           </Button>
-          <Button color="success" onClick={exportToPDF} disabled={!selectedMonth}>
+          <Button 
+            color="success" 
+            onClick={handleExport} 
+            disabled={exportType === 'month' ? !selectedMonth : !selectedStaff}
+          >
             <i className="fa fa-download me-1"></i>
             Export PDF
           </Button>
