@@ -104,38 +104,6 @@ const hexToRgba = (hex, alpha) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-// Translation object
-const translations = {
-  en: {
-    processTitle: 'Leave Application Process',
-    step1: 'Apply Leave',
-    step2: 'Print Form',
-    step3: 'Upload Proof',
-    step4: 'Wait Approval',
-    step5: 'Check Status',
-    reminder: 'After applying, print your form from the View button, sign it, upload the scanned copy, and wait for admin approval.',
-    actionRequired: 'Action Required: Upload Form',
-    applied: 'Applied',
-    print: 'Print',
-    upload: 'Upload',
-    status: 'Status'
-  },
-  ms: {
-    processTitle: 'Proses Permohonan Cuti',
-    step1: 'Mohon Cuti',
-    step2: 'Cetak Borang',
-    step3: 'Muat Naik Bukti',
-    step4: 'Tunggu Kelulusan',
-    step5: 'Semak Status',
-    reminder: 'Selepas memohon, cetak borang dari butang View, tandatangan, muat naik salinan imbasan, dan tunggu kelulusan admin.',
-    actionRequired: 'Tindakan Diperlukan: Muat Naik Borang',
-    applied: 'Dimohon',
-    print: 'Cetak',
-    upload: 'Muat Naik',
-    status: 'Status'
-  }
-};
-
 const LeaveRequest = () => {
   const staffId = sessionStorage.getItem("staffId");
 
@@ -147,10 +115,9 @@ const LeaveRequest = () => {
   const [deleteModal, setDeleteModal] = useState({ open: false, leave: null });
   const [loading, setLoading] = useState(true);
   const [showReminderModal, setShowReminderModal] = useState(false);
-  const [language, setLanguage] = useState('en'); // Language toggle
+
   
-  // Get translations
-  const t = translations[language];
+
   
   // Upload modal states
   const [uploadModal, setUploadModal] = useState({ 
@@ -431,23 +398,6 @@ const LeaveRequest = () => {
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <button
                 style={{
-                  backgroundColor: "#17a2b8",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  padding: "6px 12px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  fontSize: '14px'
-                }}
-                onClick={() => setLanguage(prev => prev === 'en' ? 'ms' : 'en')}
-                title={language === 'en' ? 'Switch to Bahasa Malaysia' : 'Switch to English'}
-              >
-                <i className="fa fa-language me-1"></i>
-                {language === 'en' ? 'BM' : 'EN'}
-              </button>
-              <button
-                style={{
                   backgroundColor: "#6f42c1",
                   color: "#fff",
                   border: "none",
@@ -465,10 +415,6 @@ const LeaveRequest = () => {
           
           {/* Process Flow Indicator */}
           <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderBottom: '1px solid #dee2e6' }}>
-            <h6 style={{ marginBottom: '15px', color: '#495057' }}>
-              <i className="fa fa-info-circle me-2"></i>
-              {t.processTitle}
-            </h6>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
               {/* Progress Line */}
               <div style={{
@@ -523,7 +469,7 @@ const LeaveRequest = () => {
                   fontWeight: 'bold',
                   marginBottom: '8px'
                 }}>
-                  <i className="fa fa-print"></i>
+                  2
                 </div>
                 <small style={{ fontWeight: '500', color: '#007bff', textAlign: 'center', fontSize: '11px' }}>
                   Print Form
@@ -544,7 +490,7 @@ const LeaveRequest = () => {
                   fontWeight: 'bold',
                   marginBottom: '8px'
                 }}>
-                  <i className="fa fa-upload"></i>
+                  3
                 </div>
                 <small style={{ fontWeight: '500', color: '#ffc107', textAlign: 'center', fontSize: '11px' }}>
                   Upload Proof
@@ -565,7 +511,7 @@ const LeaveRequest = () => {
                   fontWeight: 'bold',
                   marginBottom: '8px'
                 }}>
-                  <i className="fa fa-clock-o"></i>
+                  4
                 </div>
                 <small style={{ fontWeight: '500', color: '#6c757d', textAlign: 'center', fontSize: '11px' }}>
                   Wait Approval
@@ -586,7 +532,7 @@ const LeaveRequest = () => {
                   fontWeight: 'bold',
                   marginBottom: '8px'
                 }}>
-                  <i className="fa fa-check-circle"></i>
+                  5
                 </div>
                 <small style={{ fontWeight: '500', color: '#17a2b8', textAlign: 'center', fontSize: '11px' }}>
                   Check Status
@@ -615,14 +561,22 @@ const LeaveRequest = () => {
               <div>
                 <h5>Pending Requests</h5>
                 {latestRequests.map((leave) => {
+                  // Check if leave has been printed
+                  const isPrinted = () => {
+                    const printedLeaves = JSON.parse(localStorage.getItem('printedLeaves') || '{}');
+                    return printedLeaves[leave.request_id] === true;
+                  };
+                  
                   // Determine current step based on leave status
                   const getCurrentStep = () => {
                     if (leave.status === 'Approved' || leave.status === 'Rejected') {
                       return 5; // Final step - status updated
                     } else if (leave.scanned_form) {
                       return 4; // Uploaded, waiting for approval
+                    } else if (isPrinted()) {
+                      return 3; // Printed, need to upload
                     } else {
-                      return 2; // Need to print and upload
+                      return 2; // Applied, need to print
                     }
                   };
                   
@@ -655,9 +609,9 @@ const LeaveRequest = () => {
                           alignItems: 'center', 
                           fontSize: '11px',
                           gap: '4px',
-                          color: currentStep >= 2 ? '#007bff' : '#6c757d'
+                          color: currentStep >= 3 ? '#007bff' : '#6c757d'
                         }}>
-                          <i className={`fa ${currentStep >= 2 ? 'fa-check-circle' : 'fa-circle-o'}`}></i>
+                          <i className={`fa ${currentStep >= 3 ? 'fa-check-circle' : 'fa-circle-o'}`}></i>
                           <span>Print</span>
                         </div>
                         <span style={{ color: '#dee2e6' }}>→</span>
@@ -691,10 +645,16 @@ const LeaveRequest = () => {
                           <span style={{ fontWeight: "bold", color: leave.status === "Approved" ? "green" : leave.status === "Rejected" ? "red" : "orange" }}>
                             {leave.status}
                           </span>
-                          {!leave.scanned_form && (
+                          {currentStep === 2 && (
+                            <Badge color="info" className="ms-2" style={{ fontSize: '10px' }}>
+                              <i className="fa fa-exclamation-circle me-1"></i>
+                              Action Required: Print Form
+                            </Badge>
+                          )}
+                          {currentStep === 3 && (
                             <Badge color="warning" className="ms-2" style={{ fontSize: '10px' }}>
                               <i className="fa fa-exclamation-circle me-1"></i>
-                              Action Required: Upload Form
+                              Action Required: Upload Scanned Form
                             </Badge>
                           )}
                         </div>
@@ -809,8 +769,8 @@ const LeaveRequest = () => {
                           innerRadius: 60,
                           outerRadius: 130,
                           data: leaveTypeData,
-                          arcLabelRadius: 210,
-                          arcLabel: (item) => `${item.label} (${item.percentage.toFixed(0)}%)`,
+                          arcLabel: (item) => `${item.percentage.toFixed(0)}%`,
+                          arcLabelMinAngle: 35,
                           valueFormatter: ({ value }) =>
                             `${value} days (${((value / totalLeave) * 100).toFixed(0)}%)`,
                           highlightScope: { fade: 'global', highlight: 'item' },
@@ -819,7 +779,11 @@ const LeaveRequest = () => {
                         },
                       ]}
                       sx={{
-                        [`& .${pieArcLabelClasses.root}`]: { fontSize: '12px' },
+                        [`& .${pieArcLabelClasses.root}`]: { 
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          fill: 'white'
+                        },
                       }}
                       slotProps={{
                         legend: {
@@ -832,7 +796,6 @@ const LeaveRequest = () => {
                         }
                       }}
                     >
-                      <PieConnectingLines data={leaveTypeData} outerRadius={130} innerRadius={60} />
                       <PieCenterLabel>Leave Type</PieCenterLabel>
                     </PieChart>
                   ) : (
@@ -842,8 +805,8 @@ const LeaveRequest = () => {
                           innerRadius: 60,
                           outerRadius: 130,
                           data: usageData,
-                          arcLabelRadius: 210,
-                          arcLabel: (item) => `${item.label} (${item.percentage.toFixed(0)}%)`,
+                          arcLabel: (item) => `${item.percentage.toFixed(0)}%`,
+                          arcLabelMinAngle: 35,
                           valueFormatter: ({ value }) => `${value} days`,
                           highlightScope: { fade: 'global', highlight: 'item' },
                           highlighted: { additionalRadius: 4 },
@@ -851,7 +814,11 @@ const LeaveRequest = () => {
                         },
                       ]}
                       sx={{
-                        [`& .${pieArcLabelClasses.root}`]: { fontSize: '12px' },
+                        [`& .${pieArcLabelClasses.root}`]: { 
+                          fontSize: '14px',
+                          fontWeight: 'bold',
+                          fill: 'white'
+                        },
                       }}
                       slotProps={{
                         legend: {
@@ -864,7 +831,6 @@ const LeaveRequest = () => {
                         }
                       }}
                     >
-                      <PieConnectingLines data={usageData} outerRadius={130} innerRadius={60} />
                       <PieCenterLabel>Usage</PieCenterLabel>
                     </PieChart>
                   )}
@@ -887,7 +853,7 @@ const LeaveRequest = () => {
               <strong>Leave Application Policy:</strong>
             </p>
             <ul style={{ lineHeight: '1.8', fontSize: '15px' }}>
-              <li>Leave applications must be submitted <strong>at least 4 days before</strong> the intended leave date, except in emergencies.</li>
+              <li>Leave applications must be submitted <strong>at least 2 days before</strong> the intended leave date, except in emergencies.</li>
               <li>Emergency leave qualification is only <strong>one day</strong> unless it involves travel outside the district.</li>
               <li>Please plan your leave requests accordingly to ensure proper approval processing.</li>
             </ul>
@@ -919,7 +885,11 @@ const LeaveRequest = () => {
           <ApplyLeaveModal isOpen={showApplyModal} onClose={() => setShowApplyModal(false)} onSubmitted={handleLeaveSubmitted} />
         </>
       )}
-      {viewModal.open && <ViewLeaveModal isOpen={viewModal.open} toggle={() => setViewModal({ open: false, leave: null })} leave={viewModal.leave} isAdmin={false} />}
+      {viewModal.open && <ViewLeaveModal isOpen={viewModal.open} toggle={() => {
+        setViewModal({ open: false, leave: null });
+        // Force re-render to update indicators after modal closes
+        setLatestRequests([...latestRequests]);
+      }} leave={viewModal.leave} isAdmin={false} />}
       {editModal.open && <EditLeaveModal isOpen={editModal.open} toggle={() => setEditModal({ open: false, leave: null })} leave={editModal.leave} onSave={fetchData} />}
       {deleteModal.open && <DeleteConfirmationModal isOpen={deleteModal.open} toggle={() => setDeleteModal({ open: false, leave: null })} onConfirm={handleDelete} userName={`${deleteModal.leave?.leave_type} (${deleteModal.leave?.start_date} to ${deleteModal.leave?.end_date})`} />}
       

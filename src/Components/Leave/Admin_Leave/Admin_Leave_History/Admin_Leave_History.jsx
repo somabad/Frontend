@@ -12,6 +12,7 @@ import autoTable from 'jspdf-autotable';
 
 const AdminLeaveHistory = () => {
   const [leaveHistory, setLeaveHistory] = useState([]);
+  const [allLeaveRecords, setAllLeaveRecords] = useState([]); // Store all records including pending for export
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -225,9 +226,12 @@ const AdminLeaveHistory = () => {
       const data = await getAdminLeaveHistory(staffId);
       const allHistory = data.leaveHistory || [];
       
-      // Filter to show only approved and rejected leave requests
+      // Store ALL records (including pending AND deleted) for export - for audit trail
+      setAllLeaveRecords(allHistory);
+      
+      // Filter to show only approved and rejected leave requests (exclude pending from table view)
       const filteredHistory = allHistory.filter(item => 
-        item.status?.toLowerCase() === 'approved' || item.status?.toLowerCase() === 'rejected'
+        (item.status?.toLowerCase() === 'approved' || item.status?.toLowerCase() === 'rejected') && !item.is_deleted
       );
       
       // Sort by created_at date and time (latest first)
@@ -318,9 +322,9 @@ const AdminLeaveHistory = () => {
     return statuses;
   };
 
-  // Get months for export dropdown
+  // Get months for export dropdown (use all records including pending)
   const getAvailableMonths = () => {
-    const months = [...new Set(leaveHistory.map(item => {
+    const months = [...new Set(allLeaveRecords.map(item => {
       const date = new Date(item.created_at);
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     }))].sort().reverse();
@@ -334,8 +338,9 @@ const AdminLeaveHistory = () => {
       return;
     }
 
+    // Use allLeaveRecords which includes pending, approved, rejected (excludes deleted)
     // Filter data by selected month
-    const filteredByMonth = leaveHistory.filter(item => {
+    const filteredByMonth = allLeaveRecords.filter(item => {
       const itemDate = new Date(item.created_at);
       const itemMonth = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}`;
       return itemMonth === selectedMonth;
@@ -379,20 +384,27 @@ const AdminLeaveHistory = () => {
       'Status'
     ];
 
-    const tableRows = filteredByMonth.map(item => [
-      item.request_id || '-',
-      item.staff_name || '-',
-      item.staff_department || '-',
-      item.staff_position || '-',
-      new Date(item.created_at).toLocaleDateString(),
-      new Date(item.start_date).toLocaleDateString(),
-      new Date(item.end_date).toLocaleDateString(),
-      item.total_days || '-',
-      item.leave_type || '-',
-      item.job_taken_over_by || '-',
-      item.reason || '-',
-      item.status || '-'
-    ]);
+    const tableRows = filteredByMonth.map(item => {
+      // Add "(Deleted)" indicator to status if record was deleted by staff
+      const statusText = item.is_deleted 
+        ? `${item.status || '-'} (Deleted)` 
+        : item.status || '-';
+      
+      return [
+        item.request_id || '-',
+        item.staff_name || '-',
+        item.staff_department || '-',
+        item.staff_position || '-',
+        new Date(item.created_at).toLocaleDateString(),
+        new Date(item.start_date).toLocaleDateString(),
+        new Date(item.end_date).toLocaleDateString(),
+        item.total_days || '-',
+        item.leave_type || '-',
+        item.job_taken_over_by || '-',
+        item.reason || '-',
+        statusText
+      ];
+    });
 
     // Add table
     const tableResult = autoTable(doc, {
@@ -426,8 +438,10 @@ const AdminLeaveHistory = () => {
     });
 
     // Add summary
-    const approvedCount = filteredByMonth.filter(item => item.status?.toLowerCase() === 'approved').length;
-    const rejectedCount = filteredByMonth.filter(item => item.status?.toLowerCase() === 'rejected').length;
+    const approvedCount = filteredByMonth.filter(item => item.status?.toLowerCase() === 'approved' && !item.is_deleted).length;
+    const rejectedCount = filteredByMonth.filter(item => item.status?.toLowerCase() === 'rejected' && !item.is_deleted).length;
+    const pendingCount = filteredByMonth.filter(item => item.status?.toLowerCase() === 'pending' && !item.is_deleted).length;
+    const deletedCount = filteredByMonth.filter(item => item.is_deleted).length;
     const totalCount = filteredByMonth.length;
 
     const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 150;
@@ -438,6 +452,11 @@ const AdminLeaveHistory = () => {
     doc.text(`Total Requests: ${totalCount}`, 10, finalY + 8);
     doc.text(`Approved: ${approvedCount}`, 10, finalY + 16);
     doc.text(`Rejected: ${rejectedCount}`, 10, finalY + 24);
+    doc.text(`Pending: ${pendingCount}`, 10, finalY + 32);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(220, 53, 69); // Red color for deleted
+    doc.text(`Deleted by Staff: ${deletedCount}`, 10, finalY + 40);
+    doc.setTextColor(0, 0, 0); // Reset to black
 
     // Save the PDF
     doc.save(`Leave_History_${monthName}_${year}.pdf`);
@@ -654,7 +673,10 @@ const AdminLeaveHistory = () => {
           </FormGroup>
           <div className="text-muted small">
             <i className="fa fa-info-circle me-1"></i>
-            This will export all leave records (approved and rejected) for the selected month.
+            This will export all leave records (pending, approved, rejected, and deleted) for the selected month.
+            <br />
+            <i className="fa fa-exclamation-triangle me-1" style={{ color: '#dc3545' }}></i>
+            <strong>Audit Trail:</strong> Deleted records will be marked as "(Deleted)" in the Status column.
           </div>
         </ModalBody>
         <ModalFooter>

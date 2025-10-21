@@ -17,7 +17,7 @@ const translations = {
   en: {
     title: 'Apply for Leave',
     name: 'Name',
-    staffId: 'Staff Id',
+    staffId: 'Staff No',
     position: 'Position',
     createdAt: 'Created At',
     department: 'Department',
@@ -599,16 +599,6 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
                   type= 'text'
                   className='form-control'
                   value={staffName}
-                  readOnly
-                  >
-                  </input>
-                </div>
-                <div className='mb-3'>
-                  <label className='form-label'>{t.staffId}</label>
-                  <input
-                  type= 'text'
-                  className='form-control'
-                  value={requestId}
                   readOnly
                   >
                   </input>
