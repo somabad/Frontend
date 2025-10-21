@@ -378,7 +378,7 @@ const LeaveRequest = () => {
       },
       {
         id: `${type}-Remaining`,
-        label: `${type} Remaining`,
+        label: `${type} Balance`,
         value: Number(data.remaining),
         percentage: (Number(data.remaining) / total) * 100,
         color: baseColor,
@@ -774,7 +774,7 @@ const LeaveRequest = () => {
                   alignItems="center"
                 >
                   <ToggleButton value="type">By Leave Type</ToggleButton>
-                  <ToggleButton value="usage">Used vs Remaining</ToggleButton>
+                  <ToggleButton value="usage">Used vs Balance</ToggleButton>
                 </ToggleButtonGroup>
 
                 <Box sx={{ display: "flex", justifyContent: "center", height: 500 }}>

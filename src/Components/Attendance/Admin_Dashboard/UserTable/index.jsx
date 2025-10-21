@@ -88,15 +88,19 @@ const UserTable = () => {
                     value={searchText}
                     style={{ width: 200, marginRight: "10px" }}
                   />
-                  <div className="d-none d-sm-block d-flex gap-2">
-                    <AddNewUser
-                      buttonLabel="Add New User"
-                      onUserAdded={() => fetchUsers(false)}
-                    />
-                    <AddPosition
-                      buttonLabel="Add Position"
-                      onPositionAdded={() => fetchUsers(false)}
-                    />
+                  <div className="d-flex gap-3">
+                    <div style={{ minWidth: "120px", maxWidth: "150px" }}>
+                      <AddNewUser
+                        buttonLabel="Add New User"
+                        onUserAdded={() => fetchUsers(false)}
+                      />
+                    </div>
+                    <div style={{ minWidth: "120px", maxWidth: "150px" }}>
+                      <AddPosition
+                        buttonLabel="Add Position"
+                        onPositionAdded={() => fetchUsers(false)}
+                      />
+                    </div>
                   </div>
                 </div>
               </CardHeader>

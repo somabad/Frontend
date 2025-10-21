@@ -294,7 +294,6 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
           margin-right: -8px !important;
           padding-left: 8px !important;
           padding-right: 8px !important;
-        }
         
         .notes-section {
           margin-left: -8px !important;
@@ -314,17 +313,6 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
           min-width: auto !important;
           max-width: 350px !important;
           width: 100% !important;
-        }
-        
-        /* Shorten job takeover field for print */
-        .job-takeover-field {
-          max-width: 510px !important;
-          flex: 0 1 510px !important;
-        }
-
-        /* from date to date fields */
-        .date {
-          max-width: -100 px !important;
         }
         
         /* Prevent page breaks inside important sections */
