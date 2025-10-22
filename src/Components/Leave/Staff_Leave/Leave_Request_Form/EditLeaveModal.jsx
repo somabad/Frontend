@@ -253,6 +253,7 @@ useEffect(() => {
 
                 <div className="mb-3">
                   <label className="form-label">{t.leaveType}</label>
+                  {/* Note: Emergency Leave (ID: 1) is excluded - it's system-assigned only */}
                   <select
                     className="form-select"
                     name="leave_type_id"

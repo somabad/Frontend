@@ -111,6 +111,25 @@ const WidgetWraper = ({
                       <td style={{ textAlign: "center", padding: "6px", borderBottom: "1px solid #eee" }}>{data.remaining}</td>
                     </tr>
                   ))}
+                  {/* Emergency Leave Row - Shows count from Annual Leave */}
+                  {(() => {
+                    // Find Annual leave to get emergency_count
+                    const annualEntry = Object.entries(cards[hoveredInfoIndex].typeDetails).find(([type]) => 
+                      type.toLowerCase().includes('annual')
+                    );
+                    const emergencyCount = annualEntry && annualEntry[1].emergency_count !== undefined 
+                      ? annualEntry[1].emergency_count 
+                      : 0;
+                    
+                    // Only show Emergency row if there's emergency count OR always show it
+                    return (
+                      <tr key="emergency">
+                        <td style={{ padding: "6px", borderBottom: "1px solid #eee" }}>Emergency</td>
+                        <td style={{ textAlign: "center", padding: "6px", borderBottom: "1px solid #eee" }}>{emergencyCount}</td>
+                        <td style={{ textAlign: "center", padding: "6px", borderBottom: "1px solid #eee" }}>0</td>
+                      </tr>
+                    );
+                  })()}
                 </tbody>
               </table>
             )}

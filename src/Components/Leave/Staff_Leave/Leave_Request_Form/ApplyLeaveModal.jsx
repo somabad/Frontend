@@ -5,11 +5,13 @@ import { Tooltip} from 'reactstrap';
 import { AiOutlineInfoCircle } from 'react-icons/ai';
 import { FaLanguage } from 'react-icons/fa';
 
+// Note: Emergency Leave is excluded - it's system-assigned only when Annual Leave is applied < 2 days before start date
 const leaveTypes = [
   { value: '2', label: 'Annual Leave' },
   { value: '3', label: 'Medical Certificate' },
   { value: '4', label: 'Unpaid Leave'},
   { value: '5', label: 'Compassionate Leave'},
+  // Emergency Leave (ID: 1) is not included - automatically assigned by system
 ];
 
 // Translation object for multilingual support
@@ -233,8 +235,19 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       }
 
       // Use leave types from API if available, otherwise fall back to static list
-      const leaveTypesToFilter = leaveTypesFromAPI && Array.isArray(leaveTypesFromAPI) ? leaveTypesFromAPI : leaveTypes;
-      console.log("Leave types to filter:", leaveTypesToFilter);
+      let leaveTypesToFilter = leaveTypesFromAPI && Array.isArray(leaveTypesFromAPI) ? leaveTypesFromAPI : leaveTypes;
+      
+      // CRITICAL: Always exclude "Emergency Leave" - it's system-assigned only
+      leaveTypesToFilter = leaveTypesToFilter.filter(type => {
+        const typeName = (type.label || type.name || '').toLowerCase();
+        const isEmergency = typeName.includes('emergency');
+        if (isEmergency) {
+          console.log(`Filtering out Emergency Leave: ${type.label || type.name}`);
+        }
+        return !isEmergency;
+      });
+      
+      console.log("Leave types to filter (after removing emergency):", leaveTypesToFilter);
 
       // Set leave balances and filter available leave types
       if (balanceData) {
@@ -280,7 +293,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
         console.log("Filtered leave types:", filteredLeaveTypes);
       } else {
         console.log("No balance data available, showing all leave types");
-        // If no balance data available, show all leave types
+        // If no balance data available, show all leave types (except emergency)
         setAvailableLeaveTypes(leaveTypesToFilter);
       }
     } catch (err) {
@@ -424,12 +437,21 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
         setRequestId(latest.request_id);
       }
 
+      // Check if leave was converted to emergency
+      const isEmergency = response?.data?.is_emergency || false;
+      const emergencyMessage = isEmergency 
+        ? (language === 'en' 
+          ? '\n\nNote: Your leave has been classified as Emergency Leave because it was applied less than 2 days before the start date. It will still be deducted from your Annual Leave balance.'
+          : '\n\nNota: Cuti anda telah diklasifikasikan sebagai Cuti Kecemasan kerana ia dipohon kurang dari 2 hari sebelum tarikh mula. Ia masih akan ditolak daripada baki Cuti Tahunan anda.')
+        : '';
+
       Swal.fire({
-        icon: 'success',
+        icon: isEmergency ? 'warning' : 'success',
         title: t.successTitle,
-        text: t.successText,
-        timer: 2000,
-        showConfirmButton: false,
+        text: t.successText + emergencyMessage,
+        timer: isEmergency ? 5000 : 2000,
+        showConfirmButton: isEmergency,
+        confirmButtonText: 'OK'
       });
       onSubmitted();
     } catch (err) {
