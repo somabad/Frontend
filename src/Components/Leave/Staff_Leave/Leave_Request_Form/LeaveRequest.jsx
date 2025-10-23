@@ -641,7 +641,22 @@ const LeaveRequest = () => {
                       {/* Leave Details */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
                         <div style={{ flex: "1", minWidth: "200px" }}>
-                          <strong>{leave.leave_type}</strong> ({leave.start_date} to {leave.end_date}) - Status:{" "}
+                          <strong>{leave.leave_type}</strong>
+                          {/* Emergency Leave Badge */}
+                          {leave.is_emergency && (
+                            <span style={{
+                              marginLeft: '8px',
+                              backgroundColor: '#ff9800',
+                              color: 'white',
+                              padding: '2px 6px',
+                              borderRadius: '3px',
+                              fontSize: '10px',
+                              fontWeight: 'bold'
+                            }}>
+                              EMERGENCY
+                            </span>
+                          )}
+                          {' '}({leave.start_date} to {leave.end_date}) - Status:{" "}
                           <span style={{ fontWeight: "bold", color: leave.status === "Approved" ? "green" : leave.status === "Rejected" ? "red" : "orange" }}>
                             {leave.status}
                           </span>
