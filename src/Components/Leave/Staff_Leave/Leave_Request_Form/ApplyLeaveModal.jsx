@@ -13,18 +13,11 @@ import { FaLanguage } from "react-icons/fa";
 
 // Note: Emergency Leave is excluded - it's system-assigned only when Annual Leave is applied < 2 days before start date
 const leaveTypes = [
-<<<<<<< HEAD
-  { value: "2", label: "Annual Leave" },
-  { value: "3", label: "Medical Certificate" },
-  { value: "4", label: "Unpaid Leave" },
-  { value: "5", label: "Compassionate Leave" },
-=======
   { value: '2', label: 'Annual Leave' },
   { value: '3', label: 'Medical Certificate' },
   { value: '4', label: 'Unpaid Leave'},
   { value: '5', label: 'Compassionate Leave'},
   // Emergency Leave (ID: 1) is not included - automatically assigned by system
->>>>>>> a0560664d5a2b87a99b7eef5f5c4f5b3eb5269c4
 ];
 
 // Translation object for multilingual support
@@ -193,23 +186,26 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
 
   // Auto-calculate totalDays when dates change
   useEffect(() => {
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      if (!isNaN(start) && !isNaN(end) && end >= start) {
-        let days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
-        if (isHalfDay) {
-          setTotalDays("0.5");
-        } else {
-          setTotalDays(days.toString());
-        }
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (!isNaN(start) && !isNaN(end) && end >= start) {
+      const days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+      if (isHalfDay) {
+        // Multiply 0.5 × number of days
+        setTotalDays((days * 0.5).toString());
       } else {
-        setTotalDays("");
+        setTotalDays(days.toString());
       }
     } else {
       setTotalDays("");
     }
-  }, [startDate, endDate, isHalfDay]);
+  } else {
+    setTotalDays("");
+  }
+}, [startDate, endDate, isHalfDay]);
+
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -263,13 +259,6 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       }
 
       // Use leave types from API if available, otherwise fall back to static list
-<<<<<<< HEAD
-      const leaveTypesToFilter =
-        leaveTypesFromAPI && Array.isArray(leaveTypesFromAPI)
-          ? leaveTypesFromAPI
-          : leaveTypes;
-      console.log("Leave types to filter:", leaveTypesToFilter);
-=======
       let leaveTypesToFilter = leaveTypesFromAPI && Array.isArray(leaveTypesFromAPI) ? leaveTypesFromAPI : leaveTypes;
       
       // CRITICAL: Always exclude "Emergency Leave" - it's system-assigned only
@@ -283,7 +272,6 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
       });
       
       console.log("Leave types to filter (after removing emergency):", leaveTypesToFilter);
->>>>>>> a0560664d5a2b87a99b7eef5f5c4f5b3eb5269c4
 
       // Set leave balances and filter available leave types
       if (balanceData) {
@@ -491,11 +479,7 @@ const ApplyLeaveModal = ({ isOpen, onClose, onSubmitted }) => {
         : '';
 
       Swal.fire({
-<<<<<<< HEAD
-        icon: "success",
-=======
         icon: isEmergency ? 'warning' : 'success',
->>>>>>> a0560664d5a2b87a99b7eef5f5c4f5b3eb5269c4
         title: t.successTitle,
         text: t.successText + emergencyMessage,
         timer: isEmergency ? 5000 : 2000,
