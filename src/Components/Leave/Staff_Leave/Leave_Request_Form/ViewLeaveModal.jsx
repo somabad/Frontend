@@ -188,6 +188,10 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
     content: () => printRef.current,
     documentTitle: 'Leave Request Form',
     removeAfterPrint: false,
+    onBeforeGetContent: () => {
+      // Force content to fit on one page before printing
+      return Promise.resolve();
+    },
     onAfterPrint: () => {
       // Mark as printed after print dialog is opened
       markAsPrinted();
@@ -195,8 +199,9 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
     pageStyle: `
       @page {
         size: A4;
-        margin: 10mm;
-        height: 261mm;
+        margin: 3mm;
+        orphans: 99999;
+        widows: 99999;
       }
       @media print {
         * {
@@ -207,24 +212,37 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         html, body {
           width: 210mm !important;
           height: 297mm !important;
+          max-height: 297mm !important;
           margin: 0 !important;
           padding: 0 !important;
           font-family: Arial, sans-serif !important;
           overflow: hidden !important;
+          page-break-after: avoid !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
+        
+        body > *:not(#printable-content) {
+          display: none !important;
+        }
+        
         #printable-content {
           display: block !important;
           width: 100% !important;
           max-width: 100% !important;
           height: auto !important;
+          max-height: 287mm !important;
           padding: 8px !important;
-          margin: 1mm auto 0 auto !important;
+          margin: auto !important;
           border: 2px solid black !important;
           box-sizing: border-box !important;
           font-family: Arial, sans-serif !important;
           font-size: 11px !important;
-          transform: scale(0.95) !important;
-          transform-origin: top center !important;
+          transform: scale(0.99) !important;
+          page-break-after: avoid !important;
+          page-break-inside: avoid !important;
+          overflow: hidden !important;
         }
         .modal-body, .modal-content {
           box-shadow: none !important;
@@ -255,25 +273,43 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         }
         h4 {
           font-size: 16px !important;
-          margin: 0 !important;
+          margin: 0 0 8px 0 !important;
           font-weight: bold !important;
         }
         h5 {
           font-size: 13px !important;
-          margin: 0 !important;
+          margin: 0 0 2px 0 !important;
           font-weight: bold !important;
         }
         /* Standardize all label/text sizes - override ALL inline styles */
         span, label, div, p {
-          font-size: 12px !important;
+          font-size: 11px !important;
         }
         /* Keep input/data text consistent */
         input, textarea {
-          font-size: 12px !important;
+          font-size: 11px !important;
         }
         /* Override specific inline fontSize styles */
         [style*="fontSize"] {
-          font-size: 12px !important;
+          font-size: 11px !important;
+        }
+        /* Reduce all margins and padding */
+        [style*="marginBottom"] {
+          margin-bottom: 6px !important;
+        }
+        [style*="marginTop"] {
+          margin-top: 4px !important;
+        }
+        [style*="paddingTop"] {
+          padding-top: 4px !important;
+        }
+        [style*="paddingBottom"] {
+          padding-bottom: 4px !important;
+        }
+        
+        /* Make all sections more compact */
+        .form-group, [class*="section"] {
+          margin-bottom: 5px !important;
         }
         /* Preserve flex layouts */
         div[style*="display: flex"] {
@@ -306,7 +342,8 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
         /* Adjust stamp box positioning for print */
         .stamp-box {
           margin-right: -70px !important;
-          margin-top: 10px !important;
+          margin-top: 8px !important;
+          height: 80px !important;
         }
         
         /* Make reason field lines shorter to fit in form */
@@ -314,6 +351,9 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
           min-width: auto !important;
           max-width: 350px !important;
           width: 100% !important;
+          height: 18px !important;
+          min-height: 18px !important;
+          line-height: 18px !important;
         }
         
         /* Shorten job takeover field for print */
@@ -327,9 +367,74 @@ const ViewLeaveModal = ({ leave, isOpen, toggle, isAdmin = false }) => {
           max-width: -100 px !important;
         }
         
+        /* Reduce signature section heights */
+        [style*="height: '35px'"] {
+          height: 28px !important;
+        }
+        
+        /* Compact HR confirmation section */
+        .hr-confirmation-section {
+          padding-top: 8px !important;
+          margin-bottom: 8px !important;
+          margin-top: 0 !important;
+        }
+        
+        .hr-data-content {
+          padding-left: 25px !important;
+        }
+        
+        .hr-data-content > div {
+          margin-bottom: 4px !important;
+        }
+        
+        /* Compact notes section */
+        .notes-section {
+          padding-top: 6px !important;
+          margin-top: 0 !important;
+        }
+        
+        .notes-section ul {
+          margin-top: 3px !important;
+          margin-bottom: 2px !important;
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
+        }
+        
+        .notes-section ul li {
+          margin-bottom: 2px !important;
+        }
+        
         /* Prevent page breaks inside important sections */
         .row, [class*="col-"] {
           page-break-inside: avoid !important;
+        }
+        
+        /* Force everything on one page - prevent second page */
+        #printable-content {
+          page-break-after: auto !important;
+          orphans: 99999 !important;
+          widows: 99999 !important;
+        }
+        
+        #printable-content * {
+          page-break-after: avoid !important;
+          page-break-before: avoid !important;
+          page-break-inside: avoid !important;
+        }
+        
+        /* Prevent any second page from showing */
+        body::after {
+          content: "";
+          display: block;
+          page-break-after: always !important;
+          visibility: hidden !important;
+          height: 0 !important;
+        }
+        
+        /* Hide second page completely */
+        @page {
+          orphans: 99999;
+          widows: 99999;
         }
       }
     `,
